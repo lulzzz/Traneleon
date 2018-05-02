@@ -1,0 +1,25 @@
+﻿{
+    "Path":  null,
+    "Id":  "C:\\Users\\Ackeem\\Projects\\WebFlow\\build\\manifest.json",
+    "Version":  {
+                    "Major":  0,
+                    "Minor":  0,
+                    "Patch":  1,
+                    "Suffix":  ""
+                },
+    "Name":  "",
+    "Summary":  null,
+    "Description":  "",
+    "Author":  "Ackara",
+    "Company":  "",
+    "License":  "",
+    "Copyright":  "",
+    "Website":  "",
+    "RepositoryUrl":  "",
+    "ReleaseNotes":  "",
+    "Icon":  "",
+    "BranchSuffixMap":  {
+                            "master":  "",
+                            "*":  "alpha"
+                        }
+}
