@@ -1,4 +1,4 @@
-﻿namespace Acklann.WebFlow.Transpilation
+﻿namespace Acklann.WebFlow.Compilation
 {
     public interface ICompilierOptions
     {

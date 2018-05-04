@@ -1,4 +1,4 @@
-﻿namespace Acklann.WebFlow.Transpilation.Configuration
+﻿namespace Acklann.WebFlow.Compilation.Configuration
 {
     public struct TranspilierResult : ICompilierResult
     {

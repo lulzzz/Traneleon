@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Acklann.WebFlow.Transpilation
+namespace Acklann.WebFlow.Compilation
 {
-    public class TypescriptCompiler : ICompiler
+    public class SassCompiler : ICompiler
     {
         public bool CanExecute(ICompilierOptions options)
         {

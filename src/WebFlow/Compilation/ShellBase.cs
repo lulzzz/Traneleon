@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Acklann.WebFlow.Transpilation.Configuration;
+using Acklann.WebFlow.Compilation.Configuration;
 
-namespace Acklann.WebFlow.Transpilation
+namespace Acklann.WebFlow.Compilation
 {
     public abstract class ShellBase
     {
