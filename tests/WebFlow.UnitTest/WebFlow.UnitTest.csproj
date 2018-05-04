@@ -89,29 +89,40 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleProject.cs" />
-    <Compile Include="Tests\CompilerTest.cs" />
+    <Compile Include="Tests\TranspilierTest.cs" />
+    <Compile Include="Tests\FileProcessorTest.cs" />
     <Compile Include="Tests\ProjectTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="TestData\style1.scss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\_partial.scss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Data.cs</LastGenOutput>
     </Content>
-    <None Include="TestData\good_json_config.json">
+    <None Include="TestData\good_config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="TestData\good_xml_config.xml">
+    <Content Include="TestData\good_config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="TestData\script1.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\WebFlow\WebFlow.csproj">
       <Project>{8e5cf284-c2c0-49ac-ac99-0bd42bbd8e14}</Project>

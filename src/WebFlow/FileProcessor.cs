@@ -7,31 +7,31 @@ using System.Collections;
 
 namespace Acklann.WebFlow
 {
-    public class Compiler : ReceiveActor
+    public class FileProcessor : ReceiveActor
     {
-        public Compiler() : this(null)
+        public FileProcessor() : this(null)
         {
         }
 
-        public Compiler(IFileOperatorSelector selector)
+        public FileProcessor(ICompilerFactory selector)
         {
             _factory = selector;
             _operatoers = new Hashtable();
             _logger = Context.GetLogger();
 
-            Receive<SettingsBase>((x) => HandleMessage(x));
+            Receive<ICompilierOptions>((x) => HandleMessage(x));
         }
 
-        protected void HandleMessage(SettingsBase options)
+        protected void HandleMessage(ICompilierOptions options)
         {
             foreach (Type type in _factory.GetOperatorTypesThatSupports(options))
             {
-                IFileOperator fileOperator = (_operatoers.Contains(type.Name) ? ((IFileOperator)_operatoers[type.Name]) : _factory.CreateInstance(type));
+                ICompiler fileOperator = (_operatoers.Contains(type.Name) ? ((ICompiler)_operatoers[type.Name]) : _factory.CreateInstance(type));
 
                 if (fileOperator.CanExecute(options))
                 {
                     _operatoers.Add(type.Name, fileOperator);
-                    ResultFile result = fileOperator.Execute(options);
+                    ICompilierResult result = fileOperator.Execute(options);
                     Sender.Tell(result);
                     break;
                 }
@@ -47,7 +47,7 @@ namespace Acklann.WebFlow
 
         private readonly IDictionary _operatoers;
         private readonly ILoggingAdapter _logger;
-        private readonly IFileOperatorSelector _factory;
+        private readonly ICompilerFactory _factory;
 
         #endregion Private Members
     }

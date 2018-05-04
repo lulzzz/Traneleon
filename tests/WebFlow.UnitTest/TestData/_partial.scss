@@ -1,0 +1,8 @@
+﻿$accent-color: red;
+
+%interactive {
+    &:hover {
+        cursor: pointer;
+        background-color: transparentize($accent-color, 0.50);
+    }
+}

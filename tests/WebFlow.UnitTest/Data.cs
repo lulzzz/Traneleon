@@ -33,9 +33,15 @@ namespace Acklann.WebFlow
 			return File.ReadAllText(file.FullName);
 		}
 
-		public static FileInfo GetGood_Json_Config() => GetFile(@"good_json_config.json");
+		public static FileInfo GetGoodConfigJSON() => GetFile(@"good_config.json");
 
-		public static FileInfo GetGood_Xml_Config() => GetFile(@"good_xml_config.xml");
+		public static FileInfo GetGoodConfigXML() => GetFile(@"good_config.xml");
+
+		public static FileInfo GetScript1TS() => GetFile(@"script1.ts");
+
+		public static FileInfo GetStyle1SCSS() => GetFile(@"style1.scss");
+
+		public static FileInfo GetPartialSCSS() => GetFile(@"_partial.scss");
 
 	}
 }

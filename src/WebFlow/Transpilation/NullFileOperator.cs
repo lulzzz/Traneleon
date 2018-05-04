@@ -1,14 +1,21 @@
-﻿using Acklann.WebFlow.Transpilation.Configuration;
-
-namespace Acklann.WebFlow.Transpilation
+﻿namespace Acklann.WebFlow.Transpilation
 {
-    public class NullFileOperator : IFileOperator
+    public class NullFileOperator : ICompiler
     {
-        public bool CanExecute(SettingsBase options) => true;
+        public bool CanExecute(ICompilierOptions options) => true;
 
-        public ResultFile Execute(SettingsBase options)
+        public ICompilierResult Execute(ICompilierOptions options)
         {
-            return new ResultFile();
+            return new NullResult();
+        }
+
+        public readonly struct NullResult : ICompilierResult
+        {
+            public bool Succeeded => true;
+
+            public long ExecutionTime => 0;
+
+            public object[] ErrorList => new object[0];
         }
     }
 }

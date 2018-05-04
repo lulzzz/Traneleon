@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Acklann.WebFlow.Transpilation.Configuration;
 
 namespace Acklann.WebFlow.Transpilation
 {
-    public enum Operand
+    public abstract class ShellBase
     {
-
     }
 }

@@ -62,11 +62,11 @@ void GenerateMethods()
 		foreach (var file in new DirectoryInfo(directory).GetFiles("*", SearchOption.AllDirectories))
 		{
 			string relativeDir = file.DirectoryName.Replace(directory, "").Trim('\\', ' ', '/');
-			string fileNameWithoutExtension = CultureInfo.CurrentCulture.TextInfo.ToTitleCase( Path.GetFileNameWithoutExtension(file.Name));
+			string fileNameWithoutExtension = CultureInfo.CurrentCulture.TextInfo.ToTitleCase( Path.GetFileNameWithoutExtension(file.Name)).Replace("_", "");
 			string extension = Path.GetExtension(file.Name).ToUpper().Trim('.');
 			string path = Path.Combine(relativeDir, file.Name);
 
-			WriteLine($"public static FileInfo Get{fileNameWithoutExtension}() => GetFile(@\"{path}\");");
+			WriteLine($"public static FileInfo Get{fileNameWithoutExtension}{extension}() => GetFile(@\"{path}\");");
 			WriteLine("");
 		}
 		PopIndent();

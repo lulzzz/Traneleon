@@ -15,8 +15,8 @@ namespace Acklann.WebFlow
             _namespace = new XmlSerializerNamespaces(new XmlQualifiedName[] { new XmlQualifiedName(string.Empty, XMLNS) });
         }
 
-        [JsonIgnore]
-        public string FullName { get; set; }
+        [XmlIgnore, JsonIgnore]
+        public string FullName { get; internal set; }
 
         public static Project Load(Stream stream)
         {
@@ -62,7 +62,7 @@ namespace Acklann.WebFlow
             }
         }
 
-        public void SaveAsync() => Save(FullName);
+        public void Save() => Save(FullName);
 
         public void Save(string filePath)
         {

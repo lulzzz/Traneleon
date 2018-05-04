@@ -1,0 +1,12 @@
+﻿@import "_partial.scss";
+
+body {
+    color: $accent-color;
+}
+
+button {
+    @extend %interactive;
+    outline: none;
+}
+
+/* this comment should be removed */

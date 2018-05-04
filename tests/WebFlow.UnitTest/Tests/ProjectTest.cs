@@ -16,13 +16,13 @@ namespace Acklann.WebFlow.Tests
         [TestMethod]
         public void Load_can_deserialize_instance_from_xml()
         {
-            RunDeserializationTest(TestFile.GetGood_Xml_Config().FullName);
+            RunDeserializationTest(TestFile.GetGoodConfigXML().FullName);
         }
 
         [TestMethod]
         public void Load_can_deserialize_instance_from_json()
         {
-            RunDeserializationTest(TestFile.GetGood_Json_Config().FullName);
+            RunDeserializationTest(TestFile.GetGoodConfigJSON().FullName);
         }
 
         [TestMethod]
