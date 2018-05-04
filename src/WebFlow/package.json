@@ -1,0 +1,13 @@
+{
+  "name": "webflow",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "csso": "^3.5.0",
+    "multi-stage-sourcemap": "^0.2.1",
+    "node-sass": "^4.9.0",
+    "svgo": "^1.0.5",
+    "typescript": "^2.8.3",
+    "uglify-js": "^3.3.23"
+  }
+}

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="webFlow"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
+           xmlns:mstns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
+           targetNamespace="https://github.com/ackara/webflow/raw/master/webflow.xsd">
+  <xs:element name="project">
+    <xs:complexType>
+      <xs:attribute name="name"
+                    type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- TYPES -->
+</xs:schema>

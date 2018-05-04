@@ -33,5 +33,9 @@ namespace Acklann.WebFlow
 			return File.ReadAllText(file.FullName);
 		}
 
-			}
+		public static FileInfo GetGood_Json_Config() => GetFile(@"good_json_config.json");
+
+		public static FileInfo GetGood_Xml_Config() => GetFile(@"good_xml_config.xml");
+
+	}
 }

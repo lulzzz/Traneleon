@@ -1,0 +1,42 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.IO" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Xml.XPath" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ output extension=".cs" #>
+namespace <#= GetMSBuildProperty("//RootNamespace") #>
+{
+	public partial class Project
+	{
+		public const string XMLNS = "<#= GetXmlNamespace() #>";
+	}
+}
+<#+
+
+string GetXmlNamespace()
+{
+	string xsd = Directory.GetFiles(Path.GetDirectoryName(Host.TemplateFile), "*.xsd", SearchOption.TopDirectoryOnly)[0];
+	Match match = Regex.Match(File.ReadAllText(xsd), "(?i)targetNamespace=\"(?<xmlns>.+)\"");
+	return  match.Groups["xmlns"].Value;
+}
+
+string GetMSBuildProperty(string xpath)
+{
+	XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+	var nsManager = new XmlNamespaceManager(new NameTable());
+	nsManager.AddNamespace("ms", ns.NamespaceName);
+	var doc = XDocument.Load(Directory.GetFiles(Path.GetDirectoryName(Host.TemplateFile), "*.csproj", SearchOption.TopDirectoryOnly)[0]);
+
+	return  doc.XPathSelectElement(xpath, nsManager)?.Value;
+}
+
+#>

@@ -262,6 +262,10 @@ __pycache__/
 
 # Generated Files
 powershell_modules/
+*.received.*
+*.min.*
+*.map
+*.zip
 
 # Sensitive Files
 secrets.*
