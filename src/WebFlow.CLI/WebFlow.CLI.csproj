@@ -1,18 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Acklann.WebFlow.CLI</AssemblyName>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
+    <Title>WebFlow</Title>
+    <AssemblyVersion>0.0.9</AssemblyVersion>
+    <PackageVersion>0.0.9</PackageVersion>
+    <Authors>Ackara</Authors>
+    <Company>Ackara</Company>
+    <PackageLicenseUrl>MIT License</PackageLicenseUrl>
+    <Copyright>All rigths reserved</Copyright>
+    <PackageIconUrl>https://github.com/ackara/webflow/raw/master/art/icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/ackara/webflow</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/ackara/webflow/raw/master/releaseNotes.txt</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/ackara/webflow/webflow.git</RepositoryUrl>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\WebFlow\WebFlow.csproj" />
   </ItemGroup>
-
 </Project>
