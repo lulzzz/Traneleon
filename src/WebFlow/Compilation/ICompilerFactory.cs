@@ -7,7 +7,7 @@ namespace Acklann.WebFlow.Compilation
     {
         IEnumerable<Type> GetAllOperatorTypes();
 
-        ICompiler CreateInstance(Type type);
+        ICompiler CreateInstance(Type compilerType);
 
         ICompiler CreateInstance(ICompilierOptions options);
 

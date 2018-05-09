@@ -6,16 +6,11 @@
 
         public ICompilierResult Execute(ICompilierOptions options)
         {
-            return new NullResult();
+            return new EmptyResult();
         }
 
-        public readonly struct NullResult : ICompilierResult
+        public void Dispose()
         {
-            public bool Succeeded => true;
-
-            public long ExecutionTime => 0;
-
-            public object[] ErrorList => new object[0];
         }
     }
 }

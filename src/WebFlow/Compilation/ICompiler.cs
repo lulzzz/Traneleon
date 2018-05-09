@@ -1,6 +1,6 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public interface ICompiler
+    public interface ICompiler : System.IDisposable
     {
         bool CanExecute(ICompilierOptions options);
 

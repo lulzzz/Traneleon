@@ -1,12 +1,16 @@
-﻿namespace Test {
+﻿/// <reference path="script2.ts" />
+
+namespace Test {
     export class Page {
         constructor() {
-            this.action("unitest");
+            this.init("unitest");
         }
 
-        action(text: string): void {
+        init(text: string): void {
             var dud;
-            console.log(`Invoked action with arg: '${text}'`);
+            console.log(`Invoked init with arg: '${text}'`);
+            var compoent = new Test.Component("button");
+            compoent.action();
         }
     }
 }

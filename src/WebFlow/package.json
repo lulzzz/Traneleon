@@ -1,6 +1,6 @@
 {
   "name": "webflow",
-  "version": "0.0.1",
+  "version": "0.0.18",
   "private": true,
   "devDependencies": {
     "csso": "^3.5.0",
@@ -8,6 +8,18 @@
     "node-sass": "^4.9.0",
     "svgo": "^1.0.5",
     "typescript": "^2.8.3",
-    "uglify-js": "^3.3.23"
-  }
+    "uglify-js": "^3.3.24"
+  },
+  "author": "Ackara",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ackara/webflow/webflow.git"
+  },
+  "homepage": "https://github.com/ackara/webflow",
+  "keywords": [
+    "web",
+    "compilier",
+    "typescript",
+    "sass"
+  ]
 }

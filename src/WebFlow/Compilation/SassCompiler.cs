@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Acklann.WebFlow.Compilation.Configuration;
+using System;
 
 namespace Acklann.WebFlow.Compilation
 {
-    public class SassCompiler : ICompiler
+    public class SassCompiler : CompilerBase<TranspilierSettings>
     {
-        public bool CanExecute(ICompilierOptions options)
+        protected override bool CanExecute(TranspilierSettings options)
         {
             throw new NotImplementedException();
         }
 
-        public ICompilierResult Execute(ICompilierOptions options)
+        protected override void SetArguments(TranspilierSettings options)
         {
             throw new NotImplementedException();
         }

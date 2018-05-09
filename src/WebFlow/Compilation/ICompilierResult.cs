@@ -6,6 +6,6 @@
 
         long ExecutionTime { get; }
 
-        object[] ErrorList { get; }
+        Error[] ErrorList { get; }
     }
 }

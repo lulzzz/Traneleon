@@ -2,7 +2,7 @@
     "Version":  {
                     "Major":  0,
                     "Minor":  0,
-                    "Patch":  9,
+                    "Patch":  18,
                     "Suffix":  ""
                 },
     "Id":  "Acklann.WebFlow",
@@ -17,6 +17,7 @@
     "RepositoryUrl":  "https://github.com/ackara/webflow/webflow.git",
     "Icon":  "https://github.com/ackara/webflow/raw/master/art/icon.png",
     "ReleaseNotes":  "https://github.com/ackara/webflow/raw/master/releaseNotes.txt",
+    "Tags":  "web compilier typescript sass",
     "BranchSuffixMap":  {
                             "master":  "",
                             "*":  "alpha"

@@ -23,11 +23,12 @@ try
 		if (-not (Test-Path "$nodeDir\$($prop.Name)"))
 		{
 			$shouldUpdate = $true;
-			Write-Host "importing $module module ...";
+			Write-Host "importing $($prop.Name) module ...";
 			&npm install --save-dev "$($prop.Name)@`"$($prop.Value)`"";
 		}
 	}
-
+	Get-ChildItem $nodeDir -Recurse -File -Include @("license", "*.md", "*.npmignore") | Remove-Item -Force;
+	
 	# Create resource package.
 	$lib = "$PWD\dependencies\*";
 	if ($shouldUpdate -or (-not (Test-Path $Archive)) -or ((Get-Item $Archive | Select-Object -ExpandProperty Length) -eq 0))
