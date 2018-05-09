@@ -13,11 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".misc", ".misc", "{C120B3F2
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebFlow.UnitTest", "tests\WebFlow.UnitTest\WebFlow.UnitTest.csproj", "{B51CDC92-A44F-469D-9D2A-B99276BC3657}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebFlow.MSTest", "tests\WebFlow.MSTest\WebFlow.MSTest.csproj", "{B51CDC92-A44F-469D-9D2A-B99276BC3657}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebFlow.CLI", "src\WebFlow.CLI\WebFlow.CLI.csproj", "{9E7B2B36-86F8-4AC2-A417-723A23928615}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebFlow.Sample", "tests\WebFlow.Sample\WebFlow.Sample.csproj", "{6EAD755A-639F-46D6-AF6D-F11119E84CC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebFlow.Sample", "tests\WebFlow.Sample\WebFlow.Sample.csproj", "{6EAD755A-639F-46D6-AF6D-F11119E84CC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
