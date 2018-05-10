@@ -89,6 +89,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleProject.cs" />
+    <Compile Include="Tests\CompilerFactoryTest.cs" />
     <Compile Include="Tests\TranspilierTest.cs" />
     <Compile Include="Tests\FileProcessorTest.cs" />
     <Compile Include="Tests\ProjectTest.cs" />

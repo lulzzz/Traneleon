@@ -56,6 +56,11 @@ namespace Acklann.WebFlow.Compilation
             return value;
         }
 
+        public string Ext()
+        {
+            throw new System.NotImplementedException();
+        }
+
         #region Private Members
 
         private IDictionary<string, string> _dictionary;

@@ -30,7 +30,7 @@ namespace Acklann.WebFlow.Tests
                 .OccursOnce();
 
             var mockSelector = Mock.Create<ICompilerFactory>();
-            mockSelector.Arrange((x) => x.GetOperatorTypesThatSupports(settings))
+            mockSelector.Arrange((x) => x.GetCompilerTypesThatSupports(settings))
                 .Returns(new Type[] { typeof(ICompiler) })
                 .OccursOnce();
             mockSelector.Arrange((x) => x.CreateInstance(Arg.IsAny<Type>()))

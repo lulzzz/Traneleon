@@ -24,7 +24,7 @@ namespace Acklann.WebFlow
 
         protected void HandleMessage(ICompilierOptions options)
         {
-            foreach (Type type in _factory.GetOperatorTypesThatSupports(options))
+            foreach (Type type in _factory.GetCompilerTypesThatSupports(options))
             {
                 ICompiler fileOperator = (_operatoers.Contains(type.Name) ? ((ICompiler)_operatoers[type.Name]) : _factory.CreateInstance(type));
 

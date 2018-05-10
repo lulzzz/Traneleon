@@ -1,4 +1,6 @@
-﻿namespace Acklann.WebFlow.Compilation.Configuration
+﻿using System.IO;
+
+namespace Acklann.WebFlow.Compilation.Configuration
 {
     public struct TranspilierSettings : ICompilierOptions
     {
@@ -26,6 +28,11 @@
         public bool KeepIntermediateFiles { get; }
         public bool GenerateSourceMaps { get; }
         public bool ConcatenateFiles { get; }
+
+        public string Ext()
+        {
+            return Path.GetExtension(SourceFile);
+        }
 
         public string ToArgs()
         {

@@ -3,5 +3,7 @@
     public interface ICompilierOptions
     {
         Kind Kind { get; }
+
+        string Ext();
     }
 }

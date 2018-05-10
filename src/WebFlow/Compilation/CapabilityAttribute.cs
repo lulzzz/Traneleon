@@ -8,6 +8,7 @@ namespace Acklann.WebFlow.Compilation
     {
         public CapabilityAttribute(Kind kind, params string[] fileTypes)
         {
+            Rank = 1;
             Kind = kind;
             SupportedFileTypes = fileTypes;
         }
@@ -20,9 +21,11 @@ namespace Acklann.WebFlow.Compilation
 
         public bool Supports(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath)) return false;
+
             string ext = Path.GetExtension(filePath);
             foreach (string extension in SupportedFileTypes)
-                if (string.Equals(ext, extension, StringComparison.OrdinalIgnoreCase))
+                if (filePath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

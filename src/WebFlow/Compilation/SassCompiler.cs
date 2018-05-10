@@ -2,14 +2,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Acklann.WebFlow.Compilation
 {
+    [Capability(Kind.Transpile, ".scss")]
     public class SassCompiler : CompilerBase<TranspilierSettings>
     {
         protected override bool CanExecute(TranspilierSettings options)
         {
-            return Shell.CanInvokeNode() && options.SourceFile.EndsWith(".scss", StringComparison.OrdinalIgnoreCase);
+            if (Shell.CanInvokeNode())
+            {
+                foreach (string extension in _supportedFileTypes)
+                    if (options.SourceFile.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+            }
+
+            return false;
         }
 
         protected override void SetArguments(TranspilierSettings options)
@@ -34,5 +45,11 @@ namespace Acklann.WebFlow.Compilation
 
             return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile);
         }
+
+        #region Private Members
+
+        private readonly string[] _supportedFileTypes = typeof(SassCompiler).GetCustomAttribute<CapabilityAttribute>()?.SupportedFileTypes;
+
+        #endregion Private Members
     }
 }
