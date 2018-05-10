@@ -7,18 +7,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Acklann.WebFlow.Tests
 {
     [TestClass]
+    [TestCategory("node.exe")]
     [UseReporter(typeof(BeyondCompare4Reporter), typeof(ClipboardReporter))]
     public class TranspilierTest
     {
         private static readonly string ResultDirectory = Path.Combine(Path.GetTempPath(), nameof(TranspilierTest));
 
-        [ClassInitialize]
-        public static void Setup(TestContext context)
+        [TestInitialize]
+        public void BeforeEach()
         {
             if (Directory.Exists(ResultDirectory)) Directory.Delete(ResultDirectory, recursive: true);
             Directory.CreateDirectory(ResultDirectory);
@@ -27,16 +29,16 @@ namespace Acklann.WebFlow.Tests
         [TestMethod]
         public void TypescriptCompiler_can_compile_ts_files()
         {
-            RunTest<TypescriptCompiler>(TestFile.GetScript1TS(), ".js");
+            RunTest<TypescriptCompiler>(TestFile.GetScript1TS());
         }
 
         [TestMethod]
         public void SassCompiler_can_compile_scss_files()
         {
-            RunTest<SassCompiler>(TestFile.GetStyle1SCSS(), ".css");
+            RunTest<SassCompiler>(TestFile.GetStyle1SCSS());
         }
 
-        private static void RunTest<T>(FileInfo sourceFile, string newExtension) where T : ICompiler
+        private static void RunTest<T>(FileInfo sourceFile) where T : ICompiler
         {
             string folder(string name) => Path.Combine(ResultDirectory, name);
 
@@ -54,12 +56,13 @@ namespace Acklann.WebFlow.Tests
             {
                 var canExecute = sut.CanExecute(options);
                 var result = (TranspilierResult)sut.Execute(options);
-                var generatedFiles = Directory.GetFiles(options.OutputDirectory, "*", SearchOption.AllDirectories);
+                var generatedFiles = Directory.GetFiles(options.OutputDirectory, "*", SearchOption.AllDirectories)
+                    .Select(x => Path.GetFileName(x)).ToArray();
 
                 // Assert
                 canExecute.ShouldBeTrue();
                 result.Succeeded.ShouldBeTrue();
-                generatedFiles.Length.ShouldBe(expectedFiles);
+                generatedFiles.Length.ShouldBe(expectedFiles, string.Join(" + ", generatedFiles));
 
                 using (ApprovalResults.ForScenario(Path.GetFileName(options.OutputDirectory)))
                 {

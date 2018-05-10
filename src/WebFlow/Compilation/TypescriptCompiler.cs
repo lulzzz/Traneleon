@@ -15,7 +15,7 @@ namespace Acklann.WebFlow.Compilation
 
         protected override void SetArguments(TranspilierSettings options)
         {
-            // DOCUMENTATION: https://github.com/sass/node-sass
+            // DOCUMENTATION: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
 
             if (!Directory.Exists(options.OutputDirectory)) Directory.CreateDirectory(options.OutputDirectory);
             if (options.GenerateSourceMaps && !Directory.Exists(options.SourceMapDirectory))
@@ -32,7 +32,7 @@ namespace Acklann.WebFlow.Compilation
             long executionTime = (Shell.ExitTime.Ticks - Shell.StartTime.Ticks);
             IDictionary<string, string> files = Shell.StandardOutput.GetGeneratedFiles();
             files.TryGetValue("minifiedFile", out string compiliedFile);
-            
+
             return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile);
         }
     }

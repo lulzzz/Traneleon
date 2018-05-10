@@ -25,6 +25,7 @@ namespace Acklann.WebFlow.Compilation
                             if (obj.TryGetValue(name, out JToken token))
                             {
                                 files.Add(name, token.Value<string>());
+                                break;
                             }
                     }
                     catch (JsonReaderException)
@@ -54,11 +55,13 @@ namespace Acklann.WebFlow.Compilation
                         error.TryGetValue("line", out JToken line);
                         error.TryGetValue("file", out JToken path);
                         error.TryGetValue("message", out JToken message);
+                        error.TryGetValue("column", out JToken column);
 
                         errorList.Enqueue(new Error(
                             ((message?.HasValues ?? false) ? message.Value<string>() : string.Empty),
                             ((path?.HasValues ?? false) ? path.Value<string>() : string.Empty),
-                            ((line?.HasValues ?? false) ? line.Value<int>() : 0)
+                            ((line?.HasValues ?? false) ? line.Value<int>() : 0),
+                            ((column?.HasValues ?? false) ? column.Value<int>() : 0)
                             ));
                     }
                     catch (JsonReaderException)

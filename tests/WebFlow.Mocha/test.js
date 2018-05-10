@@ -14,7 +14,7 @@ describe("WebFlow", function () {
         }
     });
 
-    describe("compileTs", function () {
+    describe.skip("compileTs", function () {
         let sample = path.join(testDataDirectory, "script1.ts");
 
         it("can_compile_a_typscript_file", function (done) {
@@ -27,6 +27,22 @@ describe("WebFlow", function () {
             options.concat = false;
 
             webFlow.compileTs(new webFlow.FileInfo(sample), options, done);
+        });
+    });
+
+    describe("compileSass", function () {
+        let sample = path.join(testDataDirectory, "style1.scss");
+
+        it("can_compile_a_sass_file", function (done) {
+            var options = new webFlow.TranspilierOptions();
+            options.suffix = ".min";
+            options.outputDirectory = resultsDirectory;
+            options.sourceMapDirectory = os.tmpdir();
+            options.keepIntermediateFiles = true;
+            options.generateSourceMaps = true;
+            options.concat = false;
+
+            webFlow.compileSass(new webFlow.FileInfo(sample), options, done);
         });
     });
 });

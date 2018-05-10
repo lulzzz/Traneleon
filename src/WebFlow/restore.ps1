@@ -27,7 +27,7 @@ try
 			&npm install --save-dev "$($prop.Name)@`"$($prop.Value)`"" | Out-Null;
 		}
 	}
-	#Get-ChildItem $nodeDir -Recurse -File -Include @("license", "*.md", "*.npmignore") | Remove-Item -Force;
+	Get-ChildItem $nodeDir -Recurse -File -Include @("license", "*.md", "*.npmignore") | Remove-Item -Force;
 	
 	# Create resource package.
 	$lib = "$PWD\dependencies\*";

@@ -1,8 +1,13 @@
-﻿const fs = require("fs");
-const Path = require("path");
-const Uglify = require("uglify-js");
+﻿const os = require("os");
+const fs = require("fs");
+const path = require("path");
+const csso = require("csso");
 const ts = require("typescript");
-const MapMerger = require("multi-stage-sourcemap");
+const sass = require("node-sass");
+const uglify = require("uglify-js");
+//const convert = require("convert-source-map");
+//const combine = require("combine-source-map");
+const mssMerger = require("multi-stage-sourcemap");
 
 var root = {
     // #region OPTIONS
@@ -26,7 +31,7 @@ var root = {
     // ==========================================================================================
 
     compileTs: function (sourceFile, args, onSuccess) {
-        let outFile = Path.join(args.outputDirectory, (Path.basename(sourceFile.path, ".ts") + ".js"));
+        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, ".ts") + ".js"));
         let options = {
             sourceMap: true,
             noEmitOnError: true,
@@ -40,23 +45,23 @@ var root = {
         let compiler = ts.createProgram([sourceFile.path], options);
         let target = (options.outFile ? null : compiler.getSourceFile(sourceFile.path));
         let emitResult = compiler.emit(target, function (filePath, contents, bom, onError, inputFiles) {
-            switch (Path.extname(filePath).toLowerCase()) {
+            switch (path.extname(filePath).toLowerCase()) {
                 case ".map":
                     let map = JSON.parse(contents);
-                    map.file = Path.relative(args.sourceMapDirectory, outFile);
+                    map.file = path.relative(args.sourceMapDirectory, outFile);
                     sourceFile.sourceMap = JSON.stringify(map, null, 2);
                     if (args.generateSourceMaps && args.keepIntermediateFiles) {
-                        root.createFile(Path.join(args.sourceMapDirectory, Path.basename(filePath)), sourceFile.sourceMap, "sourceMapFile2");
+                        root.createFile(path.join(args.sourceMapDirectory, path.basename(filePath)), sourceFile.sourceMap, "sourceMapFile2");
                     }
                     break;
 
                 case ".js":
-                    let mapPath = Path.join(args.sourceMapDirectory, (Path.basename(filePath) + ".map"));
-                    sourceFile.contents = root.changeSourceMapUrl(contents, Path.relative(args.outputDirectory, mapPath));
+                    let mapPath = path.join(args.sourceMapDirectory, (path.basename(filePath) + ".map"));
+                    sourceFile.contents = root.changeSourceMapUrl(contents, path.relative(args.outputDirectory, mapPath));
                     sourceFile.path = filePath;
 
                     if (args.keepIntermediateFiles) {
-                        let transientFile = Path.join(args.outputDirectory, Path.basename(filePath));
+                        let transientFile = path.join(args.outputDirectory, path.basename(filePath));
                         root.createFile(transientFile, sourceFile.contents, "intermediateFile");
                     }
 
@@ -87,8 +92,8 @@ var root = {
     },
 
     minifyJs: function (sourceFile, args, onSuccess) {
-        let outFile = Path.join(args.outputDirectory, (Path.basename(sourceFile.path, ".js") + args.suffix + ".js"));
-        let mapFile = Path.join(args.sourceMapDirectory, (Path.basename(outFile) + ".map"));
+        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, ".js") + args.suffix + ".js"));
+        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile) + ".map"));
 
         let options = {
             ie8: true
@@ -97,18 +102,79 @@ var root = {
             options.sourceMap = {
                 filename: mapFile,
                 root: args.outputDirectory,
-                url: Path.relative(args.outputDirectory, mapFile)
+                url: path.relative(args.outputDirectory, mapFile)
             }
         }
 
-        var minifyResult = Uglify.minify(sourceFile.contents, options);
+        var minifyResult = uglify.minify(sourceFile.contents, options);
 
         if (args.generateSourceMaps) {
-            sourceFile.sourceMap = root.mergeSourceMaps(minifyResult.map, sourceFile.sourceMap, Path.relative(args.sourceMapDirectory, outFile));
+            sourceFile.sourceMap = root.mergeSourceMaps(minifyResult.map, sourceFile.sourceMap, path.relative(args.sourceMapDirectory, outFile));
             root.createFile(mapFile, sourceFile.sourceMap, "sourceMapFile");
         }
 
         root.createFile(outFile, minifyResult.code, "minifiedFile", onSuccess);
+    },
+
+    compileSass: function (sourceFile, args, onSuccess) {
+        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, path.extname(sourceFile.path)) + ".css"));
+        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile) + ".map"));
+
+        let options = {
+            outFile: outFile,
+            sourceMap: mapFile,
+            sourceComments: false,
+            file: sourceFile.path,
+            outputStyle: "expanded",
+            omitSourceMapUrl: (!args.generateSourceMaps)
+        };
+
+        sass.render(options, function (err, result) {
+            if (err) {
+                console.error(JSON.stringify(err));
+                process.exit(err.status);
+            }
+            else {
+                sourceFile.path = outFile;
+                sourceFile.contents = result.css.toString();
+                sourceFile.sourceMap = result.map.toString();
+
+                if (args.keepIntermediateFiles) {
+                    root.createFile(outFile, result.css, "intermediateFile");
+
+                    if (args.generateSourceMaps) {
+                        root.createFile(mapFile, result.map, "sourceMapFile2");
+                    }
+                }
+
+                root.minifyCss(sourceFile, {
+                    suffix: args.suffix,
+                    outputDirectory: args.outputDirectory,
+                    sourceMapDirectory: args.sourceMapDirectory,
+                    generateSourceMaps: args.generateSourceMaps
+                }, onSuccess);
+            }
+        });
+    },
+
+    minifyCss: function (sourceFile, args, onSuccess) {
+        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, ".css") + args.suffix + ".css"));
+        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile) + ".map"));
+        let result = csso.minify(sourceFile.contents, {
+            filename: sourceFile.path,
+            sourceMap: args.generateSourceMaps
+        });
+
+        sourceFile.path = outFile;
+        sourceFile.contents = result.css;
+
+        if (args.generateSourceMaps) {
+            sourceFile.contents = (result.css + os.EOL + "//# sourceMappingURL=" + path.relative(args.outputDirectory, mapFile));
+            let map = root.mergeSourceMaps(result.map.toString(), sourceFile.sourceMap, path.relative(args.sourceMapDirectory, outFile));
+            root.createFile(mapFile, map, "sourceMapFile");
+        }
+
+        root.createFile(outFile, sourceFile.contents, "minifiedFile", onSuccess);
     },
 
     /* ===== HELPERS ===== */
@@ -124,7 +190,7 @@ var root = {
 
     mergeSourceMaps: function (mapB, mapA, targetFile) {
         if (mapA) {
-            var mapC = MapMerger.transfer({
+            var mapC = mssMerger.transfer({
                 fromSourceMap: mapB,
                 toSourceMap: mapA
             });
@@ -144,6 +210,7 @@ var root = {
             }
 
             if (label) {
+                process.env["foo"] = filePath;
                 let obj = {};
                 obj[label] = filePath;
                 console.log(JSON.stringify(obj));
