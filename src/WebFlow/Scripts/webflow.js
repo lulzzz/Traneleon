@@ -83,11 +83,17 @@ var root = {
                 let description = ts.flattenDiagnosticMessageText(err.messageText, '\n');
 
                 console.error(JSON.stringify({
-                    message: description,
+                    code: err.code,
+                    file: err.file.fileName,
                     line: (position.line + 1),
-                    column: (position.character + 1)
+                    column: (position.character + 1),
+                    message: description.replace(/\s/, " ")
                 }));
             }
+        }
+
+        if (emitResult.emitSkipped) {
+            process.exit(emitResult.emitSkipped ? 1 : 0);
         }
     },
 
@@ -131,7 +137,13 @@ var root = {
 
         sass.render(options, function (err, result) {
             if (err) {
-                console.error(JSON.stringify(err));
+                console.error(JSON.stringify({
+                    file: err.file,
+                    line: err.line,
+                    code: err.status,
+                    column: err.column,
+                    message: err.message
+                }));
                 process.exit(err.status);
             }
             else {

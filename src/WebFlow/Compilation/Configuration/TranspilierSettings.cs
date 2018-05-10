@@ -9,8 +9,8 @@
         public TranspilierSettings(string sourceFile, string outputDirectory, string sourceMapDirectory, string suffix, bool keepIntermediateFiles = false, bool generateSourceMaps = true, bool bundle = true)
         {
             Suffix = suffix;
-            ConcatenateFiles = bundle;
             Kind = Kind.Transpile;
+            ConcatenateFiles = bundle;
             SourceFile = sourceFile;
             OutputDirectory = outputDirectory;
             SourceMapDirectory = sourceMapDirectory;
@@ -19,19 +19,12 @@
         }
 
         public Kind Kind { get; }
-
         public string Suffix { get; }
-
         public string SourceFile { get; }
-
         public string OutputDirectory { get; }
-
         public string SourceMapDirectory { get; }
-
         public bool KeepIntermediateFiles { get; }
-
         public bool GenerateSourceMaps { get; }
-
         public bool ConcatenateFiles { get; }
 
         public string ToArgs()

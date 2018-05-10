@@ -14,9 +14,7 @@ describe("WebFlow", function () {
         }
     });
 
-    describe.skip("compileTs", function () {
-        let sample = path.join(testDataDirectory, "script1.ts");
-
+    describe("compileTs", function () {
         it("can_compile_a_typscript_file", function (done) {
             var options = new webFlow.TranspilierOptions();
             options.suffix = ".min";
@@ -26,13 +24,25 @@ describe("WebFlow", function () {
             options.generateSourceMaps = true;
             options.concat = false;
 
+            let sample = path.join(testDataDirectory, "script1.ts");
+            webFlow.compileTs(new webFlow.FileInfo(sample), options, done);
+        });
+
+        it.skip("can_report_errors", function (done) {
+            var options = new webFlow.TranspilierOptions();
+            options.suffix = ".min";
+            options.outputDirectory = resultsDirectory;
+            options.sourceMapDirectory = os.tmpdir();
+            options.keepIntermediateFiles = true;
+            options.generateSourceMaps = true;
+            options.concat = false;
+
+            let sample = path.join(testDataDirectory, "bad_script1.ts");
             webFlow.compileTs(new webFlow.FileInfo(sample), options, done);
         });
     });
 
     describe("compileSass", function () {
-        let sample = path.join(testDataDirectory, "style1.scss");
-
         it("can_compile_a_sass_file", function (done) {
             var options = new webFlow.TranspilierOptions();
             options.suffix = ".min";
@@ -42,6 +52,20 @@ describe("WebFlow", function () {
             options.generateSourceMaps = true;
             options.concat = false;
 
+            let sample = path.join(testDataDirectory, "style1.scss");
+            webFlow.compileSass(new webFlow.FileInfo(sample), options, done);
+        });
+
+        it.skip("can_report_errors", function (done) {
+            var options = new webFlow.TranspilierOptions();
+            options.suffix = ".min";
+            options.outputDirectory = resultsDirectory;
+            options.sourceMapDirectory = os.tmpdir();
+            options.keepIntermediateFiles = true;
+            options.generateSourceMaps = true;
+            options.concat = false;
+
+            let sample = path.join(testDataDirectory, "bad_style1.scss");
             webFlow.compileSass(new webFlow.FileInfo(sample), options, done);
         });
     });
