@@ -1,5 +1,6 @@
 ﻿using Acklann.WebFlow.Compilation.Configuration;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Acklann.WebFlow.Compilation
@@ -24,6 +25,15 @@ namespace Acklann.WebFlow.Compilation
 
             string script = Path.Combine(ShellBase.ResourceDirectory, "tsc.js");
             Shell.InvokeNode($"\"{script}\" {options.ToArgs()}");
+        }
+
+        protected override ICompilierResult GetResult(TranspilierSettings options)
+        {
+            long executionTime = (Shell.ExitTime.Ticks - Shell.StartTime.Ticks);
+            IDictionary<string, string> files = Shell.StandardOutput.GetGeneratedFiles();
+            files.TryGetValue("minifiedFile", out string compiliedFile);
+            
+            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile);
         }
     }
 }

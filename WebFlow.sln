@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebFlow.CLI", "src\WebFlow.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebFlow.Sample", "tests\WebFlow.Sample\WebFlow.Sample.csproj", "{6EAD755A-639F-46D6-AF6D-F11119E84CC6}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "WebFlow.Mocha", "tests\WebFlow.Mocha\WebFlow.Mocha.njsproj", "{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{6EAD755A-639F-46D6-AF6D-F11119E84CC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EAD755A-639F-46D6-AF6D-F11119E84CC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EAD755A-639F-46D6-AF6D-F11119E84CC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

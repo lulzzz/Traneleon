@@ -14,5 +14,10 @@ namespace Acklann.WebFlow.Compilation
         {
             throw new NotImplementedException();
         }
+
+        protected override ICompilierResult GetResult(TranspilierSettings options)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

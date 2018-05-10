@@ -25,10 +25,7 @@ namespace Acklann.WebFlow.Compilation
 
         public bool CanExecute(ICompilierOptions options) => CanExecute((TOptions)options);
 
-        protected virtual ICompilierResult GetResult(TOptions options)
-        {
-            return Shell.GenerateResults(options);
-        }
+        protected abstract ICompilierResult GetResult(TOptions options);
 
         protected abstract void SetArguments(TOptions options);
 

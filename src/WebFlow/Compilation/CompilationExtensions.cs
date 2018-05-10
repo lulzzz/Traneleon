@@ -1,5 +1,4 @@
-﻿using Acklann.WebFlow.Compilation.Configuration;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
@@ -8,16 +7,45 @@ namespace Acklann.WebFlow.Compilation
 {
     public static class CompilationExtensions
     {
-        internal static ICompilierResult GenerateResults<TOption>(this ShellBase shell, TOption options) where TOption : ICompilierOptions
+        internal static IDictionary<string, string> GetGeneratedFiles(this StreamReader reader)
         {
             string json;
-            JObject error, file;
-            var errorList = new Queue<Error>();
-            StreamReader errorStream = shell.StandardError;
+            JObject obj;
+            var files = new Dictionary<string, string>();
 
-            while (!errorStream.EndOfStream)
+            while (!reader.EndOfStream)
             {
-                json = errorStream.ReadLine();
+                json = reader.ReadLine();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    try
+                    {
+                        obj = JObject.Parse(json);
+                        foreach (var name in new string[] { "minifiedFile", "intermediateFile", "sourceMapFile", "sourceMapFile2" })
+                            if (obj.TryGetValue(name, out JToken token))
+                            {
+                                files.Add(name, token.Value<string>());
+                            }
+                    }
+                    catch (JsonReaderException)
+                    {
+                        System.Diagnostics.Debug.WriteLine(json);
+                    }
+                }
+            }
+
+            return files;
+        }
+
+        internal static Error[] GetErrors(this StreamReader reader)
+        {
+            string json;
+            JObject error;
+            var errorList = new Queue<Error>();
+
+            while (!reader.EndOfStream)
+            {
+                json = reader.ReadLine();
                 if (!string.IsNullOrEmpty(json))
                 {
                     try
@@ -28,9 +56,9 @@ namespace Acklann.WebFlow.Compilation
                         error.TryGetValue("message", out JToken message);
 
                         errorList.Enqueue(new Error(
-                            (message.HasValues ? message.Value<string>() : string.Empty),
-                            (path.HasValues ? path.Value<string>() : string.Empty),
-                            (line.HasValues ? line.Value<int>() : 0)
+                            ((message?.HasValues ?? false) ? message.Value<string>() : string.Empty),
+                            ((path?.HasValues ?? false) ? path.Value<string>() : string.Empty),
+                            ((line?.HasValues ?? false) ? line.Value<int>() : 0)
                             ));
                     }
                     catch (JsonReaderException)
@@ -40,37 +68,7 @@ namespace Acklann.WebFlow.Compilation
                 }
             }
 
-            file = new JObject();
-            StreamReader outStream = shell.StandardOutput;
-            while (!outStream.EndOfStream)
-            {
-                json = outStream.ReadLine();
-                if (!string.IsNullOrEmpty(json))
-                {
-                    foreach (var name in new string[] { "minifiedFile", "intermediateFile", "sourceMapFile", "sourceMapFile2" })
-                        try
-                        {
-                            if (JObject.Parse(json).TryGetValue(name, out JToken value))
-                            {
-                                file.Add(name, value);
-                            }
-                        }
-                        catch (JsonReaderException)
-                        {
-                            System.Diagnostics.Debug.WriteLine(json);
-                        }
-                }
-            }
-
-            long executionTime = (shell.ExitTime.Ticks - shell.StartTime.Ticks);
-            if (shell.ExitCode == 0)
-                switch (options)
-                {
-                    case TranspilierSettings t:
-                        return new TranspilierResult(file["minifiedFile"].Value<string>(), shell.ExitCode, executionTime, errorList.ToArray());
-                }
-
-            return new EmptyResult();
+            return errorList.ToArray();
         }
     }
 }

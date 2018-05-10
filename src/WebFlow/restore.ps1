@@ -23,11 +23,11 @@ try
 		if (-not (Test-Path "$nodeDir\$($prop.Name)"))
 		{
 			$shouldUpdate = $true;
-			Write-Host "importing $($prop.Name) module ...";
-			&npm install --save-dev "$($prop.Name)@`"$($prop.Value)`"";
+			Write-Host "importing '$($prop.Name)' module ...";
+			&npm install --save-dev "$($prop.Name)@`"$($prop.Value)`"" | Out-Null;
 		}
 	}
-	Get-ChildItem $nodeDir -Recurse -File -Include @("license", "*.md", "*.npmignore") | Remove-Item -Force;
+	#Get-ChildItem $nodeDir -Recurse -File -Include @("license", "*.md", "*.npmignore") | Remove-Item -Force;
 	
 	# Create resource package.
 	$lib = "$PWD\dependencies\*";

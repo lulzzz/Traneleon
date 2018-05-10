@@ -1,0 +1,13 @@
+﻿var Test;!function(n){var t=function(){function n(n){this.name=n}return n.prototype.action=function(){console.log("invoked action: "+this.name)},n}();n.Component=t}(Test||(Test={})),function(t){var n=function(){function n(){this.init("unitest")}return n.prototype.init=function(n){console.log("Invoked init with arg: '"+n+"'"),new t.Component("button").action()},n}();t.Page=n}(Test||(Test={}));var page=new Test.Page;
+//# sourceMappingURL=maps\script1.min.js.map
+==================================================
+{
+  "version": 3,
+  "sources": [
+    "../../../../../../Projects/WebFlow/tests/WebFlow.MSTest/bin/Debug/TestData/script2.ts",
+    "../../../../../../Projects/WebFlow/tests/WebFlow.MSTest/bin/Debug/TestData/script1.ts"
+  ],
+  "names": [],
+  "mappings": "AAAA,ICEU,MDFV,SAAU,GACN,IAAA,EAAA,WACI,SAAA,EAAY,GACR,KAAK,KAAO,EAQpB,OAHI,EAAA,UAAA,OAAA,WACI,QAAQ,IAAI,mBAAmB,KAAK,OAE5C,EAVA,GAAa,EAAA,UAAS,EAD1B,CAAU,OAAA,KAAI,KCEd,SAAU,GACN,IAAA,EAAA,WACI,SAAA,IACI,KAAK,KAAK,WASlB,OANI,EAAA,UAAA,KAAA,SAAK,GAED,QAAQ,IAAI,2BAA2B,EAAI,KAC5B,IAAI,EAAK,UAAU,UACzB,UAEjB,EAXA,GAAa,EAAA,KAAI,EADrB,CAAU,OAAA,KAAI,KAed,IAAI,KAAO,IAAI,KAAK",
+  "file": "..\\script1.min.js"
+}

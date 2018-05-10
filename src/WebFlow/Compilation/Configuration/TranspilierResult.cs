@@ -2,7 +2,7 @@
 {
     public struct TranspilierResult : ICompilierResult
     {
-        public TranspilierResult(string outFile, int exitCode, long elapse, params Error[] errors)
+        public TranspilierResult(int exitCode, long elapse, Error[] errors, string outFile)
         {
             Succeeded = (exitCode == 0);
             CompiliedFile = outFile;

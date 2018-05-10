@@ -39,6 +39,8 @@ namespace Acklann.WebFlow
 
 		public static FileInfo GetScript1TS() => GetFile(@"script1.ts");
 
+		public static FileInfo GetScript2TS() => GetFile(@"script2.ts");
+
 		public static FileInfo GetStyle1SCSS() => GetFile(@"style1.scss");
 
 		public static FileInfo GetPartialSCSS() => GetFile(@"_partial.scss");

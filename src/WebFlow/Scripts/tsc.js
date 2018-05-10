@@ -1,4 +1,4 @@
-﻿var Lib = require("./lib");
+﻿var webFlow = require("./webflow");
 
-let args = new Lib.TranspilierOptions();
-let results = Lib.compileTs(args.sourceFile, args);
+var options = new webFlow.TranspilierOptions();
+let results = webFlow.compileTs(options.sourceFile, options);

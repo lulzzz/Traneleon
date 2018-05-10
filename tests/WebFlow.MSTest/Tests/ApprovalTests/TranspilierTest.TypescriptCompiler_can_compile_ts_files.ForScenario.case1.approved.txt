@@ -1,0 +1,1 @@
+﻿var Test;!function(n){var t=function(){function t(){this.init("unitest")}return t.prototype.init=function(t){console.log("Invoked init with arg: '"+t+"'"),new n.Component("button").action()},t}();n.Page=t}(Test||(Test={}));var page=new Test.Page;

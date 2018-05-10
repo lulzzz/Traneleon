@@ -45,7 +45,7 @@
     <EmbeddedResource Include="$(ExternalDependencies)">
       <Visible>false</Visible>
     </EmbeddedResource>
-    <EmbeddedResource Include="Scripts\lib.js" />
+    <EmbeddedResource Include="Scripts\webflow.js" />
     <EmbeddedResource Include="Scripts\sass.js" />
     <EmbeddedResource Include="Scripts\tsc.js" />
   </ItemGroup>
@@ -76,8 +76,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\lib.js" />
     <None Remove="Scripts\sass.js" />
+    <None Remove="Scripts\webflow.js" />
   </ItemGroup>
 
   <ItemGroup>
