@@ -1,2 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd" />
+<project xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
+         name="test">
+  <typescript>
+    <include>*.ts</include>
+  </typescript>
+</project>

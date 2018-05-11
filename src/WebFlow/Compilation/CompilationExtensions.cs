@@ -5,40 +5,9 @@ using System.IO;
 
 namespace Acklann.WebFlow.Compilation
 {
-    public static class CompilationExtensions
+    internal static class CompilationExtensions
     {
-        internal static IDictionary<string, string> GetGeneratedFiles(this StreamReader reader)
-        {
-            string json;
-            JObject obj;
-            var files = new Dictionary<string, string>();
-
-            while (!reader.EndOfStream)
-            {
-                json = reader.ReadLine();
-                if (!string.IsNullOrEmpty(json))
-                {
-                    try
-                    {
-                        obj = JObject.Parse(json);
-                        foreach (var name in new string[] { "minifiedFile", "intermediateFile", "sourceMapFile", "sourceMapFile2" })
-                            if (obj.TryGetValue(name, out JToken token))
-                            {
-                                files.Add(name, token.Value<string>());
-                                break;
-                            }
-                    }
-                    catch (JsonReaderException)
-                    {
-                        System.Diagnostics.Debug.WriteLine(json);
-                    }
-                }
-            }
-
-            return files;
-        }
-
-        internal static Error[] GetErrors(this StreamReader reader)
+        public static Error[] GetErrors(this StreamReader reader)
         {
             string json;
             JObject error;
@@ -74,6 +43,37 @@ namespace Acklann.WebFlow.Compilation
             }
 
             return errorList.ToArray();
+        }
+
+        public static IDictionary<string, string> GetGeneratedFiles(this StreamReader reader)
+        {
+            string json;
+            JObject obj;
+            var files = new Dictionary<string, string>();
+
+            while (!reader.EndOfStream)
+            {
+                json = reader.ReadLine();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    try
+                    {
+                        obj = JObject.Parse(json);
+                        foreach (var name in new string[] { "minifiedFile", "intermediateFile", "sourceMapFile", "sourceMapFile2" })
+                            if (obj.TryGetValue(name, out JToken token))
+                            {
+                                files.Add(name, token.Value<string>());
+                                break;
+                            }
+                    }
+                    catch (JsonReaderException)
+                    {
+                        System.Diagnostics.Debug.WriteLine(json);
+                    }
+                }
+            }
+
+            return files;
         }
     }
 }

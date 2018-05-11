@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using Acklann.WebFlow.Tasks;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace Acklann.WebFlow
@@ -15,8 +18,23 @@ namespace Acklann.WebFlow
             _namespace = new XmlSerializerNamespaces(new XmlQualifiedName[] { new XmlQualifiedName(string.Empty, XMLNS) });
         }
 
+
+
         [XmlIgnore, JsonIgnore]
-        public string FullName { get; internal set; }
+        public string FullName { get; private set; }
+
+        [XmlIgnore, JsonIgnore]
+        public string DirectoryName
+        {
+            get { return Path.GetDirectoryName(FullName); }
+        }
+
+        [XmlAttribute("name")]
+        public string Name { get; set; }
+
+        [XmlElement("typescript")]
+        [JsonProperty("typescript")]
+        public TypescriptItemGroup TypescriptItemGroup { get; set; }
 
         public static Project Load(Stream stream)
         {
@@ -45,6 +63,7 @@ namespace Acklann.WebFlow
             }
 
             project.FullName = filePath;
+            SetDefaults(project);
             return project;
         }
 
@@ -59,6 +78,42 @@ namespace Acklann.WebFlow
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
             {
                 return (Project)serializer.Deserialize(stream);
+            }
+        }
+
+        public static bool Validate(Stream stream, out string error)
+        {
+            var schema = new XmlSchemaSet();
+            foreach (string path in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)), $"{nameof(WebFlow)}.xsd", SearchOption.TopDirectoryOnly))
+            {
+                schema.Add(XMLNS, path);
+            }
+
+            var err = new StringBuilder();
+            var doc = XDocument.Load(stream, LoadOptions.SetLineInfo);
+            doc.Validate(schema, (sender, e) =>
+            {
+                err.AppendLine($"[{e.Severity}] {e.Message} at line {e.Exception.LineNumber}");
+            });
+            stream.Position = 0;
+            error = err.ToString();
+
+            return string.IsNullOrEmpty(error);
+        }
+
+        public static bool Validate(string filePath, out string error)
+        {
+            using (Stream file = File.OpenRead(filePath))
+            {
+                return Validate(file, out error);
+            }
+        }
+
+        public static void SetDefaults(Project project)
+        {
+            if (project.TypescriptItemGroup != null)
+            {
+                project.TypescriptItemGroup.WorkingDirectory = project.DirectoryName;
             }
         }
 
@@ -83,7 +138,12 @@ namespace Acklann.WebFlow
                     case ".json":
                         using (var writer = new StreamWriter(file))
                         {
-                            string json = JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
+                            string json = JsonConvert.SerializeObject(this, new JsonSerializerSettings()
+                            {
+                                NullValueHandling = NullValueHandling.Ignore,
+                                Formatting = Newtonsoft.Json.Formatting.Indented,
+                                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+                            });
                             writer.WriteLine(json);
                         }
                         break;
@@ -96,7 +156,7 @@ namespace Acklann.WebFlow
             using (var writer = XmlWriter.Create(file, new XmlWriterSettings() { Indent = true }))
             {
                 var serializer = new XmlSerializer(typeof(Project));
-                serializer.Serialize(file, this, _namespace);
+                serializer.Serialize(writer, this, _namespace);
             }
         }
 

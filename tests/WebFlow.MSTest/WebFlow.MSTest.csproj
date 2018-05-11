@@ -38,6 +38,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Acklann.GlobN, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Acklann.GlobN.1.2.1\lib\netstandard2.0\Acklann.GlobN.dll</HintPath>
+    </Reference>
     <Reference Include="Akka, Version=1.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Akka.1.3.2\lib\net45\Akka.dll</HintPath>
     </Reference>
@@ -90,6 +93,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleProject.cs" />
     <Compile Include="Tests\CompilerFactoryTest.cs" />
+    <Compile Include="Tests\ItemGroupTest.cs" />
     <Compile Include="Tests\TranspilierTest.cs" />
     <Compile Include="Tests\FileProcessorTest.cs" />
     <Compile Include="Tests\ProjectTest.cs" />
@@ -117,6 +121,7 @@
     </None>
     <Content Include="TestData\good_config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup>

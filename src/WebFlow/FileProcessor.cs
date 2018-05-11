@@ -1,5 +1,4 @@
 ﻿using Acklann.WebFlow.Compilation;
-using Acklann.WebFlow.Compilation.Configuration;
 using Akka.Actor;
 using Akka.Event;
 using System;
@@ -13,10 +12,10 @@ namespace Acklann.WebFlow
         {
         }
 
-        public FileProcessor(ICompilerFactory selector)
+        public FileProcessor(ICompilerFactory factory)
         {
-            _factory = selector;
-            _operatoers = new Hashtable();
+            _factory = factory;
+            _compilers = new Hashtable();
             _logger = Context.GetLogger();
 
             Receive<ICompilierOptions>((x) => HandleMessage(x));
@@ -26,13 +25,12 @@ namespace Acklann.WebFlow
         {
             foreach (Type type in _factory.GetCompilerTypesThatSupports(options))
             {
-                ICompiler fileOperator = (_operatoers.Contains(type.Name) ? ((ICompiler)_operatoers[type.Name]) : _factory.CreateInstance(type));
+                ICompiler fileOperator = (_compilers.Contains(type.Name) ? ((ICompiler)_compilers[type.Name]) : _factory.CreateInstance(type));
 
                 if (fileOperator.CanExecute(options))
                 {
-                    _operatoers.Add(type.Name, fileOperator);
-                    ICompilierResult result = fileOperator.Execute(options);
-                    Sender.Tell(result);
+                    if (!_compilers.Contains(type.Name)) _compilers.Add(type.Name, fileOperator);
+                    Sender.Tell(fileOperator.Execute(options));
                     break;
                 }
             }
@@ -40,12 +38,12 @@ namespace Acklann.WebFlow
 
         protected override void PostStop()
         {
-            _operatoers.Clear();
+            _compilers.Clear();
         }
 
         #region Private Members
 
-        private readonly IDictionary _operatoers;
+        private readonly IDictionary _compilers;
         private readonly ILoggingAdapter _logger;
         private readonly ICompilerFactory _factory;
 

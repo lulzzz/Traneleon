@@ -1,2 +1,10 @@
 ﻿{
+  "name": "test",
+  "typescript":
+  {
+    "include":
+    [
+      "*.ts"
+    ]
+  }
 }

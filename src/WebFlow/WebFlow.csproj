@@ -51,10 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Tasks\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Update="webFlow.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Xmlns.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Xmlns.cs</LastGenOutput>

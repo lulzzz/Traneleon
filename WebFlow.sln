@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebFlow.Sample", "tests\Web
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "WebFlow.Mocha", "tests\WebFlow.Mocha\WebFlow.Mocha.njsproj", "{E8B7905C-FD56-46AD-8C3B-9D60A760E0C2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2598C957-0A8C-4C06-AAEB-3F9C77355CE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

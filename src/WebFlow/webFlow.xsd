@@ -3,14 +3,92 @@
            elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
-           xmlns:mstns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
            targetNamespace="https://github.com/ackara/webflow/raw/master/webflow.xsd">
   <xs:element name="project">
     <xs:complexType>
+      <xs:all>
+        <xs:element name="typescript"
+                    type="TypescriptItemGroup"
+                    minOccurs="0"/>
+
+        <xs:element name="sass"
+                    type="SassItemGroup"
+                    minOccurs="0"/>
+      </xs:all>
+
       <xs:attribute name="name"
                     type="xs:string" />
     </xs:complexType>
   </xs:element>
 
   <!-- TYPES -->
+  <xs:complexType name="SassItemGroup">
+    <xs:complexContent>
+      <xs:extension base="ItemGroup">
+        <xs:attributeGroup ref="TranspilierAttributes" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TypescriptItemGroup">
+    <xs:complexContent>
+      <xs:extension base="ItemGroup">
+
+        <xs:attribute name="concatenate"
+                  type="xs:boolean" />
+
+        <xs:attributeGroup ref="TranspilierAttributes" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType abstract="true" name="ItemGroup">
+    <xs:sequence>
+
+      <xs:element name="include"
+                  type="xs:string"
+                  minOccurs="1"
+                  maxOccurs="unbounded" />
+
+      <xs:element name="exclude"
+                  type="xs:string"
+                  minOccurs="0"
+                  maxOccurs="unbounded" />
+    </xs:sequence>
+
+    <xs:attributeGroup ref="CompilerAttributes" />
+  </xs:complexType>
+
+  <!-- GROUPS -->
+
+  <xs:attributeGroup name="TranspilierAttributes">
+
+    <xs:attribute name="keepIntermediateFiles"
+                  type="xs:boolean"
+                  default="false"
+                  use="optional"/>
+
+    <xs:attribute name="generateSourceMaps"
+                  type="xs:boolean"
+                  default="true"
+                  use="optional"/>
+
+    <xs:attribute name="sourceMapDirectory"
+                  type="xs:string" />
+
+    <xs:attributeGroup ref="CompilerAttributes" />
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="CompilerAttributes">
+
+    <xs:attribute name="enable"
+                  type="xs:boolean" />
+
+    <xs:attribute name="suffix"
+                  type="xs:string"
+                  default=".min" />
+
+    <xs:attribute name="outputDirectory"
+                  type="xs:string" />
+  </xs:attributeGroup>
 </xs:schema>

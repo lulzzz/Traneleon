@@ -2,15 +2,17 @@
 using ApprovalTests.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Acklann.WebFlow.Tests
 {
     [TestClass]
-    [UseReporter(typeof(BeyondCompare4Reporter), typeof(ClipboardReporter))]
+    [UseReporter(typeof(BeyondCompare4Reporter))]
     public class ProjectTest
     {
         [TestMethod]
@@ -37,7 +39,14 @@ namespace Acklann.WebFlow.Tests
             var contents = File.ReadAllText(path);
             if (File.Exists(path)) File.Delete(path);
 
+            bool xmlIsWellFormed; string errorMsg;
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(contents)))
+            {
+                xmlIsWellFormed = Project.Validate(stream, out errorMsg);
+            }
+
             // Assert
+            xmlIsWellFormed.ShouldBeTrue(errorMsg);
             Approvals.Verify(contents);
         }
 
@@ -59,7 +68,19 @@ namespace Acklann.WebFlow.Tests
 
         private static Project CreateSample()
         {
-            var sample = new Project();
+            var sample = new Project
+            {
+                Name = "test",
+                TypescriptItemGroup = new Tasks.TypescriptItemGroup()
+                {
+                    Enabled = true,
+                    Suffix = ".min",
+                    GenerateSourceMaps = true,
+                    KeepIntermediateFiles = false,
+                    Include = new List<string>(new[] { "*.ts" }),
+                    Exclude = new List<string>(new[] { "_*.ts", "*.min.ts" })
+                }
+            };
 
             return sample;
         }
@@ -70,11 +91,11 @@ namespace Acklann.WebFlow.Tests
 
             var properties = (from m in typeof(Project).GetProperties()
                               where m.IsDefined(typeof(XmlElementAttribute)) || m.IsDefined(typeof(XmlAttributeAttribute))
-                              select m.GetValue(result)).ToArray();
+                              select m).ToArray();
 
             // Assert
             result.FullName.ShouldNotBeNullOrEmpty();
-            properties.ShouldAllBe(x => x != null);
+            properties.ShouldAllBe(x => x.GetValue(result) != null);
         }
     }
 }

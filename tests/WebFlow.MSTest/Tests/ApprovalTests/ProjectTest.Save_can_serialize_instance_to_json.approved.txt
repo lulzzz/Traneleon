@@ -1,1 +1,16 @@
-﻿{}
+﻿{
+  "name": "test",
+  "typescript": {
+    "keepIntermediateFiles": false,
+    "generateSourceMaps": true,
+    "enabled": true,
+    "suffix": ".min",
+    "include": [
+      "*.ts"
+    ],
+    "exclude": [
+      "_*.ts",
+      "*.min.ts"
+    ]
+  }
+}
