@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <project name="test" xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd">
   <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
-    <include>*.ts</include>
+    <include entryPoint="index.min.js">
+      <pattern>*.ts</pattern>
+    </include>
     <exclude>_*.ts</exclude>
-    <exclude>*.min.ts</exclude>
   </typescript>
 </project>

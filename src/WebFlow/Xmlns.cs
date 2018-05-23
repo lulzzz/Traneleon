@@ -1,4 +1,4 @@
-﻿namespace Acklann.WebFlow
+﻿namespace Acklann.WebFlow.Configuration
 {
 	public partial class Project
 	{

@@ -2,6 +2,11 @@
 <project xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
          name="test">
   <typescript>
-    <include>*.ts</include>
+    <include entryPoint="shared/_layout.*html">
+      <pattern>wwwroot/**/*.ts</pattern>
+    </include>
+    <exclude>_*.ts</exclude>
   </typescript>
+
+  <sass />
 </project>

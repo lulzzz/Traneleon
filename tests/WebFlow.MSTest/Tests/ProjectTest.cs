@@ -1,4 +1,5 @@
-﻿using ApprovalTests;
+﻿using Acklann.WebFlow.Configuration;
+using ApprovalTests;
 using ApprovalTests.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -71,14 +72,17 @@ namespace Acklann.WebFlow.Tests
             var sample = new Project
             {
                 Name = "test",
-                TypescriptItemGroup = new Tasks.TypescriptItemGroup()
+                TypescriptItemGroup = new TypescriptItemGroup()
                 {
                     Enabled = true,
                     Suffix = ".min",
                     GenerateSourceMaps = true,
                     KeepIntermediateFiles = false,
-                    Include = new List<string>(new[] { "*.ts" }),
-                    Exclude = new List<string>(new[] { "_*.ts", "*.min.ts" })
+                    Exclude = new List<string> { "_*.ts" },
+                    Include = new List<TypescriptItemGroup.Bundle>
+                    {
+                        new TypescriptItemGroup.Bundle("*.ts"){ EntryPoint = "index.min.js"}
+                    }
                 }
             };
 
@@ -97,5 +101,6 @@ namespace Acklann.WebFlow.Tests
             result.FullName.ShouldNotBeNullOrEmpty();
             properties.ShouldAllBe(x => x.GetValue(result) != null);
         }
+
     }
 }

@@ -3,14 +3,18 @@
   "typescript": {
     "keepIntermediateFiles": false,
     "generateSourceMaps": true,
-    "enabled": true,
-    "suffix": ".min",
     "include": [
-      "*.ts"
+      {
+        "entryPoint": "index.min.js",
+        "patterns": [
+          "*.ts"
+        ]
+      }
     ],
     "exclude": [
-      "_*.ts",
-      "*.min.ts"
-    ]
+      "_*.ts"
+    ],
+    "enabled": true,
+    "suffix": ".min"
   }
 }

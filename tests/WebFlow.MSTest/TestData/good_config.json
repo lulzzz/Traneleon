@@ -4,7 +4,12 @@
   {
     "include":
     [
-      "*.ts"
+      {
+        "patterns":
+        [
+          "*.ts"
+        ]
+      }
     ]
   }
 }

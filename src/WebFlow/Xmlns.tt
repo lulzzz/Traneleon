@@ -13,7 +13,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ output extension=".cs" #>
-namespace <#= GetMSBuildProperty("//RootNamespace") #>
+namespace <#= GetMSBuildProperty("//RootNamespace") #>.Configuration
 {
 	public partial class Project
 	{

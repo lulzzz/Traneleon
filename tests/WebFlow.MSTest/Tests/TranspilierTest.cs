@@ -1,5 +1,4 @@
 ﻿using Acklann.WebFlow.Compilation;
-using Acklann.WebFlow.Compilation.Configuration;
 using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
@@ -20,7 +19,7 @@ namespace Acklann.WebFlow.Tests
         private static readonly string ResultDirectory = Path.Combine(Path.GetTempPath(), nameof(TranspilierTest));
 
         [TestInitialize]
-        public void BeforeEach()
+        public void Initialize()
         {
             if (Directory.Exists(ResultDirectory)) Directory.Delete(ResultDirectory, recursive: true);
             Directory.CreateDirectory(ResultDirectory);
@@ -59,8 +58,8 @@ namespace Acklann.WebFlow.Tests
             {
                 var cases = new(int, TranspilierSettings)[]
                 {
-                (1, new TranspilierSettings(sourceFile.FullName, folder("case1"), folder("case1"), ".min", false, false, false)),
-                (4, new TranspilierSettings(sourceFile.FullName, folder("case2"), folder("case2\\maps"), ".min", true, true, true))
+                    (1, new TranspilierSettings(sourceFile.FullName, folder("case1"), folder("case1"), ".min", false, false, false)),
+                    (4, new TranspilierSettings(sourceFile.FullName, folder("case2"), folder("case2\\maps"), ".min", true, true, true))
                 };
 
                 // Act

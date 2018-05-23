@@ -1,17 +1,15 @@
-﻿namespace Acklann.WebFlow
+﻿using Acklann.GlobN;
+using System;
+
+namespace Acklann.WebFlow
 {
-    public class SampleProject
+    public static class SampleProject
     {
         static SampleProject()
         {
-            DirectoryName = "";
+            DirectoryName = $"../../../{nameof(WebFlow)}.Sample".ExpandPath(AppContext.BaseDirectory);
         }
 
         public static string DirectoryName { get; }
-
-        public static void Cleanup()
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

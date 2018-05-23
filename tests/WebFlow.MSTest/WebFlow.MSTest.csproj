@@ -59,6 +59,9 @@
     <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ApprovalUtilities.3.0.14\lib\net45\ApprovalUtilities.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.8.2.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\HtmlAgilityPack.1.8.2\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MSTest.TestFramework.1.2.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
@@ -92,11 +95,15 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleProject.cs" />
+    <Compile Include="Tests\CompileCommandTest.cs" />
     <Compile Include="Tests\CompilerFactoryTest.cs" />
-    <Compile Include="Tests\ItemGroupTest.cs" />
+    <Compile Include="Tests\ConfigurationExtensionsTest.cs" />
+    <Compile Include="Tests\ItemGroupBaseTest.cs" />
+    <Compile Include="Tests\SassItemGroupTest.cs" />
     <Compile Include="Tests\TranspilierTest.cs" />
     <Compile Include="Tests\FileProcessorTest.cs" />
     <Compile Include="Tests\ProjectTest.cs" />
+    <Compile Include="Tests\TypescriptItemGroupTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -119,6 +126,13 @@
     <None Include="TestData\good_config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\entryPoint1.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="TestData\entry1.html">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestData\good_config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -147,6 +161,11 @@
     <None Include="TestData\bad_script1.ts">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestData\dummy.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

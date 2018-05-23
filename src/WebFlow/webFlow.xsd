@@ -9,11 +9,11 @@
       <xs:all>
         <xs:element name="typescript"
                     type="TypescriptItemGroup"
-                    minOccurs="0"/>
+                    minOccurs="0" />
 
         <xs:element name="sass"
                     type="SassItemGroup"
-                    minOccurs="0"/>
+                    minOccurs="0" />
       </xs:all>
 
       <xs:attribute name="name"
@@ -23,32 +23,29 @@
 
   <!-- TYPES -->
   <xs:complexType name="SassItemGroup">
-    <xs:complexContent>
-      <xs:extension base="ItemGroup">
-        <xs:attributeGroup ref="TranspilierAttributes" />
-      </xs:extension>
-    </xs:complexContent>
+    <xs:all>
+      <xs:element name="include"
+                  type="FileList"
+                  minOccurs="0" />
+    </xs:all>
+
+    <xs:attributeGroup ref="TranspilierAttributes" />
   </xs:complexType>
 
   <xs:complexType name="TypescriptItemGroup">
-    <xs:complexContent>
-      <xs:extension base="ItemGroup">
-
-        <xs:attribute name="concatenate"
-                  type="xs:boolean" />
-
-        <xs:attributeGroup ref="TranspilierAttributes" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType abstract="true" name="ItemGroup">
     <xs:sequence>
-
       <xs:element name="include"
-                  type="xs:string"
-                  minOccurs="1"
-                  maxOccurs="unbounded" />
+                  minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FileList">
+              <xs:attribute name="entryPoint"
+                            type="xs:string" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
 
       <xs:element name="exclude"
                   type="xs:string"
@@ -56,31 +53,50 @@
                   maxOccurs="unbounded" />
     </xs:sequence>
 
-    <xs:attributeGroup ref="CompilerAttributes" />
+    <xs:attributeGroup ref="TranspilierAttributes" />
+  </xs:complexType>
+
+  <xs:complexType name="Bundle">
+    <xs:sequence>
+      <xs:element name="pattern"
+                  type="xs:string"
+                  minOccurs="0"
+                  maxOccurs="unbounded" />
+    </xs:sequence>
+
+    <xs:attribute name="outFile"
+                  type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="FileList">
+    <xs:sequence>
+      <xs:element name="pattern"
+                  type="xs:string"
+                  minOccurs="0"
+                  maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
 
   <!-- GROUPS -->
 
   <xs:attributeGroup name="TranspilierAttributes">
-
     <xs:attribute name="keepIntermediateFiles"
                   type="xs:boolean"
                   default="false"
-                  use="optional"/>
+                  use="optional" />
 
     <xs:attribute name="generateSourceMaps"
                   type="xs:boolean"
                   default="true"
-                  use="optional"/>
+                  use="optional" />
 
     <xs:attribute name="sourceMapDirectory"
                   type="xs:string" />
 
-    <xs:attributeGroup ref="CompilerAttributes" />
+    <xs:attributeGroup ref="ItemGroupAttributes" />
   </xs:attributeGroup>
 
-  <xs:attributeGroup name="CompilerAttributes">
-
+  <xs:attributeGroup name="ItemGroupAttributes">
     <xs:attribute name="enable"
                   type="xs:boolean" />
 

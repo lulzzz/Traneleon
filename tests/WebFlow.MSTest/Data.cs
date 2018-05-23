@@ -37,6 +37,12 @@ namespace Acklann.WebFlow
 
 		public static FileInfo GetBadStyle1SCSS() => GetFile(@"bad_style1.scss");
 
+		public static FileInfo GetDummyJS() => GetFile(@"dummy.js");
+
+		public static FileInfo GetEntry1HTML() => GetFile(@"entry1.html");
+
+		public static FileInfo GetEntrypoint1TS() => GetFile(@"entryPoint1.ts");
+
 		public static FileInfo GetGoodConfigJSON() => GetFile(@"good_config.json");
 
 		public static FileInfo GetGoodConfigXML() => GetFile(@"good_config.xml");
