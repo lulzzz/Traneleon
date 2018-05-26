@@ -1,48 +1,77 @@
-﻿using Acklann.WebFlow.Compilation;
+﻿using Acklann.GlobN;
+using Acklann.WebFlow.Compilation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Acklann.WebFlow.Configuration
 {
     public static class ConfigurationExtensions
     {
-        public static IEnumerable<ICompilierOptions> GetCompilierOptions(this Project project)
+        public static Task<ICompilierResult[]> CompileAsync(this Project project)
         {
-            var itemGroups = project.GetItempGroups();
+            var factory = new CompilerFactory();
+            var tasks = new ConcurrentStack<Task<ICompilierResult>>();
+            var compiliers = new ConcurrentDictionary<string, ICompiler>();
 
-            foreach (string file in GetProjectFiles(project))
-            {
-                foreach (IItemGroup group in itemGroups)
-                    if (group.Enabled)
+            foreach (IItemGroup itemGroup in project.GetItempGroups())
+                if (itemGroup.Enabled)
+                    foreach (string file in itemGroup.EnumerateFiles())
                     {
-
+                        ICompilierOptions options = itemGroup.CreateCompilerOptions(file);
+                        tasks.Push(Task.Run(() => Compile(options, factory, compiliers)));
                     }
-            }
 
-            throw new System.NotImplementedException();
+            return Task.WhenAll(tasks);
         }
 
-        public static IEnumerable<string> GetProjectFiles(this Project project, string pattern = "*")
+        public static Task<ICompilierResult> CompileAsync(this Project project, string filePath)
         {
-            foreach (string file in Directory.EnumerateFiles(project.DirectoryName, pattern))
-            {
-                yield return file;
-            }
+            var factory = new CompilerFactory();
+            var compiliers = new ConcurrentDictionary<string, ICompiler>();
 
-            foreach (string folder in (from p in Directory.GetDirectories(project.DirectoryName)
-                                       where
-                                        !p.EndsWith("node_modules", StringComparison.OrdinalIgnoreCase)
-                                        &&
-                                        !p.EndsWith("bower_components", StringComparison.OrdinalIgnoreCase)
-                                       select p))
-            {
-                foreach (string file in Directory.EnumerateFiles(folder, pattern, SearchOption.AllDirectories))
+            foreach (IItemGroup itemGroup in project.GetItempGroups())
+                if (itemGroup.Enabled)
                 {
-                    yield return file;
+                    ICompilierOptions options = itemGroup.CreateCompilerOptions(filePath);
+                    return Task.Run(() => Compile(options, factory, compiliers));
+                }
+
+            return Task.Run(() => (ICompilierResult)new EmptyResult());
+        }
+
+        internal static ICompilierResult Compile(ICompilierOptions options, ICompilerFactory factory, IDictionary compilers)
+        {
+            foreach (Type type in factory.GetCompilerTypesThatSupports(options))
+            {
+                ICompiler fileOperator = (compilers.Contains(type.Name) ? (ICompiler)compilers[type.Name] : factory.CreateInstance(type));
+
+                if (fileOperator?.CanExecute(options) ?? false)
+                {
+                    if (!compilers.Contains(type.Name)) compilers.Add(type.Name, fileOperator);
+                    return fileOperator.Execute(options);
                 }
             }
+
+            return new EmptyResult();
         }
+
+        internal static bool NotDependency(this string path)
+        {
+            foreach (Glob pattern in new string[] { "node_modules/", "bower_components/", "packages/" })
+                if (pattern.IsMatch(path))
+                {
+                    return false;
+                }
+            return true;
+        }
+
+        #region Private Members
+
+        private static IDictionary _compilers;
+        private static ICompilerFactory _factory;
+
+        #endregion Private Members
     }
 }
