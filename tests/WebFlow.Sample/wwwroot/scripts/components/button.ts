@@ -14,7 +14,7 @@
         name: string;
 
         action(): void {
-            console.log(`button['${this.name}'] was invoked.`);
+            console.log(`button['${this.name}'] was clicked.`);
         }
     }
 }

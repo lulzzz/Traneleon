@@ -11,6 +11,8 @@ namespace Acklann.WebFlow.Configuration
 
         string OutputDirectory { get; set; }
 
+        string WorkingDirectory { get; set; }
+
         bool CanAccept(string filePath);
 
         IEnumerable<string> EnumerateFiles();

@@ -40,7 +40,7 @@ namespace Acklann.WebFlow.Compilation
                 }
             }
 
-            return new NullFileOperator();
+            return new NullCompiler();
         }
 
         public IEnumerable<Type> GetAllCompilerTypes()

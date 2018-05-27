@@ -10,42 +10,47 @@ using Telerik.JustMock.Helpers;
 namespace Acklann.WebFlow.Tests
 {
     [TestClass]
-    public class FileProcessorTest : TestKit
+    public class ActorTest : TestKit
     {
         [TestMethod]
-        public void HandleMesage_should_process_specified_file()
+        public void FileProcessor_should_handle_compilationOptions_messages()
         {
             // Arrange
-            var tempFile = Path.GetTempFileName();
+            int occurences = 1;
+
             var settings = Mock.Create<ICompilierOptions>();
             var mockResult = Mock.Create<ICompilierResult>();
 
             var mockOperator = Mock.Create<ICompiler>();
             mockOperator.Arrange((x) => x.Execute(settings))
                 .Returns(mockResult)
-                .OccursOnce();
+                .Occurs(occurences);
             mockOperator.Arrange((x) => x.CanExecute(settings))
                 .Returns(true)
-                .OccursOnce();
+                .Occurs(occurences);
 
             var mockSelector = Mock.Create<ICompilerFactory>();
             mockSelector.Arrange((x) => x.GetCompilerTypesThatSupports(settings))
                 .Returns(new Type[] { typeof(ICompiler) })
-                .OccursOnce();
+                .Occurs(occurences);
             mockSelector.Arrange((x) => x.CreateInstance(Arg.IsAny<Type>()))
                 .Returns(mockOperator)
-                .OccursOnce();
+                .Occurs(occurences);
 
-            var sut = ActorOfAsTestActorRef<FileProcessor>(Props.Create<FileProcessor>(mockSelector));
+            var mockObserver = Mock.Create<System.IObserver<ICompilierResult>>();
+            mockObserver.Arrange((x) => x.OnNext(mockResult))
+                .Occurs(occurences);
+
+            var sut = ActorOfAsTestActorRef<FileProcessor>(Props.Create<FileProcessor>(mockObserver, mockSelector));
 
             // Act
-            sut.Tell(settings);
-            if (File.Exists(tempFile)) File.Delete(tempFile);
+            for (int i = 0; i < occurences; i++) sut.Tell(settings);
 
             // Assert
             ExpectMsg<ICompilierResult>();
             mockOperator.AssertAll();
             mockSelector.AssertAll();
+            mockObserver.AssertAll();
         }
     }
 }

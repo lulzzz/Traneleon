@@ -84,6 +84,26 @@ namespace Acklann.WebFlow.Configuration
             return JsonConvert.DeserializeObject<Project>(json);
         }
 
+        public static bool TryLoad(string filePath, out Project project, out string error)
+        {
+            error = null;
+            project = null;
+
+            using (Stream file = File.OpenRead(filePath))
+            {
+                if (Validate(file, out error))
+                {
+                    file.Position = 0;
+                    project = Load(file);
+                    project.FullName = filePath;
+                    SetDefaults(project);
+                }
+                else return false;
+            }
+
+            return true;
+        }
+
         public static bool Validate(Stream stream, out string error)
         {
             var schema = new XmlSchemaSet();
@@ -114,9 +134,9 @@ namespace Acklann.WebFlow.Configuration
 
         public static void SetDefaults(Project project)
         {
-            if (project.TypescriptItemGroup != null)
+            foreach (IItemGroup itemGroup in project.GetItempGroups())
             {
-                project.TypescriptItemGroup.WorkingDirectory = project.DirectoryName;
+                itemGroup.WorkingDirectory = project.DirectoryName;
             }
         }
 
@@ -126,6 +146,7 @@ namespace Acklann.WebFlow.Configuration
         {
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
+            FullName = filePath;
             string dir = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
@@ -165,7 +186,7 @@ namespace Acklann.WebFlow.Configuration
 
         public IEnumerable<IItemGroup> GetItempGroups()
         {
-            yield return TypescriptItemGroup;
+            if (TypescriptItemGroup != null) yield return TypescriptItemGroup;
         }
 
         #region Private Members

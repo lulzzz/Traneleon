@@ -7,5 +7,7 @@
         public long ExecutionTime => 0;
 
         public Error[] ErrorList => new Error[0];
+
+        string ICompilierResult.OutputFile => string.Empty;
     }
 }

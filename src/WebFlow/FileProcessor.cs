@@ -8,17 +8,22 @@ namespace Acklann.WebFlow
 {
     public class FileProcessor : ReceiveActor
     {
-        public FileProcessor() : this(null)
+        public FileProcessor() : this(null, new CompilerFactory())
         {
         }
 
-        public FileProcessor(ICompilerFactory factory)
+        public FileProcessor(IObserver<ICompilierResult> observer) : this(observer, new CompilerFactory())
+        {
+        }
+
+        public FileProcessor(IObserver<ICompilierResult> observer, ICompilerFactory factory)
         {
             _factory = factory;
+            _observer = observer;
             _compilers = new Hashtable();
             _logger = Context.GetLogger();
 
-            Receive<ICompilierOptions>((x) => HandleMessage(x));
+            Receive<ICompilierOptions>(HandleMessage, ((x) => _factory != null));
         }
 
         protected void HandleMessage(ICompilierOptions options)
@@ -30,7 +35,9 @@ namespace Acklann.WebFlow
                 if (fileOperator.CanExecute(options))
                 {
                     if (!_compilers.Contains(type.Name)) _compilers.Add(type.Name, fileOperator);
-                    Sender.Tell(fileOperator.Execute(options));
+                    ICompilierResult result = fileOperator.Execute(options);
+                    _observer?.OnNext(result);
+                    Sender.Tell(result);
                     break;
                 }
             }
@@ -46,6 +53,7 @@ namespace Acklann.WebFlow
         private readonly IDictionary _compilers;
         private readonly ILoggingAdapter _logger;
         private readonly ICompilerFactory _factory;
+        private readonly IObserver<ICompilierResult> _observer;
 
         #endregion Private Members
     }

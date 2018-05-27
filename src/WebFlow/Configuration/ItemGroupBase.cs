@@ -11,6 +11,14 @@ namespace Acklann.WebFlow.Configuration
 {
     public abstract class ItemGroupBase : IItemGroup
     {
+        public ItemGroupBase()
+        {
+            Enabled = true;
+            Suffix = ".min";
+        }
+
+        internal static string[] GeneratedFolders = new[] { "node_modules", "bower_components", "bin", "obj", "vendor" };
+
         [XmlIgnore, JsonIgnore]
         public string WorkingDirectory { get; set; }
 
@@ -50,7 +58,7 @@ namespace Acklann.WebFlow.Configuration
 
             bool notDependency(string path)
             {
-                foreach (string folder in new string[] { "node_modules", "bower_components", "packages" })
+                foreach (string folder in GeneratedFolders)
                     if (path.EndsWith(folder, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;

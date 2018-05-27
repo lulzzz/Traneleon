@@ -6,6 +6,8 @@
 
         long ExecutionTime { get; }
 
+        string OutputFile { get; }
+
         Error[] ErrorList { get; }
     }
 }

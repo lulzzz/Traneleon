@@ -17,5 +17,12 @@
         public Error[] ErrorList { get; private set; }
 
         public string CompiliedFile { get; private set; }
+
+        string ICompilierResult.OutputFile => CompiliedFile;
+
+        public override string ToString()
+        {
+            return CompiliedFile;
+        }
     }
 }

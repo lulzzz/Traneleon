@@ -1,6 +1,6 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public class NullFileOperator : ICompiler
+    public class NullCompiler : ICompiler
     {
         public bool CanExecute(ICompilierOptions options) => true;
 

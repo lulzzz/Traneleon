@@ -263,6 +263,7 @@ __pycache__/
 # Generated Files
 powershell_modules/
 *.received.*
+mock.config
 *.min.*
 *.map
 *.zip

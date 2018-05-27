@@ -15,7 +15,7 @@ namespace Acklann.WebFlow.Compilation
         protected override void SetArguments(TranspilierSettings options)
         {
             // DOCUMENTATION: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
-
+            
             if (!Directory.Exists(options.OutputDirectory)) Directory.CreateDirectory(options.OutputDirectory);
             if (options.GenerateSourceMaps && !Directory.Exists(options.SourceMapDirectory))
             {

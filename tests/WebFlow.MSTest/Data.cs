@@ -13,13 +13,13 @@ namespace Acklann.WebFlow
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME); }
         }
 
-		public static FileInfo GetFile(string fileName)
+		public static FileInfo GetFile(string fileName, string directory = null)
         {
             fileName = Path.GetFileName(fileName);
             string searchPattern = $"*{Path.GetExtension(fileName)}";
 
-            string appDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME);
-            return new DirectoryInfo(appDirectory).EnumerateFiles(searchPattern, SearchOption.AllDirectories)
+            if (string.IsNullOrEmpty(directory)) directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME);
+            return new DirectoryInfo(directory).EnumerateFiles(searchPattern, SearchOption.AllDirectories)
                 .First(x => x.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase));
         }
 
@@ -54,6 +54,14 @@ namespace Acklann.WebFlow
 		public static FileInfo GetStyle1SCSS() => GetFile(@"style1.scss");
 
 		public static FileInfo GetPartialSCSS() => GetFile(@"_partial.scss");
+
+	}
+
+	public static partial class SampleProject
+	{
+		public static FileInfo GetAppTS() => GetFile(@"scripts\app.ts");
+
+		public static FileInfo GetButtonTS() => GetFile(@"scripts\components\button.ts");
 
 	}
 }

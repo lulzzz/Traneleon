@@ -26,13 +26,13 @@ namespace <#= GetMSBuildProperty("//ms:RootNamespace") #>
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME); }
         }
 
-		public static FileInfo GetFile(string fileName)
+		public static FileInfo GetFile(string fileName, string directory = null)
         {
             fileName = Path.GetFileName(fileName);
             string searchPattern = $"*{Path.GetExtension(fileName)}";
 
-            string appDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME);
-            return new DirectoryInfo(appDirectory).EnumerateFiles(searchPattern, SearchOption.AllDirectories)
+            if (string.IsNullOrEmpty(directory)) directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME);
+            return new DirectoryInfo(directory).EnumerateFiles(searchPattern, SearchOption.AllDirectories)
                 .First(x => x.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase));
         }
 
@@ -46,16 +46,23 @@ namespace <#= GetMSBuildProperty("//ms:RootNamespace") #>
 			return File.ReadAllText(file.FullName);
 		}
 
-		<# GenerateMethods(); #>
+		<# GenerateMethods(Path.Combine(Path.GetDirectoryName(Host.TemplateFile), FolderName)); #>
+	}
+
+	public static partial class SampleProject
+	{
+		<#
+			var rootDir = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Host.TemplateFile)));
+			var wwwroot = Directory.GetDirectories(rootDir, "wwwroot", SearchOption.AllDirectories)[0];
+			GenerateMethods(wwwroot);
+		#>
 	}
 }
 <#+
 string FolderName = "TestData";
 
-void GenerateMethods()
+void GenerateMethods(string directory)
 {
-	var directory = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), FolderName);
-
 	if (Directory.Exists(directory))
 	{
 		PushIndent("\t\t");

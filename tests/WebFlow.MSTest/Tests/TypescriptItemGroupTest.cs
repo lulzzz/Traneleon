@@ -43,29 +43,34 @@ namespace Acklann.WebFlow.Tests
             {
                 Enabled = true,
                 Suffix = ".min",
-                WorkingDirectory = Path.GetDirectoryName(TestFile.DirectoryName),
+                WorkingDirectory = SampleProject.DirectoryName,
                 Include = new List<TypescriptItemGroup.Bundle>
                 {
                     new TypescriptItemGroup.Bundle()
                     {
-                        Patterns = new List<string> { "*.ts" },
-                        EntryPoint = $"{TestFile.FOLDER_NAME}\\{TestFile.GetEntry1HTML().Name}"
+                        Patterns = new List<string> { "wwwroot/**/*.ts" },
+                        EntryPoint = $"Shared/_Layout.*html"
                     }
                 }
             };
 
-            var sample = TestFile.GetScript2TS().FullName;
+            var outFile = SampleProject.GetAppTS().FullName;
+            var btn = SampleProject.GetButtonTS().FullName;
 
             // Act
-            var html = (TranspilierSettings)sut.CreateCompilerOptions(sample);
+            var case1 = (TranspilierSettings)sut.CreateCompilerOptions(outFile);
+            var case2 = (TranspilierSettings)sut.CreateCompilerOptions(btn);
 
-            var tmp = sut.Include[0];
-            tmp.EntryPoint = string.Empty;
-            var plain = (TranspilierSettings)sut.CreateCompilerOptions(sample);
+            sut.Include[0].EntryPoint = null;
+            var case3 = (TranspilierSettings)sut.CreateCompilerOptions(btn);
 
             // Assert
-            plain.SourceFile.ShouldBe(sample);
-            html.SourceFile.ShouldBe(TestFile.GetEntrypoint1TS().FullName, StringCompareShould.IgnoreCase);
+            case1.SourceFile.ShouldBe(outFile);
+            case2.SourceFile.ShouldBe(outFile);
+            case3.SourceFile.ShouldBe(btn);
+
+            case2.OutputDirectory.ShouldBe(Path.GetDirectoryName(outFile));
+            case2.SourceMapDirectory.ShouldBe(Path.GetDirectoryName(outFile));
         }
 
         [TestMethod]
@@ -95,8 +100,8 @@ namespace Acklann.WebFlow.Tests
             entryPoint.ShouldContain("app.ts");
             allFiles.ShouldContain("app.ts", "button.ts");
 
-            allFiles.Count.ShouldBe(2);
             entryPoint.Count.ShouldBe(1);
+            allFiles.Count.ShouldBeGreaterThanOrEqualTo(2);
         }
     }
 }

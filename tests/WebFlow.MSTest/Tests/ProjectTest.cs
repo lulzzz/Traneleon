@@ -47,6 +47,7 @@ namespace Acklann.WebFlow.Tests
             }
 
             // Assert
+            sut.FullName.ShouldBe(path);
             xmlIsWellFormed.ShouldBeTrue(errorMsg);
             Approvals.Verify(contents);
         }

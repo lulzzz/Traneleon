@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -19,6 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
+    <PackageReference Include="Acklann.Watcha" Version="0.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebFlow\WebFlow.csproj" />

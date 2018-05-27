@@ -13,11 +13,11 @@ namespace Acklann.WebFlow.Configuration
 {
     public class TypescriptItemGroup : ItemGroupBase
     {
-        public TypescriptItemGroup()
+        public TypescriptItemGroup() : base()
         {
             GenerateSourceMaps = true;
             KeepIntermediateFiles = false;
-            Include = new List<Bundle>();
+            Include = new List<Bundle> { new Bundle("*.ts") };
         }
 
         [XmlAttribute("keepIntermediateFiles")]
@@ -74,10 +74,7 @@ namespace Acklann.WebFlow.Configuration
         {
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
-            string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
-            string mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
             Bundle bundle = GetBundle(Include, filePath);
-
             if (bundle.IsNotEmpty)
             {
                 bool concat = false;
@@ -89,6 +86,8 @@ namespace Acklann.WebFlow.Configuration
                     sourceFile = GetEntryPoint(bundle);
                 }
 
+                string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(sourceFile) : OutputDirectory);
+                string mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
                 return new TranspilierSettings(sourceFile, outDir, mapDir, Suffix, KeepIntermediateFiles, GenerateSourceMaps, concat);
             }
 

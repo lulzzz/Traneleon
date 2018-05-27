@@ -18,5 +18,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 /* Approval Tests */
-[assembly: UseReporter(typeof(DiffReporter))]
+[assembly: UseReporter(typeof(BeyondCompare4Reporter))]
 [assembly: UseApprovalSubdirectory(nameof(ApprovalTests))]
