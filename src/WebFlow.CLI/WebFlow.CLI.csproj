@@ -1,21 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>Acklann.WebFlow.CLI</AssemblyName>
-    <RootNamespace>Acklann.WebFlow</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
     <Title>WebFlow</Title>
-    <AssemblyVersion>0.0.18</AssemblyVersion>
-    <PackageVersion>0.0.18</PackageVersion>
+    <Product>$(Title)</Product>
+    <ProductName>$(Title)</ProductName>
     <Authors>Ackara</Authors>
     <Company>Ackara</Company>
-    <PackageLicenseUrl>MIT License</PackageLicenseUrl>
+    <RootNamespace>Acklann.WebFlow</RootNamespace>
+    <AssemblyName>Acklann.WebFlow.CLI</AssemblyName>
+    <AssemblyVersion>0.0.19</AssemblyVersion>
+    <PackageVersion>0.0.19</PackageVersion>
     <Copyright>All rigths reserved</Copyright>
-    <PackageIconUrl>https://github.com/ackara/webflow/raw/master/art/icon.png</PackageIconUrl>
+    <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/ackara/webflow</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/ackara/webflow/raw/master/releaseNotes.txt</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/ackara/webflow/webflow.git</RepositoryUrl>
+    <PackageIconUrl>https://github.com/ackara/webflow/raw/master/art/icon.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/ackara/webflow/raw/master/releaseNotes.txt</PackageReleaseNotes>
     <PackageTags>web compilier typescript sass</PackageTags>
+    <Description>this is a description</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
