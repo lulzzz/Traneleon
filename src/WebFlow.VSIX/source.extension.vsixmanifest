@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="WebFlow.VSIX.d037ae10-efee-4f47-9b24-f56f5d330b15" Version="0.0.19" Language="en-US" Publisher="Ackara" />
+    <Identity Id="WebFlow.VSIX.d037ae10-efee-4f47-9b24-f56f5d330b15" Version="0.0.20" Language="en-US" Publisher="Ackara" />
     <DisplayName>WebFlow</DisplayName>
     <Description>this is a description</Description>
     <Tags>web compilier typescript sass</Tags>
