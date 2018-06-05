@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
     <AssemblyName>Acklann.WebFlow</AssemblyName>
-    <Description>this is a description</Description>
   </PropertyGroup>
+
   <PropertyGroup>
     <Title>WebFlow</Title>
     <Authors>Ackara</Authors>
@@ -18,25 +18,30 @@
     <RepositoryUrl>https://github.com/ackara/webflow/webflow.git</RepositoryUrl>
     <PackageIconUrl>https://github.com/ackara/webflow/raw/master/art/icon.png</PackageIconUrl>
     <PackageReleaseNotes>https://github.com/ackara/webflow/raw/master/releaseNotes.txt</PackageReleaseNotes>
+    <Description>this is a description</Description>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\Acklann.WebFlow.xml</DocumentationFile>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <ExternalDependencies>dependencies.zip</ExternalDependencies>
-  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <ExternalDependencies>dependencies.zip</ExternalDependencies>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Acklann.GlobN" Version="1.2.1" />
     <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
-    <PackageReference Include="Akka" Version="1.3.6" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.8.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Acklann.Watcha" Version="0.0.7" />
+    <PackageReference Include="Akka" Version="1.3.7" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.8.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="$(ExternalDependencies)">
       <Visible>false</Visible>
@@ -45,6 +50,7 @@
     <EmbeddedResource Include="Scripts\sass.js" />
     <EmbeddedResource Include="Scripts\tsc.js" />
   </ItemGroup>
+
   <ItemGroup>
     <None Update="webFlow.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -54,6 +60,7 @@
       <LastGenOutput>Xmlns.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Xmlns.cs">
       <DesignTime>True</DesignTime>
@@ -61,21 +68,34 @@
       <DependentUpon>Xmlns.tt</DependentUpon>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
     <None Remove="dependencies\**" />
     <None Remove="node_modules\**" />
     <Compile Remove="node_modules\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Scripts\sass.js" />
     <None Remove="Scripts\webflow.js" />
   </ItemGroup>
+
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="msbuild.targets">
+      <PackagePath>build/$(AssemblyName).targets</PackagePath>
+    </Content>
+
+    <Content Include="..\$(MSBuildProjectName).CLI\bin\$(Configuration)\netcoreapp2.0\NShellit\powershell\$(MSBuildProjectName)\bin\*">
+      <PackagePath>tools/$(TargetFramework)</PackagePath>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
   <Target Name="RestoreExternalPackages" BeforeTargets="CoreCompile">
     <Exec Command="powershell -ExecutionPolicy ByPass -NoProfile -File restore.ps1 &quot;$(ExternalDependencies)&quot; &quot;$(MSBuildProjectName)&quot;" />
   </Target>
+
   <Target Name="CleanExternalPackages" AfterTargets="Clean">
     <RemoveDir Directories="node_modules" />
     <Delete Condition="Exists('$(ExternalDependencies)')" Files="$(ExternalDependencies)" />

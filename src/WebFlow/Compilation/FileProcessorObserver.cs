@@ -8,15 +8,15 @@ namespace Acklann.WebFlow.Compilation
     {
         public int Count => _count;
 
-        public void OnCompleted()
+        public virtual void OnCompleted()
         {
         }
 
-        public void OnError(Exception error)
+        public virtual void OnError(Exception error)
         {
         }
 
-        public void OnNext(ICompilierResult value)
+        public virtual void OnNext(ICompilierResult value)
         {
             _count++;
             _results.Push(value);

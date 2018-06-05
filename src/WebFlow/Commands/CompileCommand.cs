@@ -1,11 +1,8 @@
 ﻿using Acklann.GlobN;
 using Acklann.NShellit.Attributes;
-using Acklann.Watcha;
 using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Configuration;
-using Akka.Actor;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -38,42 +35,29 @@ namespace Acklann.WebFlow.Commands
             else if (Project.TryLoad(ConfigFile, out _project, out string error))
             {
                 Log.WorkingDirectory = _project.DirectoryName;
-                var config = Akka.Configuration.ConfigurationFactory.ParseString(@"
-                akka {
-                    loglevel = WARNING
-                }
-");
-                using (_akka = ActorSystem.Create(nameof(WebFlow), config))
-                {
-                    _processor = _akka.ActorOf(Props.Create(typeof(FileProcessor), _observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount)));
+                if (EnableWatcher) StartWatcher();
+                else Compile();
 
-                    if (EnableWatcher) StartWatcher();
-                    else Compile();
-
-                    return 0;
-                }
+                return 0;
             }
             else throw new FormatException(error);
         }
 
         public void StartWatcher()
         {
-            using (_watcher = new EnhancedFileSystemWatcher(_project.DirectoryName))
+            using (_monitor = new ProjectMonitor(_observer))
             {
-                _watcher.EnableRaisingEvents = true;
-                _watcher.IncludeSubdirectories = true;
-                _watcher.NotifyFilter = (NotifyFilters.LastWrite | NotifyFilters.FileName);
-                _watcher.Renamed += OnFileChanged;
-                _watcher.Created += OnFileChanged;
-                _watcher.ChangeComplete += OnFileChanged;
-                Log.Debug($"monitoring '{_project.DirectoryName}' for changes.");
-
+                _monitor.Start(_project);
+                Log.Debug("monitoring project files for changes...");
                 do
                 {
-                    Log.Debug("\r\npress the [Enter] key to exit ...");
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.WriteLine("\rpress the [Enter] key to exit...");
                 } while (shouldNotTerminate());
-                Log.Debug("watcher terminated.");
             }
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Log.Info("exited watch mode.");
+            Console.ResetColor();
 
             bool shouldNotTerminate()
             {
@@ -89,43 +73,17 @@ namespace Acklann.WebFlow.Commands
 
         private void Compile()
         {
-            int max = 0;
-            IEnumerable<IItemGroup> itemGroups = _project?.GetItempGroups()?.ToArray();
+            long startTime = DateTime.Now.Ticks;
+            Log.Debug(format($"Build started", '-'));
+            ICompilierResult[] results = _project.CompileAsync().Result;
+            string elapse = TimeSpan.FromTicks(DateTime.Now.Ticks - startTime).ToString();
+            Log.Debug(format($"Build: finished in ({elapse}); {results.Count(x => x.Succeeded)} succeeded, {results.Count(x => !x.Succeeded)} failed", '='));
 
-            if (itemGroups != null)
-                foreach (IItemGroup itemGroup in itemGroups)
-                    if (itemGroup.Enabled)
-                        foreach (string file in itemGroup.EnumerateFiles())
-                        {
-                            max++;
-                            _processor.Tell(itemGroup.CreateCompilerOptions(file));
-                        }
-            _observer.WaitForCompletion(max, 30_000);
-        }
-
-        private void OnFileChanged(object sender, FileSystemEventArgs e)
-        {
-            //Console.WriteLine($"{e.ChangeType}: {e.Name}");
-
-            if (e.FullPath.NotDependency())
+            string format(string value, char c)
             {
-                if (e.FullPath.Equals(_project.FullName, StringComparison.OrdinalIgnoreCase))
-                {
-                    Log.Debug($" reloading: '{_project.FullName.GetRelativePath(_project.DirectoryName)}'.");
-                    _project = Project.Load(e.FullPath);
-                }
-                else
-                {
-                    IEnumerable<IItemGroup> itemGroups = _project?.GetItempGroups()?.ToArray();
-
-                    if (itemGroups != null)
-                        foreach (IItemGroup itemGroup in itemGroups)
-                            if (itemGroup.Enabled && itemGroup.CanAccept(e.FullPath))
-                            {
-                                Log.Debug($" processing: '{e.FullPath.GetRelativePath(_project.DirectoryName)}'.");
-                                _processor.Tell(itemGroup.CreateCompilerOptions(e.FullPath));
-                            }
-                }
+                var line = string.Join("", Enumerable.Repeat(c, 80 - value.Length));
+                line = line.Insert((line.Length / 2), $" {value} ");
+                return line;
             }
         }
 
@@ -134,11 +92,8 @@ namespace Acklann.WebFlow.Commands
         private readonly IActorObserver _observer;
 
         private Project _project;
-        private IActorRef _processor;
+        private ProjectMonitor _monitor;
         private volatile bool _continueWatching;
-
-        private ActorSystem _akka;
-        private EnhancedFileSystemWatcher _watcher;
 
         #endregion Private Members
     }

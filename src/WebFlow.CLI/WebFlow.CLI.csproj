@@ -22,9 +22,14 @@
     <PackageTags>web compilier typescript sass</PackageTags>
     <Description>this is a description</Description>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
-    <PackageReference Include="Acklann.Watcha" Version="0.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebFlow\WebFlow.csproj" />

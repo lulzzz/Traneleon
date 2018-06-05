@@ -13,7 +13,6 @@ namespace Acklann.WebFlow.Configuration
         {
             GenerateSourceMaps = true;
             KeepIntermediateFiles = false;
-            Exclude = new List<string>();
             Include = new List<string> { "*.scss" };
         }
 

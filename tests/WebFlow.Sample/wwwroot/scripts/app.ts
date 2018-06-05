@@ -19,4 +19,4 @@ namespace Site {
 
 var vm = new Site.App();
 // do yuck foo bar foo bar foo
-// foo roo doo foo scoop poop poop whoop scoop
+// foo roo doo foo scoop poop poop whoop poop scoop...

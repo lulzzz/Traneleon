@@ -47,7 +47,6 @@ namespace Acklann.WebFlow.Tests
             for (int i = 0; i < occurences; i++) sut.Tell(settings);
 
             // Assert
-            ExpectMsg<ICompilierResult>();
             mockOperator.AssertAll();
             mockSelector.AssertAll();
             mockObserver.AssertAll();

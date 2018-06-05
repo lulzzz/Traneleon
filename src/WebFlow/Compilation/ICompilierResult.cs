@@ -8,6 +8,6 @@
 
         string OutputFile { get; }
 
-        Error[] ErrorList { get; }
+        CompilerError[] ErrorList { get; }
     }
 }

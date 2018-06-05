@@ -13,7 +13,7 @@ namespace Acklann.WebFlow.Configuration
         {
             return Task.Run(() =>
             {
-                using (var akka = ActorSystem.Create(nameof(CompilationExtensions)))
+                using (var akka = ActorSystem.Create(Guid.NewGuid().ToString("n"), Akka.Configuration.ConfigurationFactory.ParseString("akka { loglevel = WARNING }")))
                 {
                     var observer = new FileProcessorObserver();
                     IActorRef processor = akka.ActorOf(Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount)));
@@ -26,7 +26,7 @@ namespace Acklann.WebFlow.Configuration
                                 max++;
                                 processor.Tell(itemGroup.CreateCompilerOptions(file));
                             }
-                    
+
                     observer.WaitForCompletion(max, millisecondsTimeout);
                     return observer.GetResults().ToArray();
                 }

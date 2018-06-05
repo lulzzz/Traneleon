@@ -7,11 +7,11 @@ namespace Acklann.WebFlow.Compilation
 {
     internal static class CompilationExtensions
     {
-        public static Error[] GetErrors(this StreamReader reader)
+        public static CompilerError[] GetErrors(this StreamReader reader)
         {
             string json;
             JObject error;
-            var errorList = new Queue<Error>();
+            var errorList = new Queue<CompilerError>();
 
             while (!reader.EndOfStream)
             {
@@ -27,7 +27,7 @@ namespace Acklann.WebFlow.Compilation
                         error.TryGetValue("column", out JToken column);
                         error.TryGetValue("message", out JToken message);
 
-                        errorList.Enqueue(new Error(
+                        errorList.Enqueue(new CompilerError(
                             (message?.Value<string>() ?? string.Empty),
                             (path?.Value<string>() ?? string.Empty),
                             (line?.Value<int>() ?? 0),

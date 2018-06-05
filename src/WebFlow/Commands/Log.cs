@@ -48,7 +48,7 @@ namespace Acklann.WebFlow.Commands
             if (value.Succeeded)
             {
                 string elapse = TimeSpan.FromTicks(value.ExecutionTime).ToString(@"mm\:ss\.fff");
-                Write($" => processed '{path}' in {elapse}", ConsoleColor.White);
+                Write($"=> processed '{path}' in ({elapse}).", ConsoleColor.White);
             }
             else
             {
@@ -63,7 +63,7 @@ namespace Acklann.WebFlow.Commands
         {
             if (Console.ForegroundColor != fg) Console.ForegroundColor = fg;
             string timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-            Console.WriteLine($"{timestamp}|  {message}");
+            Console.WriteLine($" {message}");
         }
     }
 }

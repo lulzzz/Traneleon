@@ -33,11 +33,28 @@ namespace Acklann.WebFlow.Configuration
         }
 
         [XmlAttribute("name")]
-        public string Name { get; set; }
+        public string Name
+        {
+            get { return string.IsNullOrEmpty(_name) ? Path.GetFileName(FullName) : _name; }
+            set { _name = value; }
+        }
+
+        [XmlElement("sass")]
+        [JsonProperty("sass")]
+        public SassItemGroup SassItemGroup { get; set; }
 
         [XmlElement("typescript")]
         [JsonProperty("typescript")]
         public TypescriptItemGroup TypescriptItemGroup { get; set; }
+
+        public static Project CreateInstance(string filePath)
+        {
+            return new Project(filePath)
+            {
+                SassItemGroup = new SassItemGroup(),
+                TypescriptItemGroup = new TypescriptItemGroup()
+            };
+        }
 
         public static Project Load(Stream stream)
         {
@@ -186,12 +203,14 @@ namespace Acklann.WebFlow.Configuration
 
         public IEnumerable<IItemGroup> GetItempGroups()
         {
+            if (SassItemGroup != null) yield return SassItemGroup;
             if (TypescriptItemGroup != null) yield return TypescriptItemGroup;
         }
 
         #region Private Members
 
         private readonly XmlSerializerNamespaces _namespace;
+        private string _name;
 
         #endregion Private Members
     }

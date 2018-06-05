@@ -26,6 +26,11 @@ namespace Acklann.WebFlow
             Receive<ICompilierOptions>(HandleMessage, ((x) => _factory != null));
         }
 
+        public static Props GetProps(IObserver<ICompilierResult> observer)
+        {
+            return Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount));
+        }
+
         protected void HandleMessage(ICompilierOptions options)
         {
             foreach (Type type in _factory.GetCompilerTypesThatSupports(options))
@@ -35,9 +40,12 @@ namespace Acklann.WebFlow
                 if (fileOperator.CanExecute(options))
                 {
                     if (!_compilers.Contains(type.Name)) _compilers.Add(type.Name, fileOperator);
-                    ICompilierResult result = fileOperator.Execute(options);
-                    _observer?.OnNext(result);
-                    Sender.Tell(result);
+                    try
+                    {
+                        ICompilierResult result = fileOperator.Execute(options);
+                        _observer?.OnNext(result);
+                    }
+                    catch (Exception ex) { _observer?.OnError(ex); }
                     break;
                 }
             }
@@ -46,6 +54,7 @@ namespace Acklann.WebFlow
         protected override void PostStop()
         {
             _compilers.Clear();
+            _observer?.OnCompleted();
         }
 
         #region Private Members
