@@ -5,11 +5,11 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Acklann.WebFlow
@@ -29,7 +29,8 @@ namespace Acklann.WebFlow
         {
             _akka = ActorSystem.Create("webflow-vsix");
             _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
-            _activator = delegate () { return new ProjectMonitor(null, _akka); };
+            _compiler = _akka.ActorOf(Props.Create<FileProcessor>(_reporter));
+            _activator = delegate () { return new ProjectMonitor(_reporter, _akka); };
         }
 
         internal DTE2 DTE;
@@ -46,6 +47,7 @@ namespace Acklann.WebFlow
         private void RegisterCommands()
         {
             InitCommand.Initialize(this);
+            WatchCommand.Initialize(this);
         }
 
         private void SubscribeToEvents()
@@ -55,7 +57,19 @@ namespace Acklann.WebFlow
             _projectEvents.ItemAdded += _itemAddedHandler;
 
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
-            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterCloseSolution += OnSolutionClosed;
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
+        }
+
+        private void CreateOutputPane()
+        {
+            var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
+
+            var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
+            outputWindow.CreatePane(ref guid, nameof(WebFlow), 1, 1);
+            outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
+
+            _outputPane = pane;
+            _reporter = new Reporter(pane, null);
         }
 
         // Event Handlers
@@ -69,11 +83,20 @@ namespace Acklann.WebFlow
         private void OnSolutionLoaded(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("soltion was opened");
+            InitCommand.Instance.Execute(DTE.GetProjects());
         }
 
-        private void OnSolutionClosed(object sender = null, EventArgs e = null)
+        private void OnSolutionClosing(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("solution closed");
+            foreach (EnvDTE.Project project in DTE.GetProjects())
+            {
+                if (_watchList.Contains(project.FullName) && (_watchList[project.FullName] is ProjectMonitor monitor))
+                {
+                    monitor.Pasuse();
+                    System.Diagnostics.Debug.WriteLine($"stopped watching {monitor.DirectoryName}");
+                }
+            }
         }
 
         #region Base Members
@@ -87,11 +110,9 @@ namespace Acklann.WebFlow
             DTE = (DTE2)GetService(typeof(DTE));
 
             SubscribeToEvents();
+            CreateOutputPane();
             RegisterCommands();
             OnSolutionLoaded();
-
-            var configFile = Path.Combine(Path.GetTempPath(), "webFlow.config");
-            Configuration.Project.CreateInstance(configFile).Save();
         }
 
         protected override void Dispose(bool disposing)
@@ -112,8 +133,12 @@ namespace Acklann.WebFlow
         #region Private Members
 
         internal readonly ActorSystem _akka;
+        internal readonly IActorRef _compiler;
         internal readonly IDictionary _watchList;
         internal readonly ProjectMonitorActivator _activator;
+
+        internal Reporter _reporter;
+        private IVsOutputWindowPane _outputPane;
 
         private EnvDTE.ProjectItemsEvents _projectEvents;
         private _dispSolutionEvents_OpenedEventHandler _solutionOpenedEventHandler;

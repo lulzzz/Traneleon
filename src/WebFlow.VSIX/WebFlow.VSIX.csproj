@@ -69,6 +69,7 @@
       <DependentUpon>Symbols.tt</DependentUpon>
     </Compile>
     <Compile Include="Utilities\Extensions.cs" />
+    <Compile Include="Utilities\Reporter.cs" />
     <Compile Include="Utilities\UserState.cs" />
     <Compile Include="VSPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -81,6 +82,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Acklann.GlobN, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Acklann.GlobN.1.2.1\lib\netstandard2.0\Acklann.GlobN.dll</HintPath>
+    </Reference>
     <Reference Include="Akka, Version=1.3.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Akka.1.3.7\lib\net45\Akka.dll</HintPath>
     </Reference>

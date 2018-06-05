@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
 namespace Acklann.WebFlow.Utilities
 {
+    [XmlRoot("state")]
     public sealed class UserState : IDisposable
     {
-        private UserState()
-        {
-            WatchList = new List<string>();
-        }
-
-        public List<string> WatchList { get; set; }
+        [XmlElement("watch")]
+        public bool WatcherEnabled { get; set; } = true;
 
         public static UserState Load()
         {
@@ -29,28 +25,18 @@ namespace Acklann.WebFlow.Utilities
             }
         }
 
-        public void Save()
+        public void Save(string filePath = null)
         {
-            string dir = Path.GetDirectoryName(_path);
+            if (filePath == null) filePath = _path;
+
+            string dir = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
             var serializer = new XmlSerializer(typeof(UserState));
-            using (Stream file = File.OpenWrite(_path))
+            using (Stream file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 serializer.Serialize(file, this);
             }
-        }
-
-        public bool CheckIfOnWatchList(string fullPath)
-        {
-            if (WatchList != null)
-                foreach (string path in WatchList)
-                    if (path.Equals(fullPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-            return false;
         }
 
         public void Dispose()

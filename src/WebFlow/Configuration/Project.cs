@@ -35,7 +35,7 @@ namespace Acklann.WebFlow.Configuration
         [XmlAttribute("name")]
         public string Name
         {
-            get { return string.IsNullOrEmpty(_name) ? Path.GetFileName(FullName) : _name; }
+            get { return string.IsNullOrEmpty(_name) ? Path.GetFileNameWithoutExtension(FullName) : _name; }
             set { _name = value; }
         }
 

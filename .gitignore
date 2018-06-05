@@ -260,6 +260,9 @@ paket-files/
 __pycache__/
 *.pyc
 
+# Temporary Files
+* - Copy/
+
 # Generated Files
 powershell_modules/
 *.received.*

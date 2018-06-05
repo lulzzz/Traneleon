@@ -46,29 +46,15 @@ namespace Acklann.WebFlow
             _watcher.EnableRaisingEvents = true;
         }
 
-        public void Stop()
+        public void Resume()
+        {
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        public void Pasuse()
         {
             _watcher.EnableRaisingEvents = false;
         }
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _watcher?.Dispose();
-                _akka?.Dispose();
-            }
-        }
-
-        #endregion IDisposable
 
         protected virtual void OnFileWasModified(object sender, FileSystemEventArgs e)
         {
@@ -94,6 +80,25 @@ namespace Acklann.WebFlow
                 }
             }
         }
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _watcher?.Dispose();
+                _akka?.Dispose();
+            }
+        }
+
+        #endregion IDisposable
 
         #region Private Members
 
