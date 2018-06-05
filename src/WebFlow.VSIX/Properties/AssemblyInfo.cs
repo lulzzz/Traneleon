@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WebFlow")]
-[assembly: AssemblyDescription("this is a description")]
+[assembly: AssemblyTitle("WebFlow.VSIX")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ackara")]
-[assembly: AssemblyProduct("WebFlow")]
-[assembly: AssemblyCopyright("All rigths reserved")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("WebFlow.VSIX")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,8 +28,6 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("0.0.20")]
-[assembly: AssemblyVersion"0.0.19"")]
-[assembly: AssemblyFileVersion("0.0.20")]
-[assembly: AssemblyInformationalVersion("0.0.20")]
-
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
