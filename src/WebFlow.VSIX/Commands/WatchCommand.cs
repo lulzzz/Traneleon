@@ -1,35 +1,38 @@
 ﻿using Acklann.WebFlow.Utilities;
-using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections;
 using System.ComponentModel.Design;
+using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
     internal sealed class WatchCommand
     {
-        public WatchCommand(IMenuCommandService service, IDictionary watchList)
+        public WatchCommand(IMenuCommandService commandService, IDictionary watchList)
         {
-            if (service == null) throw new ArgumentNullException(nameof(service));
+            if (commandService == null) throw new ArgumentNullException(nameof(commandService));
             _watchList = watchList ?? throw new ArgumentNullException(nameof(watchList));
 
             var command = new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.WatchCommandIdId)) { Checked = UserState.Instance.WatcherEnabled };
-            service.AddCommand(command);
+            commandService.AddCommand(command);
         }
 
         private static void OnCommandInvoked(object sender, EventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("watch command was invoked.");
+            System.Diagnostics.Debug.WriteLine("watch command was invoked.");
 
-            if (sender is OleMenuCommand command)
+            if (sender is MenuCommand command)
             {
-                command.Checked = UserState.Instance.WatcherEnabled = !UserState.Instance.WatcherEnabled;
-                foreach (ProjectMonitor monitor in _watchList.Values)
+                Task.Run(() =>
                 {
-                    if (command.Checked) monitor?.Resume();
-                    else monitor?.Pasuse();
-                }
-                UserState.Instance.Save();
+                    command.Checked = UserState.Instance.WatcherEnabled = !UserState.Instance.WatcherEnabled;
+                    UserState.Instance.Save();
+                    foreach (ProjectMonitor monitor in _watchList.Values)
+                    {
+                        if (command.Checked) monitor?.Resume();
+                        else monitor?.Pause();
+                    }
+                });
             }
         }
 

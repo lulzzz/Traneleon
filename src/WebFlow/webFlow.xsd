@@ -16,8 +16,15 @@
                     minOccurs="0" />
       </xs:all>
 
+      <xs:attribute name="enable"
+                    type="xs:boolean"
+                    default="true" />
+
       <xs:attribute name="name"
                     type="xs:string" />
+
+      <xs:attribute name="outputDirectory"
+                  type="xs:string" />
     </xs:complexType>
   </xs:element>
 
@@ -98,7 +105,8 @@
 
   <xs:attributeGroup name="ItemGroupAttributes">
     <xs:attribute name="enable"
-                  type="xs:boolean" />
+                  type="xs:boolean"
+                  default="true" />
 
     <xs:attribute name="suffix"
                   type="xs:string"

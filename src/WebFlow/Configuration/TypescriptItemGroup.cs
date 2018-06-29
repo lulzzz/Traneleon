@@ -128,7 +128,7 @@ namespace Acklann.WebFlow.Configuration
 
         internal string GetEntryPoint(Bundle bundle)
         {
-            string entryPoint = bundle.EntryPoint.ResolvePath(WorkingDirectory, false).FirstOrDefault();
+            string entryPoint = bundle.EntryPoint.ResolvePath(WorkingDirectory, SearchOption.AllDirectories).FirstOrDefault();
 
             if (string.IsNullOrEmpty(entryPoint)) return string.Empty;
             else if (entryPoint.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)) return entryPoint;

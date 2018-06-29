@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Acklann.WebFlow.Compilation
 {
-    public interface IActorObserver : IObserver<ICompilierResult>
+    public interface IActorObserver : IObserver<ICompilierResult>, IDisposable
     {
         int Count { get; }
 

@@ -8,7 +8,7 @@
             Code = code;
             Column = column;
             Message = description;
-            LineNumber = lineNumber;
+            Line = lineNumber;
         }
 
         public int Code { get; }
@@ -17,7 +17,7 @@
 
         public string File { get; }
 
-        public int LineNumber { get; }
+        public int Line { get; }
 
         public string Message { get; }
     }

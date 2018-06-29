@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "WebFlow.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "build C:\\Users\\Ackeem\\Projects\\WebFlow\\tests\\WebFlow.Sample\\*webflow*",
+      "workingDirectory": "C:\\Users\\Ackeem\\Projects\\WebFlow\\tests\\WebFlow.Sample"
+    }
+  }
+}

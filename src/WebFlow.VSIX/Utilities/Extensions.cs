@@ -1,5 +1,4 @@
 ﻿using EnvDTE80;
-using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +6,20 @@ namespace Acklann.WebFlow.Utilities
 {
     public static class Extensions
     {
-        public static IEnumerable<EnvDTE.Project> GetProjects(this DTE2 dte)
+        public static EnvDTE.Project GetProject(this DTE2 dte, string filePath)
+        {
+            if (dte == null) throw new ArgumentNullException(nameof(dte));
+
+            foreach (EnvDTE.Project project in GetActiveProjects(dte))
+                if (project.FileName == filePath)
+                {
+                    return project;
+                }
+
+            return null;
+        }
+
+        public static IEnumerable<EnvDTE.Project> GetActiveProjects(this DTE2 dte)
         {
             if (dte == null) throw new ArgumentNullException(nameof(dte));
 
@@ -16,9 +28,10 @@ namespace Acklann.WebFlow.Utilities
                 foreach (EnvDTE.Project solutionItem in solution.Projects)
                 {
                     foreach (EnvDTE.Project project in getProjectsNestedInSolutionFolder(solutionItem))
-                    {
-                        yield return project;
-                    }
+                        if (project.Kind != EnvDTE.Constants.vsProjectKindUnmodeled)
+                        {
+                            yield return project;
+                        }
                 }
 
             /// Checking to see of the <EnvDTE.Project> is a solution folder.
@@ -26,28 +39,28 @@ namespace Acklann.WebFlow.Utilities
             /// If the <EnvDTE.Project> is not a solution folder just return it.
             IEnumerable<EnvDTE.Project> getProjectsNestedInSolutionFolder(EnvDTE.Project project)
             {
-                if (project.Kind == "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}"/* solution folder guid */)
+                if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
                 {
                     foreach (EnvDTE.ProjectItem item in project.ProjectItems)
                     {
                         EnvDTE.Project folder = item?.SubProject;
                         if (folder != null)
                         {
-                            foreach (var child in getProjectsNestedInSolutionFolder(folder))
+                            foreach (EnvDTE.Project child in getProjectsNestedInSolutionFolder(folder))
                             {
                                 yield return child;
                             }
                         }
                     }
                 }
-                else if ((project?.FullName?.EndsWith("proj")) ?? false)
+                else if (project?.FullName?.EndsWith("proj") ?? false)
                 {
                     yield return project;
                 }
             }
         }
 
-        public static IEnumerable<EnvDTE.Project> GetSelectedProjects(this DTE2 dte)
+        public static IEnumerable<EnvDTE.Project> GetSelectedProjects(this DTE2 dte, bool defaultToStartup = true)
         {
             if (dte == null) throw new ArgumentNullException(nameof(dte));
 
@@ -67,7 +80,7 @@ namespace Acklann.WebFlow.Utilities
 
             // Checking to see if their is a start-up project
             // since no project files where selected.
-            if (noProjectsWereSelected)
+            if (noProjectsWereSelected && defaultToStartup)
             {
                 EnvDTE.SolutionBuild solution = dte.Solution.SolutionBuild;
 
@@ -79,13 +92,15 @@ namespace Acklann.WebFlow.Utilities
             }
         }
 
-        public static void Write(this IVsStatusbar statusBar, string text)
+        public static IEnumerable<EnvDTE.SelectedItem> GetSelectedItems(this DTE2 dte)
         {
-            statusBar.IsFrozen(out int frozen);
+            if (dte == null) throw new ArgumentNullException(nameof(dte));
 
-            if (frozen != 0) statusBar.FreezeOutput(0);
-            statusBar.SetText(text);
-            statusBar.FreezeOutput(1);
+            EnvDTE.SelectedItems selectedItems = dte.SelectedItems;
+            if (selectedItems != null)
+            {
+                foreach (EnvDTE.SelectedItem item in selectedItems) yield return item;
+            }
         }
     }
 }

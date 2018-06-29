@@ -8,7 +8,7 @@ namespace Acklann.WebFlow.Utilities
     public sealed class UserState : IDisposable
     {
         [XmlElement("watch")]
-        public bool WatcherEnabled { get; set; } = true;
+        public bool WatcherEnabled { get; set; }
 
         public static UserState Load()
         {
@@ -32,11 +32,15 @@ namespace Acklann.WebFlow.Utilities
             string dir = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            var serializer = new XmlSerializer(typeof(UserState));
-            using (Stream file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            try
             {
-                serializer.Serialize(file, this);
+                using (Stream file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    var serializer = new XmlSerializer(typeof(UserState));
+                    serializer.Serialize(file, this);
+                }
             }
+            catch (IOException) { }
         }
 
         public void Dispose()

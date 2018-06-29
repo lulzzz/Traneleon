@@ -8,6 +8,10 @@
 
         public CompilerError[] ErrorList => new CompilerError[0];
 
+        public Kind Kind => Kind.Minify;
+
+        public string SourceFile => string.Empty;
+
         string ICompilierResult.OutputFile => string.Empty;
     }
 }

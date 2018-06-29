@@ -9,12 +9,14 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Acklann.WebFlow
 {
-    public delegate ProjectMonitor ProjectMonitorActivator();
+    public delegate ProjectMonitor ProjectMonitorActivator(string projectFile);
 
     [Guid(Symbols.Package.GuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
@@ -25,29 +27,11 @@ namespace Acklann.WebFlow
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class VSPackage : Package
     {
-        public VSPackage()
-        {
-            _akka = ActorSystem.Create("webflow-vsix");
-            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
-            _compiler = _akka.ActorOf(Props.Create<FileProcessor>(_reporter));
-            _activator = delegate () { return new ProjectMonitor(_reporter, _akka); };
-        }
-
         internal DTE2 DTE;
-
-        public void Reset()
-        {
-        }
 
         internal T GetService<T>()
         {
             return (T)GetService(typeof(T));
-        }
-
-        private void RegisterCommands()
-        {
-            InitCommand.Initialize(this);
-            WatchCommand.Initialize(this);
         }
 
         private void SubscribeToEvents()
@@ -60,16 +44,38 @@ namespace Acklann.WebFlow
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
         }
 
-        private void CreateOutputPane()
+        private void InitializeComponents()
+        {
+            _outputPane = CreateOutputPane();
+            _akka = ActorSystem.Create("webflow-vsix");
+            _errorListProvider = new ErrorListProvider(this);
+            _solution = (IVsSolution)GetService<SVsSolution>();
+
+            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
+            _activator = delegate (string projectFile)
+            {
+                return new ProjectMonitor(new Reporter(projectFile, this), _akka);
+            };
+        }
+
+        private void RegisterCommands(CancellationToken cancellationToken = default)
+        {
+            _commandService = GetService<IMenuCommandService>();
+
+            //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            WatchCommand.Initialize(this);
+            TranspileCommand.Initialize(this);
+            AddConfigCommand.Initialize(this);
+            CompileOnBuildCommand.Initialize(this);
+        }
+
+        private IVsOutputWindowPane CreateOutputPane(string title = nameof(WebFlow))
         {
             var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
-
             var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
-            outputWindow.CreatePane(ref guid, nameof(WebFlow), 1, 1);
+            outputWindow.CreatePane(ref guid, title, 1, 1);
             outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
-
-            _outputPane = pane;
-            _reporter = new Reporter(pane, null);
+            return pane;
         }
 
         // Event Handlers
@@ -83,17 +89,17 @@ namespace Acklann.WebFlow
         private void OnSolutionLoaded(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("soltion was opened");
-            InitCommand.Instance.Execute(DTE.GetProjects());
+            AddConfigCommand.Instance.Execute(DTE.GetActiveProjects());
         }
 
         private void OnSolutionClosing(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("solution closed");
-            foreach (EnvDTE.Project project in DTE.GetProjects())
+            foreach (EnvDTE.Project project in DTE.GetActiveProjects())
             {
                 if (_watchList.Contains(project.FullName) && (_watchList[project.FullName] is ProjectMonitor monitor))
                 {
-                    monitor.Pasuse();
+                    monitor.Pause();
                     System.Diagnostics.Debug.WriteLine($"stopped watching {monitor.DirectoryName}");
                 }
             }
@@ -109,6 +115,7 @@ namespace Acklann.WebFlow
 
             DTE = (DTE2)GetService(typeof(DTE));
 
+            InitializeComponents();
             SubscribeToEvents();
             CreateOutputPane();
             RegisterCommands();
@@ -117,9 +124,11 @@ namespace Acklann.WebFlow
 
         protected override void Dispose(bool disposing)
         {
+            System.Diagnostics.Debug.WriteLine("!!!!! Disposing !!!!!");
             if (disposing)
             {
                 _akka?.Dispose();
+                _errorListProvider?.Dispose();
                 UserState.Instance?.Dispose();
 
                 foreach (IDisposable obj in _watchList.Values) obj?.Dispose();
@@ -132,19 +141,16 @@ namespace Acklann.WebFlow
 
         #region Private Members
 
-        internal readonly ActorSystem _akka;
-        internal readonly IActorRef _compiler;
-        internal readonly IDictionary _watchList;
-        internal readonly ProjectMonitorActivator _activator;
-
-        internal Reporter _reporter;
-        private IVsOutputWindowPane _outputPane;
+        internal ActorSystem _akka;
+        internal IVsSolution _solution;
+        internal IDictionary _watchList;
+        internal IVsOutputWindowPane _outputPane;
+        internal ProjectMonitorActivator _activator;
+        internal IMenuCommandService _commandService;
+        internal ErrorListProvider _errorListProvider;
 
         private EnvDTE.ProjectItemsEvents _projectEvents;
-        private _dispSolutionEvents_OpenedEventHandler _solutionOpenedEventHandler;
         private _dispProjectItemsEvents_ItemAddedEventHandler _itemAddedHandler;
-        private _dispProjectItemsEvents_ItemRemovedEventHandler _itemRemovedHandler;
-        private _dispProjectItemsEvents_ItemRenamedEventHandler _itemRenamedHandler;
 
         #endregion Private Members
     }

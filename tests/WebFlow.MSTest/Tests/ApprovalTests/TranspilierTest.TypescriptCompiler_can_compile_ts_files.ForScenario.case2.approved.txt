@@ -4,8 +4,8 @@
 {
   "version": 3,
   "sources": [
-    "../../../../../../Projects/WebFlow/tests/WebFlow.MSTest/bin/Debug/TestData/script2.ts",
-    "../../../../../../Projects/WebFlow/tests/WebFlow.MSTest/bin/Debug/TestData/script1.ts"
+    ".../script2.ts",
+    ".../script1.ts"
   ],
   "names": [],
   "mappings": "AAAA,ICEU,MDFV,SAAU,GACN,IAAA,EAAA,WACI,SAAA,EAAY,GACR,KAAK,KAAO,EAQpB,OAHI,EAAA,UAAA,OAAA,WACI,QAAQ,IAAI,mBAAmB,KAAK,OAE5C,EAVA,GAAa,EAAA,UAAS,EAD1B,CAAU,OAAA,KAAI,KCEd,SAAU,GACN,IAAA,EAAA,WACI,SAAA,IACI,KAAK,KAAK,WASlB,OANI,EAAA,UAAA,KAAA,SAAK,GAED,QAAQ,IAAI,2BAA2B,EAAI,KAC5B,IAAI,EAAK,UAAU,UACzB,UAEjB,EAXA,GAAa,EAAA,KAAI,EADrB,CAAU,OAAA,KAAI,KAed,IAAI,KAAO,IAAI,KAAK",

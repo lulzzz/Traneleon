@@ -1,14 +1,14 @@
 {
-  "name": "Webflow",
+  "name": "webflow",
   "version": "0.0.20",
   "private": true,
   "devDependencies": {
-    "csso": "^3.5.0",
+    "csso": "^3.5.1",
     "multi-stage-sourcemap": "^0.2.1",
     "node-sass": "^4.9.0",
     "svgo": "^1.0.5",
-    "typescript": "^2.9.1",
-    "uglify-js": "^3.4.0"
+    "typescript": "^2.9.2",
+    "uglify-js": "^3.4.2"
   },
   "author": "Ackara",
   "repository": {

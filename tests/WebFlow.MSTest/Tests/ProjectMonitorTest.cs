@@ -18,34 +18,38 @@ namespace Acklann.WebFlow.Tests
         public void Start_should_monitor_project_files_for_changes()
         {
             // Arrange
-            var cwd = Path.Combine(Path.GetTempPath(), nameof(ProjectMonitorTest));
-            if (Directory.Exists(cwd)) Directory.Delete(cwd, recursive: true);
-            Directory.CreateDirectory(cwd);
+            var cwd = Path.Combine(Path.GetTempPath(), $"{nameof(ProjectMonitorTest)}_watch".ToLower());
 
-            int totalExpectedFiles = (2 * 5) + 1;
             var sample1 = Path.Combine(cwd, "style1.scss");
             var sample2 = Path.Combine(cwd, "style2.scss");
 
-            var config = new Project(Path.Combine(cwd, "dev.config"))
+            var config = new Project(Path.Combine(cwd, "webflow-compiler.config"))
             {
                 SassItemGroup = new SassItemGroup()
                 {
                     Enabled = true,
-                    WorkingDirectory = cwd,
+                    Suffix = ".min",
                     GenerateSourceMaps = true,
                     KeepIntermediateFiles = true,
                     Include = new List<string> { "*.scss" },
                 }
             };
+            config.AssignDefaults();
 
+            int calls = 0, expectedCalls = 2;
             var observer = Mock.Create<IObserver<ICompilierResult>>();
             observer.Arrange((x) => x.OnNext(Arg.IsAny<ICompilierResult>()))
-                .DoInstead<ICompilierResult>((x) => { System.Diagnostics.Debug.WriteLine($"Transpiled: {Path.GetFileName(x.OutputFile)}"); })
-                .OccursAtLeast(1);
+                .DoInstead<ICompilierResult>((x) => { calls++; })
+                .OccursAtLeast(expectedCalls);
 
-            var sut = new MockProjectMonitor(observer);
+            Action waitForFilesToBeGenerated = () => { do { System.Threading.Thread.Sleep(500); } while (calls <= expectedCalls); };
+
+            var sut = new ProjectMonitor(observer);
 
             // Act
+            if (Directory.Exists(cwd)) Directory.Delete(cwd, recursive: true);
+            Directory.CreateDirectory(cwd);
+
             using (sut)
             {
                 config.Save();
@@ -58,41 +62,66 @@ namespace Acklann.WebFlow.Tests
                 File.Delete(sample1);
                 File.Move(temp, sample1);
                 File.WriteAllText(sample2, ".hide { display: none; }");
-                Should.CompleteIn(() => sut.WaitForCompletion(totalExpectedFiles), TimeSpan.FromSeconds(30));
+                Should.CompleteIn(waitForFilesToBeGenerated, TimeSpan.FromSeconds(30));
             }
             var files = Directory.GetFiles(cwd).Select((x) => Path.GetFileName(x)).ToList();
 
             // Assert
-            files.Count.ShouldBe(totalExpectedFiles);
+            files.Count.ShouldBe((expectedCalls * 5) + 1);
             files.ShouldContain((x) => x.EndsWith(".min.css"));
             files.ShouldContain((x) => x.EndsWith(".map"));
             observer.AssertAll();
         }
 
-        private class MockProjectMonitor : ProjectMonitor
+        [TestMethod]
+        public void Compile_should_process_all_project_files()
         {
-            public MockProjectMonitor(IObserver<ICompilierResult> observer) : base(observer)
+            // Arrange
+            var cwd = SampleProject.DirectoryName;
+            var outDir = Path.Combine(Path.GetTempPath(), $"{nameof(ProjectMonitorTest)}_Compile");
+            var config = new Project(Path.Combine(cwd, "webflow-compiler.config"))
             {
-            }
-
-            public volatile int ChangedEventsRaised = 0;
-
-            public void WaitForCompletion(int totalExpectedFiles)
-            {
-                bool expectedFilesHasNotYetBeenGenerated = true;
-                while (expectedFilesHasNotYetBeenGenerated)
+                OutputDirectory = outDir,
+                SassItemGroup = new SassItemGroup()
                 {
-                    System.Threading.Thread.Sleep(500);
-                    expectedFilesHasNotYetBeenGenerated = Directory.EnumerateFiles(DirectoryName, "*").Count() < totalExpectedFiles;
+                    Enabled = true,
+                    Include = new List<string> { "*.scss" }
+                },
+                TypescriptItemGroup = new TypescriptItemGroup()
+                {
+                    Enabled = true,
+                    Include = new List<TypescriptItemGroup.Bundle>
+                    {
+                        new TypescriptItemGroup.Bundle("*.ts") { EntryPoint = "Shared/_Layout.cshtml" }
+                    }
                 }
-            }
+            };
+            config.AssignDefaults();
 
-            protected override void OnFileWasModified(object sender, FileSystemEventArgs e)
+            var expectedCalls = 1;
+            var mockObserver = Mock.Create<IObserver<ICompilierResult>>();
+            mockObserver.Arrange(x => x.OnNext(Arg.IsAny<ICompilierResult>()))
+                .DoInstead(() => { expectedCalls--; })
+                .OccursAtLeast(expectedCalls);
+
+            var sut = new ProjectMonitor(mockObserver);
+
+            // Act
+            if (Directory.Exists(outDir)) Directory.Delete(outDir, recursive: true);
+
+            using (sut)
             {
-                //System.Diagnostics.Debug.WriteLine($"{e.ChangeType}: {e.Name}");
-                base.OnFileWasModified(sender, e);
-                ChangedEventsRaised++;
+                Should.CompleteIn(() =>
+                {
+                    sut.Compile(config);
+                    while (expectedCalls > 0) System.Threading.Thread.Sleep(500);
+                }, TimeSpan.FromSeconds(15));
             }
+            var filesGenerated = Directory.GetFiles(outDir, "*min*");
+
+            // Assert
+            mockObserver.AssertAll();
+            filesGenerated.ShouldAllBe(x => x.Contains(".min"));
         }
     }
 }

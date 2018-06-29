@@ -1,8 +1,11 @@
-﻿using Acklann.WebFlow.Compilation;
+﻿using Acklann.GlobN;
+using Acklann.WebFlow.Compilation;
 using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Shouldly;
 using System;
 using System.IO;
@@ -63,7 +66,7 @@ namespace Acklann.WebFlow.Tests
                 };
 
                 // Act
-                foreach (var (expectedFiles, options) in cases)
+                foreach (var (totalExpectedFiles, options) in cases)
                 {
                     var canExecute = sut.CanExecute(options);
                     var result = (TranspilierResult)sut.Execute(options);
@@ -73,7 +76,7 @@ namespace Acklann.WebFlow.Tests
                     // Assert
                     canExecute.ShouldBeTrue();
                     result.Succeeded.ShouldBeTrue();
-                    generatedFiles.Length.ShouldBe(expectedFiles, string.Join(" + ", generatedFiles));
+                    generatedFiles.Length.ShouldBe(totalExpectedFiles, string.Join(" + ", generatedFiles));
 
                     using (ApprovalResults.ForScenario(Path.GetFileName(options.OutputDirectory)))
                     {
@@ -82,7 +85,19 @@ namespace Acklann.WebFlow.Tests
                         if (options.GenerateSourceMaps)
                         {
                             contents.AppendLine("==================================================");
-                            contents.AppendLine(File.ReadAllText(Path.Combine(options.SourceMapDirectory, (Path.GetFileName(result.CompiliedFile) + ".map"))));
+                            var map = JObject.Parse(File.ReadAllText(Path.Combine(options.SourceMapDirectory, (Path.GetFileName(result.CompiliedFile) + ".map"))));
+                            if (map.TryGetValue("sources", out JToken sources))
+                            {
+                                var array = sources as JArray;
+                                for (int i = 0; i < array.Count; i++)
+                                    if (File.Exists(array[i].Value<string>().ExpandPath(options.SourceMapDirectory)))
+                                    {
+                                        array[i].Replace(".../" + Path.GetFileName(array[i].Value<string>()));
+                                    }
+                                    else Assert.Fail($"The source map file '{array[i]}' was not generated.");
+                            }
+                            else Assert.Fail($"The source map for '{result.CompiliedFile}' was not generated.");
+                            contents.AppendLine(map.ToString(Formatting.Indented));
                         }
 
                         Approvals.Verify(contents.ToString());
@@ -104,7 +119,7 @@ namespace Acklann.WebFlow.Tests
                 // Assert
                 result.Succeeded.ShouldBeFalse();
                 result.ErrorList.ShouldNotBeEmpty();
-                result.ErrorList[0].LineNumber.ShouldBe(errorLine);
+                result.ErrorList[0].Line.ShouldBe(errorLine);
                 result.ErrorList[0].Message.ShouldNotBeNullOrEmpty();
                 File.Exists(result.ErrorList[0].File).ShouldBeTrue();
             }

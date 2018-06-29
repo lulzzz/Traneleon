@@ -38,7 +38,8 @@ namespace Acklann.WebFlow.Commands
         {
             if (Level >= LogLevel.ErrorLevel)
             {
-                Write(message, ConsoleColor.Red);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(message);
             }
         }
 
@@ -54,7 +55,7 @@ namespace Acklann.WebFlow.Commands
             {
                 foreach (var error in value.ErrorList)
                 {
-                    Write($"{error.Message} at {error.File}:{error.LineNumber}", ConsoleColor.Red);
+                    Write($"{error.Message} at {error.File}:{error.Line}", ConsoleColor.Red);
                 }
             }
         }

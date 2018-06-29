@@ -45,6 +45,20 @@ namespace Acklann.WebFlow.Compilation
             }
         }
 
+        #region IDisposable
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        #endregion IDisposable
+
         #region Private Members
 
         private readonly ConcurrentStack<ICompilierResult> _results = new ConcurrentStack<ICompilierResult>();

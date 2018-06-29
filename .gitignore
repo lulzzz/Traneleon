@@ -267,9 +267,10 @@ __pycache__/
 powershell_modules/
 *.received.*
 mock.config
+*-lock.*
 *.min.*
-*.map
 *.zip
+*.map
 
 # Sensitive Files
 secrets.*

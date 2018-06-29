@@ -20,13 +20,15 @@ namespace Acklann.WebFlow.Compilation
 #if DEBUG && FORCE
             force = true;
 #endif
-
             foreach (string name in assembly.GetManifestResourceNames())
             {
                 string extension = Path.GetExtension(name);
                 switch (extension.ToLowerInvariant())
                 {
-                    default:
+                    //case ".json":
+                    //    RestoreNodePackages(assembly.GetManifestResourceStream(name));
+                    //    break;
+
                     case ".js":
                         string baseName = Path.GetFileNameWithoutExtension(name);
                         string filePath = Path.Combine(ResourceDirectory, $"{baseName.Substring(baseName.LastIndexOf('.') + 1)}{extension}");
@@ -76,6 +78,42 @@ namespace Acklann.WebFlow.Compilation
         }
 
         public static readonly string ResourceDirectory;
+
+        public static void RestoreNodePackages(Stream stream)
+        {
+            if (!File.Exists(Path.Combine(ResourceDirectory, "node_modules")))
+            {
+                using (stream)
+                using (var file = new FileStream(Path.Combine(ResourceDirectory, "package.json"), FileMode.Create, FileAccess.Write))
+                {
+                    stream.CopyTo(file);
+                    stream.Flush();
+                }
+
+                using (var node = new Process())
+                {
+                    node.StartInfo = new ProcessStartInfo()
+                    {
+                        Arguments = "npm install csso",
+                        WorkingDirectory = ResourceDirectory,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    switch (Environment.OSVersion.Platform)
+                    {
+                        case PlatformID.Win32NT:
+                            node.StartInfo.FileName = "cmd";
+                            break;
+                    }
+
+                    node.Start();
+                    node.WaitForExit(600_000);
+                }
+            }
+        }
 
         public static ShellBase GetShell()
         {

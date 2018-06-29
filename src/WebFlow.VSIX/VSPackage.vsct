@@ -8,63 +8,56 @@
 
   <Commands package="Package">
     <Groups>
-      <Group guid="CmdSet" id="SolutionCommandGroup" />
+      <Group guid="CmdSet" id="InfoGroup" />
+      <Group guid="CmdSet" id="GlobalCommandGroup" />
+      <Group guid="CmdSet" id="ConfigCommandGroup" />
+      <Group guid="CmdSet" id="ProjectCommandGroup" />
+      <Group guid="CmdSet" id="FileContextMenuGroup" />
       <Group guid="CmdSet" id="ProjectContextMenuGroup" />
       <Group guid="CmdSet" id="ProjectFileContextMenuGroup" />
 
-      <Group guid="CmdSet" id="ToolbarCommandGroup" priority="0x01">
-        <Parent guid="CmdSet" id="ToolBarMenu" />
-      </Group>
-
-      <Group guid="CmdSet" id="BuildSubMenuGroup" priority="0x602">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
+      <Group guid="CmdSet" id="ToolbarMenuGroup" priority="0x01">
+        <Parent guid="CmdSet" id="ToolbarMenu" />
       </Group>
 
       <Group guid="CmdSet" id="VSToolsMenuGroup" priority="0x601">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
       </Group>
+
+      <Group guid="CmdSet" id="SolutionExplorerGroup" priority="0x020">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_PROJWIN" />
+      </Group>
     </Groups>
 
     <Menus>
-      <Menu type="Toolbar" guid="CmdSet" id="ToolBarMenu">
+      <Menu type="Toolbar" guid="CmdSet" id="ToolbarMenu">
         <Strings>
-          <ButtonText>WebFlow</ButtonText>
+          <ButtonText>Web Flow</ButtonText>
         </Strings>
       </Menu>
 
-      <Menu type="Menu" guid="CmdSet" id="ToolsSubMenu" priority="0x10">
+      <Menu type="Menu" guid="CmdSet" id="ToolsMenu" priority="0x001">
         <Parent guid="CmdSet" id="VSToolsMenuGroup" />
         <Strings>
-          <ButtonText>WebFlow</ButtonText>
+          <ButtonText>Web Flow</ButtonText>
+        </Strings>
+      </Menu>
+
+      <Menu type="Menu" guid="CmdSet" id="ContextMenu" priority="0x001">
+        <Strings>
+          <ButtonText>Web Flow</ButtonText>
         </Strings>
       </Menu>
     </Menus>
 
     <Buttons>
-      <Button guid="CmdSet" id="InitCommandId">
-        <Icon guid="ImageCatalogGuid" id="Watch" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Add to Watch List</ButtonText>
-        </Strings>
-      </Button>
-
       <Button guid="CmdSet" id="WatchCommandId">
         <Icon guid="ImageCatalogGuid" id="Watch" />
         <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Watch</ButtonText>
-        </Strings>
-      </Button>
-
-      <Button guid="CmdSet" id="RefreshCommandId">
-        <Icon guid="ImageCatalogGuid" id="Refresh" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Restart Watcher</ButtonText>
+          <ButtonText>Transpile on Save</ButtonText>
         </Strings>
       </Button>
 
@@ -76,30 +69,47 @@
         </Strings>
       </Button>
 
-      <Button guid="CmdSet" id="TranspileSolutionCommandId">
+      <Button guid="CmdSet" id="CompileSolutionCommandId">
         <Icon guid="ImageCatalogGuid" id="Transform" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Transpile All Web Files</ButtonText>
+          <ButtonText>Transpile Solution</ButtonText>
         </Strings>
       </Button>
 
-      <Button guid="CmdSet" id="TranspileProjectCommandId">
-        <Icon guid="ImageCatalogGuid" id="Transform" />
+      <Button guid="CmdSet" id="CompileProjectCommandId">
+        <Icon guid="ImageCatalogGuid" id="BuildSelection" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Transpile Project Web Files</ButtonText>
+          <ButtonText>Transpile Project</ButtonText>
         </Strings>
       </Button>
 
-      <Button guid="CmdSet" id="TranspileSelectionCommandId">
-        <Icon guid="ImageCatalogGuid" id="Transform" />
+      <Button guid="CmdSet" id="CompileSelectionCommandId">
+        <Icon guid="ImageCatalogGuid" id="BuildSolution" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Transpile</ButtonText>
+          <ButtonText>Transpile File(s)</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="CmdSet" id="CompileOnBuildCommandId">
+        <Icon guid="ImageCatalogGuid" id="BuildDefinition" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Transpile on Build</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="CmdSet" id="AddConfigFileCommandId">
+        <Icon guid="ImageCatalogGuid" id="AddTextFile" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Add Configuration File</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -116,61 +126,77 @@
       <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_WEBPROJECT" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="SolutionCommandGroup" priority="0x01">
-      <Parent guid="CmdSet" id="ToolsSubMenu" />
+    <CommandPlacement guid="CmdSet" id="ProjectFileContextMenuGroup" priority="0x010">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="OptionsCommandGroup" priority="0x02">
-      <Parent guid="CmdSet" id="ToolsSubMenu" />
+    <CommandPlacement guid="CmdSet" id="ProjectFileContextMenuGroup" priority="0x010">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_WEBITEMNODE" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="ContextMenu" priority="0x001">
+      <Parent guid="CmdSet" id="ProjectContextMenuGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="ProjectCommandGroup" priority="0x010">
+      <Parent guid="CmdSet" id="ContextMenu" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="ConfigCommandGroup" priority="0x005">
+      <Parent guid="CmdSet" id="ToolsMenu" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="GlobalCommandGroup" priority="0x001">
+      <Parent guid="CmdSet" id="ToolsMenu" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="InfoGroup" priority="0x004">
+      <Parent guid="CmdSet" id="ToolsMenu" />
     </CommandPlacement>
 
     <!-- Buttons -->
-    <CommandPlacement guid="CmdSet" id="TranspileSolutionCommandId" priority="0x02">
-      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+
+    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="0x001">
+      <Parent guid="CmdSet" id="SolutionExplorerGroup" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="RefreshCommandId" priority="0x03">
-      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+    <!-- === -->
+
+    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="0x001">
+      <Parent guid="CmdSet" id="GlobalCommandGroup" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="0x01">
-      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+    <CommandPlacement guid="CmdSet" id="CompileSolutionCommandId" priority="0x002">
+      <Parent guid="CmdSet" id="GlobalCommandGroup" />
     </CommandPlacement>
 
-    <!-- ... -->
+    <!-- === -->
 
-    <CommandPlacement guid="CmdSet" id="SettingsCommandId" priority="0x04">
-      <Parent guid="CmdSet" id="OptionsCommandGroup" />
+    <CommandPlacement guid="CmdSet" id="SettingsCommandId" priority="0x040">
+      <Parent guid="CmdSet" id="ConfigCommandGroup" />
     </CommandPlacement>
 
-    <!-- ... -->
+    <!-- === -->
 
-    <CommandPlacement guid ="CmdSet" id="TranspileSelectionCommandId" priority="0x02">
+    <CommandPlacement guid ="CmdSet" id="CompileSelectionCommandId" priority="0x800">
       <Parent guid="CmdSet" id="ProjectFileContextMenuGroup" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="InitCommandId" priority="0x01">
-      <Parent guid="CmdSet" id="ProjectContextMenuGroup" />
+    <!-- === -->
+
+    <CommandPlacement guid="CmdSet" id="AddConfigFileCommandId" priority="0x020">
+      <Parent guid="CmdSet" id="ProjectCommandGroup" />
     </CommandPlacement>
 
-    <CommandPlacement guid="CmdSet" id="TranspileProjectCommandId" priority="0x01">
-      <Parent guid="CmdSet" id="ProjectContextMenuGroup" />
-    </CommandPlacement>
-
-    <!-- ... -->
-
-    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="0x01">
-      <Parent guid="CmdSet" id="ToolbarCommandGroup" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="CmdSet" id="TranspileSolutionCommandId" priority="0x02">
-      <Parent guid="CmdSet" id="ToolbarCommandGroup" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="CmdSet" id="RefreshCommandId" priority="0x03">
-      <Parent guid="CmdSet" id="ToolbarCommandGroup" />
+    <CommandPlacement guid="CmdSet" id="CompileOnBuildCommandId" priority="0x010">
+      <Parent guid="CmdSet" id="ProjectCommandGroup" />
     </CommandPlacement>
   </CommandPlacements>
+
+  <VisibilityConstraints>
+    <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasSingleProject" />
+    <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasMultipleProjects" />
+  </VisibilityConstraints>
 
   <Symbols>
     <GuidSymbol name="Package" value="{b7b0e0af-d860-4e41-a041-4d1f62bc423c}" />
@@ -179,24 +205,30 @@
       <!-- Groups -->
       <IDSymbol name="ProjectFileContextMenuGroup" value="0x0103" />
       <IDSymbol name="ProjectContextMenuGroup" value="0x0102" />
-      <IDSymbol name="SolutionCommandGroup" value="0x0105" />
-      <IDSymbol name="ToolbarCommandGroup" value="0x0100" />
-      <IDSymbol name="OptionsCommandGroup" value="0x0106" />
-      <IDSymbol name="BuildSubMenuGroup" value="0x0101" />
+      <IDSymbol name="SolutionExplorerGroup" value="0x0105" />
+      <IDSymbol name="FileContextMenuGroup" value="0x0107" />
+      <IDSymbol name="ProjectCommandGroup" value="0x0108" />
+      <IDSymbol name="GlobalCommandGroup" value="0x0110" />
+      <IDSymbol name="ConfigCommandGroup" value="0x0106" />
+      <IDSymbol name="ToolbarMenuGroup" value="0x0100" />
       <IDSymbol name="VSToolsMenuGroup" value="0x0104" />
+      <IDSymbol name="InfoGroup" value="0x0109" />
 
       <!-- Menu -->
-      <IDSymbol name="ToolBarMenu" value="0x0701" />
-      <IDSymbol name="ToolsSubMenu" value="0x0700" />
+      <IDSymbol name="ToolsMenu" value="0x0200" />
+      <IDSymbol name="ContextMenu" value="0x0202" />
+      <IDSymbol name="ToolbarMenu" value="0x0201" />
 
       <!-- Commands -->
-      <IDSymbol name="InitCommandId" value="0x0800" />
-      <IDSymbol name="WatchCommandId" value="0x0801" />
-      <IDSymbol name="RefreshCommandId" value="0x0802" />
-      <IDSymbol name="SettingsCommandId" value="0x0803" />
-      <IDSymbol name="TranspileSolutionCommandId" value="0x0804" />
-      <IDSymbol name="TranspileSelectionCommandId" value="0x0805" />
-      <IDSymbol name="TranspileProjectCommandId" value="0x0806" />
+      <IDSymbol name="WatchCommandId" value="0x0301" />
+      <IDSymbol name="DonateCommandId" value="0x0302" />
+      <IDSymbol name="SettingsCommandId" value="0x0303" />
+      <IDSymbol name="GotoWebsiteCommandId" value="0x0307" />
+      <IDSymbol name="AddConfigFileCommandId" value="0x0304" />
+      <IDSymbol name="CompileOnBuildCommandId" value="0x0305" />
+      <IDSymbol name="CompileProjectCommandId" value="0x0309" />
+      <IDSymbol name="CompileSolutionCommandId" value="0x0308" />
+      <IDSymbol name="CompileSelectionCommandId" value="0x0306" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

@@ -33,11 +33,16 @@ namespace Acklann.WebFlow.Configuration
         }
 
         [XmlAttribute("name")]
+        [JsonProperty("name")]
         public string Name
         {
             get { return string.IsNullOrEmpty(_name) ? Path.GetFileNameWithoutExtension(FullName) : _name; }
             set { _name = value; }
         }
+
+        [XmlAttribute("outputDirectory")]
+        [JsonProperty("outputDirectory")]
+        public string OutputDirectory { get; set; }
 
         [XmlElement("sass")]
         [JsonProperty("sass")]
@@ -47,7 +52,7 @@ namespace Acklann.WebFlow.Configuration
         [JsonProperty("typescript")]
         public TypescriptItemGroup TypescriptItemGroup { get; set; }
 
-        public static Project CreateInstance(string filePath)
+        public static Project CreateDefault(string filePath)
         {
             return new Project(filePath)
             {
@@ -83,7 +88,7 @@ namespace Acklann.WebFlow.Configuration
             }
 
             project.FullName = filePath;
-            SetDefaults(project);
+            project.AssignDefaults();
             return project;
         }
 
@@ -113,7 +118,7 @@ namespace Acklann.WebFlow.Configuration
                     file.Position = 0;
                     project = Load(file);
                     project.FullName = filePath;
-                    SetDefaults(project);
+                    project.AssignDefaults();
                 }
                 else return false;
             }
@@ -121,7 +126,7 @@ namespace Acklann.WebFlow.Configuration
             return true;
         }
 
-        public static bool Validate(Stream stream, out string error)
+        public static void Validate(Stream stream, ValidationEventHandler handler)
         {
             var schema = new XmlSchemaSet();
             foreach (string path in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)), $"{nameof(WebFlow)}.xsd", SearchOption.TopDirectoryOnly))
@@ -129,13 +134,20 @@ namespace Acklann.WebFlow.Configuration
                 schema.Add(XMLNS, path);
             }
 
-            var err = new StringBuilder();
+            if (handler == null) handler = delegate (object sender, ValidationEventArgs e) { };
+
             var doc = XDocument.Load(stream, LoadOptions.SetLineInfo);
-            doc.Validate(schema, (sender, e) =>
+            doc.Validate(schema, handler);
+            stream.Position = 0;
+        }
+
+        public static bool Validate(Stream stream, out string error)
+        {
+            var err = new StringBuilder();
+            Validate(stream, (sender, e) =>
             {
                 err.AppendLine($"[{e.Severity}] {e.Message} at line {e.Exception.LineNumber}");
             });
-            stream.Position = 0;
             error = err.ToString();
 
             return string.IsNullOrEmpty(error);
@@ -149,11 +161,19 @@ namespace Acklann.WebFlow.Configuration
             }
         }
 
-        public static void SetDefaults(Project project)
+        public void AssignDefaults()
         {
-            foreach (IItemGroup itemGroup in project.GetItempGroups())
+            foreach (IItemGroup itemGroup in GetItempGroups())
             {
-                itemGroup.WorkingDirectory = project.DirectoryName;
+                itemGroup.WorkingDirectory = DirectoryName;
+                if (!string.IsNullOrEmpty(OutputDirectory) && string.IsNullOrEmpty(itemGroup.OutputDirectory))
+                {
+                    itemGroup.OutputDirectory = OutputDirectory;
+                }
+                if (itemGroup.Suffix == null)
+                {
+                    itemGroup.Suffix = ".min";
+                }
             }
         }
 

@@ -31,7 +31,10 @@ namespace Acklann.WebFlow
             _processor = _akka.ActorOf(Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount)));
         }
 
-        public string DirectoryName { get; private set; }
+        public string DirectoryName
+        {
+            get { return _project?.DirectoryName; }
+        }
 
         public void Start(string filePath)
         {
@@ -42,7 +45,7 @@ namespace Acklann.WebFlow
         public void Start(Project project)
         {
             _project = project ?? throw new ArgumentNullException(nameof(project));
-            _watcher.Path = DirectoryName = project.DirectoryName;
+            _watcher.Path = project.DirectoryName;
             _watcher.EnableRaisingEvents = true;
         }
 
@@ -51,35 +54,48 @@ namespace Acklann.WebFlow
             _watcher.EnableRaisingEvents = true;
         }
 
-        public void Pasuse()
+        public void Pause()
         {
             _watcher.EnableRaisingEvents = false;
         }
 
-        protected virtual void OnFileWasModified(object sender, FileSystemEventArgs e)
+        public void Compile(Project project)
         {
-            if (e.FullPath.NotDependency())
-            {
-                if (e.FullPath.Equals(_project?.FullName))
-                {
-                    if (Project.TryLoad(e.FullPath, out Project project, out string error))
-                    {
-                        _project = project;
-                    }
-                }
-                else
-                {
-                    IItemGroup[] itemGroups = _project?.GetItempGroups()?.ToArray();
+            _project = project ?? throw new ArgumentException(nameof(project));
 
-                    if (itemGroups != null)
-                        foreach (IItemGroup itemGroup in itemGroups)
-                            if (itemGroup.Enabled && itemGroup.CanAccept(e.FullPath))
-                            {
-                                _processor.Tell(itemGroup.CreateCompilerOptions(e.FullPath));
-                            }
+            foreach (IItemGroup itemGroup in project.GetItempGroups())
+                if (itemGroup.Enabled)
+                    foreach (string filePath in itemGroup.EnumerateFiles())
+                    {
+                        _processor.Tell(itemGroup.CreateCompilerOptions(filePath));
+                    }
+        }
+
+        public void Compile(string filePath)
+        {
+            if (filePath.Equals(_project?.FullName))
+            {
+                if (Project.TryLoad(filePath, out Project project, out string error))
+                {
+                    _project = project;
                 }
             }
+            else if (filePath.NotDependency())
+            {
+                IItemGroup[] itemGroups = _project?.GetItempGroups()?.ToArray();
+
+                if (itemGroups != null)
+                    foreach (IItemGroup itemGroup in itemGroups)
+                        if (itemGroup.Enabled && itemGroup.CanAccept(filePath))
+                        {
+                            _processor.Tell(itemGroup.CreateCompilerOptions(filePath));
+                        }
+            }
         }
+
+        public void Compile() => Compile(_project);
+
+        protected virtual void OnFileWasModified(object sender, FileSystemEventArgs e) => Compile(e.FullPath);
 
         #region IDisposable
 
@@ -108,8 +124,6 @@ namespace Acklann.WebFlow
 
         private Project _project;
 
-        private static ActorSystem CreateActorSystem() => ActorSystem.Create(nameof(WebFlow), Akka.Configuration.ConfigurationFactory.ParseString("akka { loglevel = WARNING }"));
-
         private static FileSystemWatcher CreateWatch()
         {
             return new FileSystemWatcher
@@ -118,6 +132,8 @@ namespace Acklann.WebFlow
                 IncludeSubdirectories = true
             };
         }
+
+        private static ActorSystem CreateActorSystem() => ActorSystem.Create(nameof(WebFlow), Akka.Configuration.ConfigurationFactory.ParseString("akka { loglevel = WARNING }"));
 
         #endregion Private Members
     }

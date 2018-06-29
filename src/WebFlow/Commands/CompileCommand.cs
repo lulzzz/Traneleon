@@ -16,7 +16,7 @@ namespace Acklann.WebFlow.Commands
         public CompileCommand(string configFile, bool enableWatcher)
         {
             EnableWatcher = _continueWatching = enableWatcher;
-            ConfigFile = configFile.ExpandPath(Environment.CurrentDirectory, true);
+            ConfigFile = configFile.ResolvePath(Environment.CurrentDirectory, expandVariables: true).FirstOrDefault();
 
             _observer = new FileProcessorObserver();
         }

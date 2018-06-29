@@ -41,8 +41,8 @@ namespace Acklann.WebFlow.Compilation
             long executionTime = (Shell.ExitTime.Ticks - Shell.StartTime.Ticks);
             IDictionary<string, string> files = Shell.StandardOutput.GetGeneratedFiles();
             files.TryGetValue("minifiedFile", out string compiliedFile);
-
-            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile);
+            
+            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile, options.SourceFile);
         }
 
         #region Private Members

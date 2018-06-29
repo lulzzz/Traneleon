@@ -2,21 +2,27 @@
 {
     public struct TranspilierResult : ICompilierResult
     {
-        public TranspilierResult(int exitCode, long elapse, CompilerError[] errors, string outFile)
+        public TranspilierResult(int exitCode, long elapse, CompilerError[] errors, string outFile, string sourceFile)
         {
+            Kind = Kind.Transpile;
             Succeeded = (exitCode == 0);
             CompiliedFile = outFile;
+            SourceFile = sourceFile;
             ExecutionTime = elapse;
             ErrorList = errors;
         }
 
-        public bool Succeeded { get; private set; }
+        public Kind Kind { get; }
 
-        public long ExecutionTime { get; private set; }
+        public bool Succeeded { get; }
 
-        public CompilerError[] ErrorList { get; private set; }
+        public long ExecutionTime { get; }
 
-        public string CompiliedFile { get; private set; }
+        public CompilerError[] ErrorList { get; }
+
+        public string CompiliedFile { get; }
+
+        public string SourceFile { get; }
 
         string ICompilierResult.OutputFile => CompiliedFile;
 

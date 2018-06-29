@@ -181,7 +181,7 @@ var root = {
         sourceFile.contents = result.css;
 
         if (args.generateSourceMaps) {
-            sourceFile.contents = (result.css + os.EOL + "//# sourceMappingURL=" + path.relative(args.outputDirectory, mapFile));
+            sourceFile.contents = (result.css + os.EOL + "/* # sourceMappingURL=" + path.relative(args.outputDirectory, mapFile) + " */");
             let map = root.mergeSourceMaps(result.map.toString(), sourceFile.sourceMap, path.relative(args.sourceMapDirectory, outFile));
             root.createFile(mapFile, map, "sourceMapFile");
         }
