@@ -14,7 +14,7 @@ try
 	Push-Location $PSScriptRoot;
 
 	# Package lib resources.
-	$lib = "$PWD\dependencies\*";
+	$lib = "$PWD\$([System.IO.Path]::GetFileNameWithoutExtension($Archive))\*";
 	if ($PSCmdlet.ShouldProcess($lib, "Compress"))
 	{
 		if (Test-Path $Archive) { Remove-Item $Archive -Force; }

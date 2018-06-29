@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ExternalDependencies>dependencies.zip</ExternalDependencies>
+    <ExternalDependencies>lib.zip</ExternalDependencies>
   </PropertyGroup>
 
   <Choose>
