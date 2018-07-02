@@ -13,8 +13,8 @@ namespace Acklann.WebFlow.Compilation
         static ShellBase()
         {
             Assembly assembly = typeof(ShellBase).Assembly;
-            string version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
-            ResourceDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location), $"modules_{version}");
+            Version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+            ResourceDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location), $"modules_{Version}");
             if (!Directory.Exists(ResourceDirectory)) Directory.CreateDirectory(ResourceDirectory);
             bool force = false;
 
@@ -74,7 +74,7 @@ namespace Acklann.WebFlow.Compilation
             };
         }
 
-        public static readonly string ResourceDirectory;
+        public static readonly string ResourceDirectory, Version;
 
         public static ShellBase GetShell()
         {
