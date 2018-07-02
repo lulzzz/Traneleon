@@ -1,27 +1,25 @@
 ﻿{
-  "Version":
-  {
-    "Major": 0,
-    "Minor": 0,
-    "Patch": 21,
-    "Suffix": ""
-  },
-  "Id": "Acklann.WebFlow",
-  "Name": "WebFlow",
-  "Summary": "",
-  "Description": "this is a description",
-  "Author": "Ackara",
-  "Company": "Ackara",
-  "License": "MIT License",
-  "Copyright": "All rigths reserved",
-  "Website": "https://github.com/ackara/webflow",
-  "RepositoryUrl": "https://github.com/ackara/webflow/webflow.git",
-  "Icon": "https://github.com/ackara/webflow/raw/master/art/icon.png",
-  "ReleaseNotes": "https://github.com/ackara/webflow/raw/master/releaseNotes.txt",
-  "Tags": "web compilier typescript sass",
-  "BranchSuffixMap":
-  {
-    "master": "",
-    "*": "rc"
-  }
+    "Version":  {
+                    "Major":  0,
+                    "Minor":  0,
+                    "Patch":  22,
+                    "Suffix":  ""
+                },
+    "Id":  "Acklann.WebFlow",
+    "Name":  "WebFlow",
+    "Summary":  "",
+    "Description":  "this is a description",
+    "Author":  "Ackara",
+    "Company":  "Ackara",
+    "License":  "MIT License",
+    "Copyright":  "All rigths reserved",
+    "Website":  "https://github.com/ackara/webflow",
+    "RepositoryUrl":  "https://github.com/ackara/webflow/webflow.git",
+    "Icon":  "https://github.com/ackara/webflow/raw/master/art/icon.png",
+    "ReleaseNotes":  "https://github.com/ackara/webflow/raw/master/releaseNotes.txt",
+    "Tags":  "web compilier typescript sass",
+    "BranchSuffixMap":  {
+                            "master":  "",
+                            "*":  "rc"
+                        }
 }

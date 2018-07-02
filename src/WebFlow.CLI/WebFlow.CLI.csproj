@@ -11,8 +11,8 @@
     <Company>Ackara</Company>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
     <AssemblyName>Acklann.WebFlow.CLI</AssemblyName>
-    <AssemblyVersion>0.0.21</AssemblyVersion>
-    <PackageVersion>0.0.21</PackageVersion>
+    <AssemblyVersion>0.0.22</AssemblyVersion>
+    <PackageVersion>0.0.22</PackageVersion>
     <Copyright>All rigths reserved</Copyright>
     <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/ackara/webflow</PackageProjectUrl>
