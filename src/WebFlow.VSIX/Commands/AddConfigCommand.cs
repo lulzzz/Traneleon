@@ -50,12 +50,12 @@ namespace Acklann.WebFlow.Commands
                         monitor = _activator.Invoke(project.FullName);
                         _watchList.Add(project.FileName, monitor);
                         monitor?.Start(configFile);
+
+                        _dte.StatusBar.Text = $"[{nameof(WebFlow)}] Added the '{project.Name}' project to the watch-list.";
                     }
 
                     if (UserState.Instance.WatcherEnabled) monitor?.Resume();
                     else monitor?.Pause();
-
-                    _dte.StatusBar.Text = $"[Webflow]: Added the '{project.Name}' project to watch-list.";
                 }
             });
         }

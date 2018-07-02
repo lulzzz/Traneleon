@@ -20,7 +20,7 @@ namespace Acklann.WebFlow.Commands
 
         private void OnCommandInvoked(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("compile-on-build command invoked");
+            System.Diagnostics.Debug.WriteLine("setup compile-on-build command invoked");
 
             AddConfigCommand.Instance.Execute(_dte.GetSelectedProjects());
             // TODO: Add nuget package

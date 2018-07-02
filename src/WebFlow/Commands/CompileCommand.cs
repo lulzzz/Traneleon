@@ -3,6 +3,7 @@ using Acklann.NShellit.Attributes;
 using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Configuration;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -16,7 +17,14 @@ namespace Acklann.WebFlow.Commands
         public CompileCommand(string configFile, bool enableWatcher)
         {
             EnableWatcher = _continueWatching = enableWatcher;
-            ConfigFile = configFile.ResolvePath(Environment.CurrentDirectory, expandVariables: true).FirstOrDefault();
+            string dir = Environment.CurrentDirectory;
+            ConfigFile = configFile.ResolvePath(dir, expandVariables: true).FirstOrDefault();
+            //ConfigFile = configFile;
+            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(ConfigFile))
+            {
+                System.Diagnostics.Debug.WriteLine("foo");
+                Debugger.Break();
+            }
 
             _observer = new FileProcessorObserver();
         }
@@ -31,7 +39,7 @@ namespace Acklann.WebFlow.Commands
 
         public int Execute()
         {
-            if (!File.Exists(ConfigFile)) throw new FileNotFoundException($"Could not find file at '{ConfigFile}'.");
+            if (!File.Exists(ConfigFile)) throw new FileNotFoundException($"Could not find config file at '{ConfigFile}'.");
             else if (Project.TryLoad(ConfigFile, out _project, out string error))
             {
                 Log.WorkingDirectory = _project.DirectoryName;

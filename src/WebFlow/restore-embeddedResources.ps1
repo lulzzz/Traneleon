@@ -28,7 +28,7 @@ try
 		$moduleDir = "$PSScriptRoot\node_modules";
 		Write-Host "restoring node packages ...";
 		if (Test-Path $moduleDir) { Remove-Item $moduleDir -Recurse -Force; }
-		&npm install --save-dev;
+		&npm install --save-dev | Out-Null;
 		Get-ChildItem $moduleDir -Recurse -Include @("*.md", "LICENSE") | Remove-Item -Force;
 
 		$Archive = Join-Path $PWD "$($env:OS)-node_modules.zip";

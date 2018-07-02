@@ -31,10 +31,10 @@ namespace Acklann.WebFlow.Tests
                 }
             };
 
-            var sut = new CompileCommand(config.FullName, false);
-
             // Act
             config.Save();
+            var sut = new CompileCommand(config.FullName, false);
+
             if (Directory.Exists(outDir)) Directory.Delete(outDir, recursive: true);
             var exitCode = sut.Execute();
             File.Delete(config.FullName);

@@ -11,8 +11,11 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow
 {
@@ -34,6 +37,15 @@ namespace Acklann.WebFlow
             return (T)GetService(typeof(T));
         }
 
+        internal void WriteToStatusbar(string text, bool appendPrefix = true)
+        {
+            _statusbar.IsFrozen(out int frozen);
+            if (frozen != 0) _statusbar.FreezeOutput(0);
+
+            _statusbar.SetText(appendPrefix ? $"[{nameof(WebFlow)}]: {text}" : text);
+            _statusbar.FreezeOutput(1);
+        }
+
         private void SubscribeToEvents()
         {
             _projectEvents = DTE.Events.SolutionItemsEvents;
@@ -50,6 +62,7 @@ namespace Acklann.WebFlow
             _akka = ActorSystem.Create("webflow-vsix");
             _errorListProvider = new ErrorListProvider(this);
             _solution = (IVsSolution)GetService<SVsSolution>();
+            _statusbar = (IVsStatusbar)GetService<SVsStatusbar>();
 
             _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
             _activator = delegate (string projectFile)
@@ -89,7 +102,24 @@ namespace Acklann.WebFlow
         private void OnSolutionLoaded(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("soltion was opened");
-            AddConfigCommand.Instance.Execute(DTE.GetActiveProjects());
+
+            Task.Run(() =>
+            {
+                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
+                {
+                    string folder = Path.GetDirectoryName(project.FullName);
+                    string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
+
+                    if (configFile != null)
+                    {
+                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
+                        _watchList.Add(project.FileName, monitor);
+                        monitor?.Start(configFile);
+                        if (UserState.Instance.WatcherEnabled) WriteToStatusbar($"Monitoring '{project.Name}' for changes ...");
+                        else monitor?.Pause();
+                    }
+                }
+            });
         }
 
         private void OnSolutionClosing(object sender = null, EventArgs e = null)
@@ -100,7 +130,7 @@ namespace Acklann.WebFlow
                 if (_watchList.Contains(project.FullName) && (_watchList[project.FullName] is ProjectMonitor monitor))
                 {
                     monitor.Pause();
-                    System.Diagnostics.Debug.WriteLine($"stopped watching {monitor.DirectoryName}");
+                    System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
                 }
             }
         }
@@ -149,6 +179,7 @@ namespace Acklann.WebFlow
         internal IMenuCommandService _commandService;
         internal ErrorListProvider _errorListProvider;
 
+        private IVsStatusbar _statusbar;
         private EnvDTE.ProjectItemsEvents _projectEvents;
         private _dispProjectItemsEvents_ItemAddedEventHandler _itemAddedHandler;
 

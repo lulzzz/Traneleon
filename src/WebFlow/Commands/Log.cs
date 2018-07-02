@@ -49,7 +49,7 @@ namespace Acklann.WebFlow.Commands
             if (value.Succeeded)
             {
                 string elapse = TimeSpan.FromTicks(value.ExecutionTime).ToString(@"mm\:ss\.fff");
-                Write($"=> processed '{path}' in ({elapse}).", ConsoleColor.White);
+                Write($"=> generated '{path}' in ({elapse}).", ConsoleColor.White);
             }
             else
             {

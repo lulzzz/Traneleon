@@ -1,6 +1,5 @@
 ﻿using Acklann.WebFlow.Compilation;
 using Akka.Actor;
-using Akka.Event;
 using System;
 using System.Collections;
 
@@ -21,7 +20,6 @@ namespace Acklann.WebFlow
             _factory = factory;
             _observer = observer;
             _compilers = new Hashtable();
-            _logger = Context.GetLogger();
 
             Receive<ICompilierOptions>(HandleMessage, ((x) => _factory != null));
         }
@@ -60,7 +58,6 @@ namespace Acklann.WebFlow
         #region Private Members
 
         private readonly IDictionary _compilers;
-        private readonly ILoggingAdapter _logger;
         private readonly ICompilerFactory _factory;
         private readonly IObserver<ICompilierResult> _observer;
 

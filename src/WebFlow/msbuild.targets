@@ -2,50 +2,22 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <TranspileOnBuild>true</TranspileOnBuild>
-    <WebFlowConfigFile>$(MSBuildProjectDirectory)\*webflow*</WebFlowConfigFile>
+    <TranspileOnBuild Condition="$(TranspileOnBuild) == ''">true</TranspileOnBuild>
+    <WebFlowConfigFile Condition="$(WebFlowConfigFile)==''">$(MSBuildProjectDirectory)\*webflow*</WebFlowConfigFile>
+    <WebFlowRootDirectory>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))))</WebFlowRootDirectory>
   </PropertyGroup>
 
   <Target Name="TranspileWebAssetsBeforeBuild"
           Condition="$(TranspileOnBuild)"
           BeforeTargets="CoreCompile, Build">
-    <CallTarget Targets="Transpile" UseResultsCache="true" />
+    <CallTarget Targets="Transpile" />
   </Target>
 
   <Target Name="Transpile">
-    <MoveUp Path="$(MSBuildThisFileDirectory)" Level="3">
-      <Output TaskParameter="Result" PropertyName="RootDirectory" />
-    </MoveUp>
-
     <ItemGroup>
-      <AssemblyFile Include="$(RootDirectory)\tools\*\*.CLI.dll" />
+      <WebFlowAssemblyFile Include="$(WebFlowRootDirectory)\tools\*\*.CLI.dll" />
     </ItemGroup>
 
-    <Message Text="assembly: @(AssemblyFile)" />
-    <Message Text="config: $(WebFlowConfigFile)" />
-
-    <Exec Command="dotnet &quot;@(AssemblyFile)&quot; build &quot;$(WebFlowConfigFile)&quot;" />
+    <Exec Command="dotnet &quot;@(WebFlowAssemblyFile)&quot; build &quot;$(WebFlowConfigFile)&quot;" />
   </Target>
-
-  <UsingTask TaskName="MoveUp"
-             TaskFactory="CodeTaskFactory"
-             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-    <ParameterGroup>
-      <Path ParameterType="System.String" Required="true" />
-      <Level ParameterType="System.Int32" Required="true" />
-      <Result ParameterType="System.String" Output="true" />
-    </ParameterGroup>
-
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-        Result = Path;
-        for (int i = 0; i < Level; i++)
-        {
-          Result = System.IO.Path.GetDirectoryName(Result);
-        }
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
 </Project>

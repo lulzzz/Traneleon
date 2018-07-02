@@ -15,6 +15,7 @@ namespace Acklann.WebFlow.Compilation
             Assembly assembly = typeof(ShellBase).Assembly;
             string version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
             ResourceDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location), $"modules_{version}");
+            if (!Directory.Exists(ResourceDirectory)) Directory.CreateDirectory(ResourceDirectory);
             bool force = false;
 
 #if DEBUG && FORCE
