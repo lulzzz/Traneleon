@@ -11,16 +11,16 @@
     <Company>Ackara</Company>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
     <AssemblyName>Acklann.WebFlow.CLI</AssemblyName>
-    <AssemblyVersion>0.0.22</AssemblyVersion>
-    <PackageVersion>0.0.22</PackageVersion>
+    <AssemblyVersion>0.0.23</AssemblyVersion>
+    <PackageVersion>0.0.23</PackageVersion>
     <Copyright>All rigths reserved</Copyright>
     <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/ackara/webflow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ackara/webflow/webflow.git</RepositoryUrl>
     <PackageIconUrl>https://github.com/ackara/webflow/raw/master/art/icon.png</PackageIconUrl>
     <PackageReleaseNotes>https://github.com/ackara/webflow/raw/master/releaseNotes.txt</PackageReleaseNotes>
-    <PackageTags>web compilier typescript sass</PackageTags>
-    <Description>this is a description</Description>
+    <PackageTags>web compile minify typescript sass images</PackageTags>
+    <Description>This package allows you to compile, minify and bundle your web assets.</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <LangVersion>7.2</LangVersion>

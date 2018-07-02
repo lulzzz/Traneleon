@@ -1,6 +1,6 @@
 ﻿{
     "name":  "WebFlow",
-    "version":  "0.0.22",
+    "version":  "0.0.23",
     "private":  true,
     "devDependencies":  {
                             "csso":  "^3.5.1",
@@ -18,9 +18,11 @@
     "homepage":  "https://github.com/ackara/webflow",
     "keywords":  [
                      "web",
-                     "compilier",
+                     "compile",
+                     "minify",
                      "typescript",
-                     "sass"
+                     "sass",
+                     "images"
                  ],
-    "description":  "this is a description"
+    "description":  "This package allows you to compile, minify and bundle your web assets."
 }
