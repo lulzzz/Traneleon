@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".misc", ".misc", "{C120B3F2
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		README.md = README.md
+		releaseNotes.txt = releaseNotes.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebFlow.MSTest", "tests\WebFlow.MSTest\WebFlow.MSTest.csproj", "{B51CDC92-A44F-469D-9D2A-B99276BC3657}"
