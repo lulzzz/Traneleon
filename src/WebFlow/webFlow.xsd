@@ -2,8 +2,8 @@
 <xs:schema id="webFlow"
            elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
-           targetNamespace="https://github.com/ackara/webflow/raw/master/webflow.xsd">
+           xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd"
+           targetNamespace="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd">
   <xs:element name="project">
     <xs:complexType>
       <xs:all>
@@ -34,6 +34,10 @@
       <xs:element name="include"
                   type="FileList"
                   minOccurs="0" />
+
+      <xs:element name="exclude"
+                  type="FileList"
+                  minOccurs="0" />
     </xs:all>
 
     <xs:attributeGroup ref="TranspilierAttributes" />
@@ -55,9 +59,9 @@
       </xs:element>
 
       <xs:element name="exclude"
-                  type="xs:string"
+                  type="FileList"
                   minOccurs="0"
-                  maxOccurs="unbounded" />
+                  maxOccurs="1" />
     </xs:sequence>
 
     <xs:attributeGroup ref="TranspilierAttributes" />

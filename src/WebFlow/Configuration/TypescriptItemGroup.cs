@@ -32,7 +32,8 @@ namespace Acklann.WebFlow.Configuration
         [XmlElement("include")]
         public List<Bundle> Include { get; set; }
 
-        [XmlElement("exclude")]
+        [XmlArray("exclude")]
+        [XmlArrayItem("pattern")]
         public List<string> Exclude { get; set; }
 
         public override bool CanAccept(string filePath)

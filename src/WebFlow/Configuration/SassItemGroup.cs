@@ -25,10 +25,12 @@ namespace Acklann.WebFlow.Configuration
         [XmlAttribute("sourceDirectory")]
         public string SourceMapDirectory { get; set; }
 
-        [XmlElement("include")]
+        [XmlArray("include")]
+        [XmlArrayItem("pattern")]
         public List<string> Include { get; set; }
 
-        [XmlElement("exclude")]
+        [XmlArray("exclude")]
+        [XmlArrayItem("pattern")]
         public List<string> Exclude { get; set; }
 
         public override bool CanAccept(string filePath)

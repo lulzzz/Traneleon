@@ -45,6 +45,7 @@ namespace Acklann.WebFlow.Tests
             {
                 xmlIsWellFormed = Project.Validate(stream, out errorMsg);
             }
+            System.Diagnostics.Debug.WriteLine(contents);
 
             // Assert
             sut.FullName.ShouldBe(path);
@@ -73,6 +74,16 @@ namespace Acklann.WebFlow.Tests
             var sample = new Project
             {
                 Name = "test",
+                SassItemGroup = new SassItemGroup()
+                {
+                    Enabled = true,
+                    Suffix = ".min",
+                    Exclude = new List<string>() { "_*.scss" },
+                    Include = new List<string>()
+                    {
+                        "*.scss"
+                    }
+                },
                 TypescriptItemGroup = new TypescriptItemGroup()
                 {
                     Enabled = true,

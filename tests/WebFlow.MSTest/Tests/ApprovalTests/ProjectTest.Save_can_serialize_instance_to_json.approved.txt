@@ -1,5 +1,17 @@
 ﻿{
   "name": "test",
+  "sass": {
+    "keepIntermediateFiles": false,
+    "generateSourceMaps": true,
+    "include": [
+      "*.scss"
+    ],
+    "exclude": [
+      "_*.scss"
+    ],
+    "enabled": true,
+    "suffix": ".min"
+  },
   "typescript": {
     "keepIntermediateFiles": false,
     "generateSourceMaps": true,
