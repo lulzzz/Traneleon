@@ -17,7 +17,6 @@ namespace Acklann.WebFlow.Configuration
         {
             GenerateSourceMaps = true;
             KeepIntermediateFiles = false;
-            Include = new List<Bundle> { new Bundle("*.ts") };
         }
 
         [XmlAttribute("keepIntermediateFiles")]
@@ -45,9 +44,7 @@ namespace Acklann.WebFlow.Configuration
         {
             bundle = null;
 
-            if (!string.IsNullOrEmpty(Suffix)
-                &&
-                filePath.EndsWith(string.Concat(Suffix, Path.GetExtension(filePath)), StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith(string.Concat(Suffix, Path.GetExtension(filePath)), StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

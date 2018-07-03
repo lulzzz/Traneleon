@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 
 namespace Acklann.WebFlow.Configuration
 {
+    [System.Diagnostics.DebuggerDisplay("{ToDebuggerDisplay()}")]
     [XmlRoot("project", Namespace = XMLNS)]
     public partial class Project
     {
@@ -231,6 +232,8 @@ namespace Acklann.WebFlow.Configuration
 
         private readonly XmlSerializerNamespaces _namespace;
         private string _name;
+
+        private string ToDebuggerDisplay() => FullName;
 
         #endregion Private Members
     }

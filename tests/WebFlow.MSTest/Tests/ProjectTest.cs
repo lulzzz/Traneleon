@@ -112,7 +112,8 @@ namespace Acklann.WebFlow.Tests
             // Assert
             result.FullName.ShouldNotBeNullOrEmpty();
             properties.ShouldAllBe(x => x.GetValue(result) != null);
+            result.TypescriptItemGroup.Include.Count.ShouldBe(1);
+            result.TypescriptItemGroup.Include[0].EntryPoint.ShouldNotBeNullOrEmpty();
         }
-
     }
 }

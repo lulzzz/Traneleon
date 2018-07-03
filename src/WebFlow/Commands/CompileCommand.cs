@@ -3,7 +3,6 @@ using Acklann.NShellit.Attributes;
 using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Configuration;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -16,17 +15,9 @@ namespace Acklann.WebFlow.Commands
         [UseConstructor]
         public CompileCommand(string configFile, bool enableWatcher)
         {
-            EnableWatcher = _continueWatching = enableWatcher;
-            string dir = Environment.CurrentDirectory;
-            ConfigFile = configFile.ResolvePath(dir, expandVariables: true).FirstOrDefault();
-            //ConfigFile = configFile;
-            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(ConfigFile))
-            {
-                System.Diagnostics.Debug.WriteLine("foo");
-                Debugger.Break();
-            }
-
             _observer = new FileProcessorObserver();
+            EnableWatcher = _continueWatching = enableWatcher;
+            ConfigFile = configFile.ResolvePath(Environment.CurrentDirectory, expandVariables: true).FirstOrDefault();
         }
 
         [Required, Parameter('c', "config", Kind = "path")]
@@ -39,13 +30,12 @@ namespace Acklann.WebFlow.Commands
 
         public int Execute()
         {
-            if (!File.Exists(ConfigFile)) throw new FileNotFoundException($"Could not find config file at '{ConfigFile}'.");
+            if (!File.Exists(ConfigFile)) throw new FileNotFoundException($"Could not find {nameof(WebFlow)} configuration file at '{ConfigFile}'.");
             else if (Project.TryLoad(ConfigFile, out _project, out string error))
             {
                 Log.WorkingDirectory = _project.DirectoryName;
                 if (EnableWatcher) StartWatcher();
                 else Compile();
-
                 return 0;
             }
             else throw new FormatException(error);
@@ -83,15 +73,14 @@ namespace Acklann.WebFlow.Commands
         {
             long startTime = DateTime.Now.Ticks;
             Log.Debug(format($"Build started", '-'));
-            ICompilierResult[] results = _project.CompileAsync().Result;
+            ICompilierResult[] results = _project.Compile();
             string elapse = TimeSpan.FromTicks(DateTime.Now.Ticks - startTime).ToString();
             Log.Debug(format($"Build: finished in ({elapse}); {results.Count(x => x.Succeeded)} succeeded, {results.Count(x => !x.Succeeded)} failed", '='));
 
             string format(string value, char c)
             {
                 var line = string.Join("", Enumerable.Repeat(c, 80 - value.Length));
-                line = line.Insert((line.Length / 2), $" {value} ");
-                return line;
+                return line.Insert((line.Length / 2), $" {value} ");
             }
         }
 

@@ -9,14 +9,14 @@ namespace Acklann.WebFlow.Configuration
 {
     public static class ConfigurationExtensions
     {
-        public static Task<ICompilierResult[]> CompileAsync(this Project project, int millisecondsTimeout = 30_000)
+        public static Task<ICompilierResult[]> CompileAsync(this Project project, IActorObserver observer = null, int millisecondsTimeout = 30_000)
         {
             return Task.Run(() =>
             {
                 using (var akka = ActorSystem.Create(Guid.NewGuid().ToString("n"), Akka.Configuration.ConfigurationFactory.ParseString("akka { loglevel = WARNING }")))
                 {
-                    var observer = new FileProcessorObserver();
-                    IActorRef processor = akka.ActorOf(Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount)));
+                    if (observer == null) observer = new FileProcessorObserver();
+                    IActorRef processor = akka.ActorOf(FileProcessor.GetProps(observer));
 
                     int max = 0;
                     foreach (IItemGroup itemGroup in project.GetItempGroups())
@@ -27,11 +27,14 @@ namespace Acklann.WebFlow.Configuration
                                 processor.Tell(itemGroup.CreateCompilerOptions(file));
                             }
 
-                    observer.WaitForCompletion(max, millisecondsTimeout);
-                    return observer.GetResults().ToArray();
+                    observer?.WaitForCompletion(max, millisecondsTimeout);
+                    return observer?.GetResults().ToArray();
                 }
             });
         }
+
+        public static ICompilierResult[] Compile(this Project project, IActorObserver observer = null, int millisecondsTimeout = 30_000)
+            => CompileAsync(project, observer, millisecondsTimeout).Result;
 
         internal static bool NotDependency(this string path)
         {
