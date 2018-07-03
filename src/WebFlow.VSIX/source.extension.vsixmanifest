@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="WebFlow.VSIX.c52cbe28-691f-4105-9fd8-41e5bac86278" Version="0.0.28" Language="en-US" Publisher="Ackara" />
+    <Identity Id="WebFlow.VSIX.c52cbe28-691f-4105-9fd8-41e5bac86278" Version="0.0.29" Language="en-US" Publisher="Ackara" />
     <DisplayName>WebFlow</DisplayName>
     <Description>This package allows you to compile, minify and bundle your web assets.</Description>
     <Tags>web compile minify typescript sass images</Tags>
