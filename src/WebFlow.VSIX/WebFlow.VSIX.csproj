@@ -65,7 +65,6 @@
     <Compile Include="OptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ProductInfo.cs" />
     <Compile Include="Symbols.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
