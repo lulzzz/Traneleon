@@ -8,8 +8,8 @@
     <Title>WebFlow</Title>
     <Authors>Ackara</Authors>
     <Company>Ackara</Company>
-    <PackageVersion>0.0.27</PackageVersion>
-    <AssemblyVersion>0.0.27</AssemblyVersion>
+    <PackageVersion>0.0.28</PackageVersion>
+    <AssemblyVersion>0.0.28</AssemblyVersion>
     <Copyright>All rigths reserved</Copyright>
     <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageTags>web compile minify typescript sass images</PackageTags>
