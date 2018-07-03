@@ -57,8 +57,17 @@ namespace Acklann.WebFlow.Configuration
         {
             return new Project(filePath)
             {
-                SassItemGroup = new SassItemGroup(),
+                SassItemGroup = new SassItemGroup()
+                {
+                    Include = new List<string>() { "*.scss" }
+                },
                 TypescriptItemGroup = new TypescriptItemGroup()
+                {
+                    Include = new List<TypescriptItemGroup.Bundle>()
+                    {
+                        new TypescriptItemGroup.Bundle("*.ts")
+                    }
+                }
             };
         }
 

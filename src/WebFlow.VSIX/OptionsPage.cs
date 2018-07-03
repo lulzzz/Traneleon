@@ -7,6 +7,7 @@ namespace Acklann.WebFlow
     {
         public OptionsPage()
         {
+            AutoConfig = true;
             Pattern = "*webflow*";
         }
 
@@ -14,5 +15,10 @@ namespace Acklann.WebFlow
         [LocDisplayName("Profile Location")]
         [Description("The absolute path in which your task profiles are stored.")]
         public string Pattern { get; set; }
+
+        [Category("General")]
+        [LocDisplayName("Add Configuration to Project Automatically")]
+        [Description("Determines whether a configuration file should automatically be added to web projects.")]
+        public bool AutoConfig { get; set; }
     }
 }

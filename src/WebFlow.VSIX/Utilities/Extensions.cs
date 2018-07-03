@@ -102,5 +102,24 @@ namespace Acklann.WebFlow.Utilities
                 foreach (EnvDTE.SelectedItem item in selectedItems) yield return item;
             }
         }
+
+        public static bool IsaWebProject(this EnvDTE.Project project)
+        {
+            var kinds = new string[]
+            {
+                 "{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}", /* ASPNET_5 */
+                 "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", /* DOTNET_Core */
+                 "{E24C65DC-7377-472B-9ABA-BC803B73C61A}", /* WEBSITE_PROJECT */
+                 "{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}"  /* NODE_JS */
+            };
+
+            foreach (string guid in kinds)
+                if (project.Kind.Equals(guid, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+            return false;
+        }
     }
 }

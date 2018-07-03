@@ -1,4 +1,5 @@
-﻿using Acklann.WebFlow.Utilities;
+﻿using Acklann.WebFlow.Configuration;
+using Acklann.WebFlow.Utilities;
 using EnvDTE80;
 using System;
 using System.Collections;
@@ -42,16 +43,23 @@ namespace Acklann.WebFlow.Commands
 
                         if (configFile == null)
                         {
-                            configFile = Path.Combine(folder, "webflow-compiler.config");
+                            configFile = Path.Combine(folder, VSPackage.ConfigName);
                             Configuration.Project.CreateDefault(configFile).Save();
                         }
 
                         // Initiailizing watcher.
                         monitor = _activator.Invoke(project.FullName);
                         _watchList.Add(project.FileName, monitor);
-                        monitor?.Start(configFile);
 
-                        _dte.StatusBar.Text = $"[{nameof(WebFlow)}] Added the '{project.Name}' project to the watch-list.";
+                        if (Project.TryLoad(configFile, out Project config, out string error))
+                        {
+                            monitor?.Start(config);
+                            _dte.StatusBar.Text = $"[{nameof(WebFlow)}] Added the '{project.Name}' project to the watch-list.";
+                        }
+                        else
+                        {
+                            _dte.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
+                        }
                     }
 
                     if (UserState.Instance.WatcherEnabled) monitor?.Resume();
