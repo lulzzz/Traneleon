@@ -30,6 +30,7 @@ namespace Acklann.WebFlow.Compilation
         }
 
         public static readonly string ResourceDirectory, Version;
+        public static bool IsNotLoaded = true;
 
         public static ShellBase GetShell()
         {
@@ -48,7 +49,7 @@ namespace Acklann.WebFlow.Compilation
 #endif
             string lockFile = Path.Combine(ResourceDirectory, "webflow-lock.json");
 
-            if (!File.Exists(lockFile) || force)
+            if (IsNotLoaded && (!File.Exists(lockFile) || force))
                 try
                 {
                     var resources = new Stack<string>();
@@ -95,6 +96,7 @@ namespace Acklann.WebFlow.Compilation
                         }
                     }
 
+                    IsNotLoaded = false;
                     File.WriteAllText(lockFile, JsonConvert.SerializeObject(new { resources }));
                 }
                 catch (UnauthorizedAccessException) { Debug.WriteLine($"{nameof(ShellBase)}.{nameof(LoadModules)} was unable to access a file."); }

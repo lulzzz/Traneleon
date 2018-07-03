@@ -48,7 +48,11 @@ namespace Acklann.WebFlow
         private void LoadEmbeddedModules()
         {
             DTE.StatusBar.Text = $"[{nameof(WebFlow)}] loading modules ...";
-            Task.Run(() => { ShellBase.LoadModules(); });
+            Task.Run(() =>
+            {
+                ShellBase.LoadModules();
+                System.Diagnostics.Debug.WriteLine($"Using {ShellBase.ResourceDirectory}.");
+            });
         }
 
         private void InitializeComponents()
@@ -105,7 +109,7 @@ namespace Acklann.WebFlow
                         ProjectMonitor monitor = _activator.Invoke(project.FullName);
                         _watchList.Add(project.FileName, monitor);
 
-                        if (Configuration.Project.TryLoad(project.FileName, out Configuration.Project config, out string error))
+                        if (Configuration.Project.TryLoad(configFile, out Configuration.Project config, out string error))
                         {
                             monitor?.Start(config);
                             if (UserState.Instance.WatcherEnabled) DTE.StatusBar.Text = $"Monitoring '{project.Name}' for changes ...";
