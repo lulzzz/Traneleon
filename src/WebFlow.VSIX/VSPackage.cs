@@ -1,4 +1,5 @@
 ﻿using Acklann.WebFlow.Commands;
+using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Utilities;
 using Akka.Actor;
 using EnvDTE;
@@ -30,6 +31,7 @@ namespace Acklann.WebFlow
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class VSPackage : Package
     {
+        internal const string ConfigName = "webflow-compiler.config";
         internal DTE2 DTE;
 
         internal T GetService<T>()
@@ -37,23 +39,20 @@ namespace Acklann.WebFlow
             return (T)GetService(typeof(T));
         }
 
-        internal void WriteToStatusbar(string text, bool appendPrefix = true)
-        {
-            _statusbar.IsFrozen(out int frozen);
-            if (frozen != 0) _statusbar.FreezeOutput(0);
-
-            _statusbar.SetText(appendPrefix ? $"[{nameof(WebFlow)}]: {text}" : text);
-            _statusbar.FreezeOutput(1);
-        }
-
         private void SubscribeToEvents()
         {
-            _projectEvents = DTE.Events.SolutionItemsEvents;
-            _itemAddedHandler = new _dispProjectItemsEvents_ItemAddedEventHandler(OnProjectItemAdded);
-            _projectEvents.ItemAdded += _itemAddedHandler;
-
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
+        }
+
+        private void LoadEmbeddedModules()
+        {
+            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] loading modules ...";
+            Task.Run(() =>
+            {
+                ShellBase.LoadModules();
+                System.Diagnostics.Debug.WriteLine($"Using {ShellBase.ResourceDirectory}.");
+            });
         }
 
         private void InitializeComponents()
@@ -62,7 +61,6 @@ namespace Acklann.WebFlow
             _akka = ActorSystem.Create("webflow-vsix");
             _errorListProvider = new ErrorListProvider(this);
             _solution = (IVsSolution)GetService<SVsSolution>();
-            _statusbar = (IVsStatusbar)GetService<SVsStatusbar>();
 
             _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
             _activator = delegate (string projectFile)
@@ -94,14 +92,10 @@ namespace Acklann.WebFlow
         // Event Handlers
         // ================================================================================
 
-        private void OnProjectItemAdded(ProjectItem item)
-        {
-            System.Diagnostics.Debug.WriteLine("project item added invoked.");
-        }
-
         private void OnSolutionLoaded(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("soltion was opened");
+            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
 
             Task.Run(() =>
             {
@@ -110,12 +104,31 @@ namespace Acklann.WebFlow
                     string folder = Path.GetDirectoryName(project.FullName);
                     string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
 
-                    if (configFile != null)
+                    if (!string.IsNullOrEmpty(configFile))
                     {
                         ProjectMonitor monitor = _activator.Invoke(project.FullName);
                         _watchList.Add(project.FileName, monitor);
-                        monitor?.Start(configFile);
-                        if (UserState.Instance.WatcherEnabled) WriteToStatusbar($"Monitoring '{project.Name}' for changes ...");
+
+                        if (Configuration.Project.TryLoad(configFile, out Configuration.Project config, out string error))
+                        {
+                            monitor?.Start(config);
+                            if (UserState.Instance.WatcherEnabled) DTE.StatusBar.Text = $"Monitoring '{project.Name}' for changes ...";
+                            else monitor?.Pause();
+                        }
+                        else
+                        {
+                            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
+                        }
+                    }
+                    else if (userOptions.AutoConfig && project.IsaWebProject())
+                    {
+                        var config = Configuration.Project.CreateDefault(Path.Combine(folder, ConfigName));
+                        config.Save();
+
+                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
+                        _watchList.Add(project.FileName, monitor);
+                        monitor?.Start(config);
+                        if (UserState.Instance.WatcherEnabled) DTE.StatusBar.Text = $"Monitoring '{project.Name}' for changes ...";
                         else monitor?.Pause();
                     }
                 }
@@ -147,8 +160,8 @@ namespace Acklann.WebFlow
 
             InitializeComponents();
             SubscribeToEvents();
-            CreateOutputPane();
             RegisterCommands();
+            LoadEmbeddedModules();
             OnSolutionLoaded();
         }
 
@@ -178,10 +191,6 @@ namespace Acklann.WebFlow
         internal ProjectMonitorActivator _activator;
         internal IMenuCommandService _commandService;
         internal ErrorListProvider _errorListProvider;
-
-        private IVsStatusbar _statusbar;
-        private EnvDTE.ProjectItemsEvents _projectEvents;
-        private _dispProjectItemsEvents_ItemAddedEventHandler _itemAddedHandler;
 
         #endregion Private Members
     }

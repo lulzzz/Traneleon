@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="manifest.json" />
+    <Content Include="secrets.json" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />

@@ -1,19 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project name="test" xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd">
+<project name="webflow-compiler" xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd">
   <sass enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
     <include>
       <pattern>*.scss</pattern>
     </include>
-    <exclude>
-      <pattern>_*.scss</pattern>
-    </exclude>
   </sass>
   <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
-    <include entryPoint="index.min.js">
+    <include entryPoint="">
       <pattern>*.ts</pattern>
     </include>
-    <exclude>
-      <pattern>_*.ts</pattern>
-    </exclude>
   </typescript>
 </project>

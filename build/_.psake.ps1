@@ -30,7 +30,7 @@ Task "Deploy" -alias "publish" -description "This task compiles, test then publi
 Task "Import-Dependencies" -alias "restore" -description "This task imports all build dependencies." `
 -action {
 	#  Importing all required powershell modules.
-	foreach ($moduleId in @("Ncrement", "Pester"))
+	foreach ($moduleId in @("Ncrement", "Pester", "Invoke-MsBuild"))
 	{
 		$modulePath = "$PoshModulesDir\$moduleId\*\*.psd1";
 		if (-not (Test-Path $modulePath))
@@ -64,8 +64,10 @@ Task "Increment-VersionNumber" -alias "version" -description "This task incremen
 
 Task "Build-Solution" -alias "compile" -description "This task compiles the solution." `
 -depends @("restore") -precondition { return (-not $SkipCompilation); } -action {
-	Write-Header "dotnet: msbuild";
-	Exec { &dotnet msbuild $((Get-Item "$RootDir\*.sln").FullName) "/p:Configuration=$Configuration" "/verbosity:minimal"; }
+	Write-Header "msbuild ($Configuration)";
+	#Exec { &dotnet msbuild $((Get-Item "$RootDir\*.sln").FullName) "/p:Configuration=$Configuration" "/verbosity:minimal"; }
+	$result =  Invoke-MSBuild $(Get-Item "$RootDir\*.sln").FullName -MsBuildParameters "/p:Configuration=$Configuration /verbosity:minimal" -ShowBuildOutputInCurrentWindow;
+	if (-not $result.BuildSucceeded) { throw $result.Message; }
 }
 
 Task "Run-Tests" -alias "test" -description "This task invoke all tests within the 'tests' folder." `

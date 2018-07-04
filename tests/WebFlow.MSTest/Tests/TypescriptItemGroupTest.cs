@@ -94,8 +94,8 @@ namespace Acklann.WebFlow.Tests
             var allFiles = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
 
             // Assert
-            entryPoint.ShouldNotBeEmpty();
             allFiles.ShouldNotBeEmpty();
+            entryPoint.ShouldNotBeEmpty();
 
             entryPoint.ShouldContain("app.ts");
             allFiles.ShouldContain("app.ts", "button.ts");

@@ -65,9 +65,9 @@ namespace Acklann.WebFlow
 
             foreach (IItemGroup itemGroup in project.GetItempGroups())
                 if (itemGroup.Enabled)
-                    foreach (string filePath in itemGroup.EnumerateFiles())
+                    foreach (string file in itemGroup.EnumerateFiles())
                     {
-                        _processor.Tell(itemGroup.CreateCompilerOptions(filePath));
+                        _processor.Tell(itemGroup.CreateCompilerOptions(file));
                     }
         }
 

@@ -47,6 +47,8 @@ namespace Acklann.WebFlow
 
 		public static FileInfo GetGoodConfigXML() => GetFile(@"good_config.xml");
 
+		public static FileInfo GetMockConfigXML() => GetFile(@"mock_config.xml");
+
 		public static FileInfo GetScript1TS() => GetFile(@"script1.ts");
 
 		public static FileInfo GetScript2TS() => GetFile(@"script2.ts");

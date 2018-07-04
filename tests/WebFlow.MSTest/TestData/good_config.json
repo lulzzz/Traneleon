@@ -6,6 +6,7 @@
     "include":
     [
       {
+        "entryPoint": "_Layout.cshtml",
         "patterns":
         [
           "*.ts"

@@ -2,8 +2,8 @@
     "Version":  {
                     "Major":  0,
                     "Minor":  0,
-                    "Patch":  23,
-                    "Suffix":  ""
+                    "Patch":  29,
+                    "Suffix":  "rc"
                 },
     "Id":  "Acklann.WebFlow",
     "Name":  "WebFlow",

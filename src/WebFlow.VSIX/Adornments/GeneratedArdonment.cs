@@ -4,15 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Acklann.WebFlow
+namespace Acklann.WebFlow.Adornments
 {
-    public static class ProductInfo
+    public class GeneratedArdonment
     {
-        static ProductInfo()
-        {
-
-        }
-
         
     }
 }

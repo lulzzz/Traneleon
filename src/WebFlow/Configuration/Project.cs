@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 
 namespace Acklann.WebFlow.Configuration
 {
+    [System.Diagnostics.DebuggerDisplay("{ToDebuggerDisplay()}")]
     [XmlRoot("project", Namespace = XMLNS)]
     public partial class Project
     {
@@ -56,8 +57,17 @@ namespace Acklann.WebFlow.Configuration
         {
             return new Project(filePath)
             {
-                SassItemGroup = new SassItemGroup(),
+                SassItemGroup = new SassItemGroup()
+                {
+                    Include = new List<string>() { "*.scss" }
+                },
                 TypescriptItemGroup = new TypescriptItemGroup()
+                {
+                    Include = new List<TypescriptItemGroup.Bundle>()
+                    {
+                        new TypescriptItemGroup.Bundle("*.ts")
+                    }
+                }
             };
         }
 
@@ -231,6 +241,8 @@ namespace Acklann.WebFlow.Configuration
 
         private readonly XmlSerializerNamespaces _namespace;
         private string _name;
+
+        private string ToDebuggerDisplay() => FullName;
 
         #endregion Private Members
     }

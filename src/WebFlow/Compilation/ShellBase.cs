@@ -1,6 +1,6 @@
-﻿#define FORCE
-
+﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -13,54 +13,9 @@ namespace Acklann.WebFlow.Compilation
         static ShellBase()
         {
             Assembly assembly = typeof(ShellBase).Assembly;
-            string version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
-            ResourceDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location), $"modules_{version}");
+            Version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+            ResourceDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location), $"modules_{Version}");
             if (!Directory.Exists(ResourceDirectory)) Directory.CreateDirectory(ResourceDirectory);
-            bool force = false;
-
-#if DEBUG && FORCE
-            force = true;
-#endif
-            foreach (string name in assembly.GetManifestResourceNames())
-            {
-                string extension = Path.GetExtension(name);
-                switch (extension.ToLowerInvariant())
-                {
-                    case ".js":
-                        string baseName = Path.GetFileNameWithoutExtension(name);
-                        string filePath = Path.Combine(ResourceDirectory, $"{baseName.Substring(baseName.LastIndexOf('.') + 1)}{extension}");
-
-                        if (!File.Exists(filePath) || force)
-                            using (Stream stream = assembly.GetManifestResourceStream(name))
-                            using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                            {
-                                stream.CopyTo(file);
-                                stream.Flush();
-                            }
-                        break;
-
-                    case ".zip":
-                        if (!Directory.Exists(Path.Combine(ResourceDirectory, "node_modules")))
-                            using (Stream stream = assembly.GetManifestResourceStream(name))
-                            using (var archive = new ZipArchive(stream))
-                            {
-                                string destination, dir;
-                                foreach (ZipArchiveEntry entry in archive.Entries)
-                                {
-                                    if (isFile(entry.FullName))
-                                    {
-                                        destination = Path.Combine(ResourceDirectory, entry.FullName);
-                                        dir = Path.GetDirectoryName(destination);
-                                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                                        entry.ExtractToFile(destination, overwrite: true);
-                                    }
-                                }
-                            }
-                        break;
-                }
-            }
-
-            bool isFile(string filePath) => !(filePath.EndsWith("\\") || filePath.EndsWith("/"));
         }
 
         public ShellBase() : base()
@@ -74,7 +29,8 @@ namespace Acklann.WebFlow.Compilation
             };
         }
 
-        public static readonly string ResourceDirectory;
+        public static readonly string ResourceDirectory, Version;
+        public static bool IsNotLoaded = true;
 
         public static ShellBase GetShell()
         {
@@ -84,6 +40,68 @@ namespace Acklann.WebFlow.Compilation
                 case PlatformID.Win32NT:
                     return new Win32();
             }
+        }
+
+        public static void LoadModules(bool force = false)
+        {
+#if DEBUG
+            force = true;
+#endif
+            string lockFile = Path.Combine(ResourceDirectory, "webflow-lock.json");
+
+            if (IsNotLoaded && (!File.Exists(lockFile) || force))
+                try
+                {
+                    var resources = new Stack<string>();
+                    Assembly assembly = typeof(ShellBase).Assembly;
+                    foreach (string name in assembly.GetManifestResourceNames())
+                    {
+                        string extension = Path.GetExtension(name);
+                        switch (extension.ToLowerInvariant())
+                        {
+                            case ".js":
+                                string baseName = Path.GetFileNameWithoutExtension(name);
+                                string filePath = Path.Combine(ResourceDirectory, $"{baseName.Substring(baseName.LastIndexOf('.') + 1)}{extension}");
+
+                                if (!File.Exists(filePath) || force)
+                                    using (Stream stream = assembly.GetManifestResourceStream(name))
+                                    using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                    {
+                                        resources.Push(name);
+                                        stream.CopyTo(file);
+                                        stream.Flush();
+                                    }
+                                break;
+
+                            case ".zip":
+                                if (!File.Exists(lockFile))
+                                    using (Stream stream = assembly.GetManifestResourceStream(name))
+                                    using (var archive = new ZipArchive(stream))
+                                    {
+                                        resources.Push(name);
+                                        string destination, dir;
+
+                                        foreach (ZipArchiveEntry entry in archive.Entries)
+                                        {
+                                            if (isFile(entry.FullName))
+                                            {
+                                                destination = Path.Combine(ResourceDirectory, entry.FullName);
+                                                dir = Path.GetDirectoryName(destination);
+                                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                                entry.ExtractToFile(destination, overwrite: true);
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                    }
+
+                    IsNotLoaded = false;
+                    File.WriteAllText(lockFile, JsonConvert.SerializeObject(new { resources }));
+                }
+                catch (UnauthorizedAccessException) { Debug.WriteLine($"{nameof(ShellBase)}.{nameof(LoadModules)} was unable to access a file."); }
+
+            bool isFile(string filePath) => !(filePath.EndsWith("\\") || filePath.EndsWith("/"));
         }
 
         public abstract void InvokeJava(string args);

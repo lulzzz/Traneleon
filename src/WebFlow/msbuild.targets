@@ -9,8 +9,8 @@
 
   <Target Name="TranspileWebAssetsBeforeBuild"
           Condition="$(TranspileOnBuild)"
-          BeforeTargets="CoreCompile, Build">
-    <CallTarget Targets="Transpile" />
+          BeforeTargets="CoreCompile">
+    <CallTarget Targets="Transpile" UseResultsCache="true" />
   </Target>
 
   <Target Name="Transpile">

@@ -7,6 +7,7 @@ namespace Acklann.WebFlow.Compilation
     {
         static Win32()
         {
+            ShellBase.LoadModules();
             _executablesDirectory = Path.Combine(ResourceDirectory, "windows");
             using (var proc = new Process())
             {

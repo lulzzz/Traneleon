@@ -1,12 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="https://github.com/ackara/webflow/raw/master/webflow.xsd"
+<project xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd"
          name="test"
          outputDirectory="%temp%\webflow">
   <typescript>
     <include entryPoint="shared/_layout.*html">
       <pattern>wwwroot/**/*.ts</pattern>
     </include>
-    <exclude>_*.ts</exclude>
+    <exclude>
+      <pattern>_*.ts</pattern>
+    </exclude>
   </typescript>
 
   <sass />
