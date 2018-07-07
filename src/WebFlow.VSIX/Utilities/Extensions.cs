@@ -39,7 +39,8 @@ namespace Acklann.WebFlow.Utilities
             /// If the <EnvDTE.Project> is not a solution folder just return it.
             IEnumerable<EnvDTE.Project> getProjectsNestedInSolutionFolder(EnvDTE.Project project)
             {
-                if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
+                if (string.CompareOrdinal(project.Kind, EnvDTE.Constants.vsProjectKindUnmodeled) == 0) yield break;
+                else if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
                 {
                     foreach (EnvDTE.ProjectItem item in project.ProjectItems)
                     {

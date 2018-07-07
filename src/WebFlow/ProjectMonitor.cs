@@ -73,6 +73,8 @@ namespace Acklann.WebFlow
 
         public void Compile(string filePath)
         {
+            System.Diagnostics.Debug.WriteLine($"modified: '{filePath}'");
+
             if (filePath.Equals(_project?.FullName))
             {
                 if (Project.TryLoad(filePath, out Project project, out string error))
