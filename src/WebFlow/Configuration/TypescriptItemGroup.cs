@@ -78,7 +78,7 @@ namespace Acklann.WebFlow.Configuration
                 bool concat = false;
                 string outFile, mapDir, outDir;
 
-                if (string.IsNullOrEmpty(bundle.EntryPoint))
+                if (string.IsNullOrEmpty(bundle.OutFile))
                 {
                     src = new[] { filePath };
                     outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
@@ -87,15 +87,15 @@ namespace Acklann.WebFlow.Configuration
                 else
                 {
                     concat = true;
-                    if (Path.IsPathRooted(bundle.EntryPoint))
+                    if (Path.IsPathRooted(bundle.OutFile))
                     {
-                        outFile = bundle.EntryPoint;
+                        outFile = bundle.OutFile;
                         outDir = Path.GetDirectoryName(outFile);
                     }
-                    else if (bundle.EntryPoint.EndsWith(".js") || bundle.EntryPoint.EndsWith(".ts"))
+                    else if (bundle.OutFile.EndsWith(".js") || bundle.OutFile.EndsWith(".ts"))
                     {
                         outDir = (string.IsNullOrEmpty(OutputDirectory) ? WorkingDirectory : OutputDirectory);
-                        outFile = Path.Combine(outDir, bundle.EntryPoint);
+                        outFile = Path.Combine(outDir, bundle.OutFile);
                     }
                     else
                     {
@@ -126,10 +126,10 @@ namespace Acklann.WebFlow.Configuration
             foreach (string file in EnumerateFiles("*.ts"))
                 if (CanAccept(file, bundles, out Bundle bundle))
                 {
-                    if (string.IsNullOrEmpty(bundle.EntryPoint)) yield return file;
-                    else if (!usedList.ContainsKey(bundle.EntryPoint))
+                    if (string.IsNullOrEmpty(bundle.OutFile)) yield return file;
+                    else if (!usedList.ContainsKey(bundle.OutFile))
                     {
-                        usedList.Add(bundle.EntryPoint, true);
+                        usedList.Add(bundle.OutFile, true);
                         string src = GetEntryPoint(bundle);
                         if (!string.IsNullOrEmpty(src) && !usedList.ContainsKey(src))
                         {
@@ -155,7 +155,7 @@ namespace Acklann.WebFlow.Configuration
 
         internal string GetEntryPoint(Bundle bundle)
         {
-            string entryPoint = bundle.EntryPoint.ResolvePath(WorkingDirectory, SearchOption.AllDirectories).FirstOrDefault();
+            string entryPoint = bundle.OutFile.ResolvePath(WorkingDirectory, SearchOption.AllDirectories).FirstOrDefault();
 
             if (string.IsNullOrEmpty(entryPoint)) return string.Empty;
             else if (entryPoint.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)) return entryPoint;
@@ -206,12 +206,12 @@ namespace Acklann.WebFlow.Configuration
 
             public Bundle(params string[] patterns)
             {
-                EntryPoint = string.Empty;
+                OutFile = string.Empty;
                 Patterns = new List<string>(patterns);
             }
 
-            [XmlAttribute("entryPoint")]
-            public string EntryPoint;
+            [XmlAttribute("outFile")]
+            public string OutFile;
 
             [XmlElement("pattern")]
             public List<string> Patterns { get; set; }

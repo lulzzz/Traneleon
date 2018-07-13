@@ -3,7 +3,7 @@
          name="test"
          outputDirectory="%temp%\webflow">
   <typescript>
-    <include entryPoint="shared/_layout.*html">
+    <include outFile="shared/_layout.*html">
       <pattern>wwwroot/**/*.ts</pattern>
     </include>
     <exclude>

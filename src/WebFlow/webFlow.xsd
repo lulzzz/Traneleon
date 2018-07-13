@@ -51,7 +51,7 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="FileList">
-              <xs:attribute name="entryPoint"
+              <xs:attribute name="outFile"
                             type="xs:string" />
             </xs:extension>
           </xs:complexContent>

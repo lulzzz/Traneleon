@@ -92,7 +92,7 @@ namespace Acklann.WebFlow.Tests
                     Enabled = true,
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                        new TypescriptItemGroup.Bundle("*.ts") { EntryPoint = "Shared/_Layout.cshtml" }
+                        new TypescriptItemGroup.Bundle("*.ts") { OutFile = "Shared/_Layout.cshtml" }
                     }
                 }
             };

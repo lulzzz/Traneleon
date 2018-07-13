@@ -93,7 +93,7 @@ namespace Acklann.WebFlow.Tests
                     Exclude = new List<string> { "_*.ts" },
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                        new TypescriptItemGroup.Bundle("*.ts"){ EntryPoint = "index.min.js"}
+                        new TypescriptItemGroup.Bundle("*.ts"){ OutFile = "index.min.js"}
                     }
                 }
             };
@@ -113,7 +113,7 @@ namespace Acklann.WebFlow.Tests
             result.FullName.ShouldNotBeNullOrEmpty();
             properties.ShouldAllBe(x => x.GetValue(result) != null);
             result.TypescriptItemGroup.Include.Count.ShouldBe(1);
-            result.TypescriptItemGroup.Include[0].EntryPoint.ShouldNotBeNullOrEmpty();
+            result.TypescriptItemGroup.Include[0].OutFile.ShouldNotBeNullOrEmpty();
         }
     }
 }

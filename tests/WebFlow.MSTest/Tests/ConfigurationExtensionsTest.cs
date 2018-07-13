@@ -29,7 +29,7 @@ namespace Acklann.WebFlow.Tests
                     KeepIntermediateFiles = true,
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                         new TypescriptItemGroup.Bundle("wwwroot/**/*.ts") { EntryPoint = "Views/Shared/_Layout.cshtml" },
+                         new TypescriptItemGroup.Bundle("wwwroot/**/*.ts") { OutFile = "Views/Shared/_Layout.cshtml" },
                     }
                 }
             };

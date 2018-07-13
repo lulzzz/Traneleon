@@ -49,22 +49,22 @@ namespace Acklann.WebFlow.Tests
                     new TypescriptItemGroup.Bundle()
                     {
                         Patterns = new List<string> { "wwwroot/**/*.ts" },
-                        EntryPoint = $"wwwroot/scripts/build.js"
+                        OutFile = $"wwwroot/scripts/build.js"
                     }
                 }
             };
 
-            var outFile = Path.Combine(SampleProject.DirectoryName, sut.Include[0].EntryPoint);
+            var outFile = Path.Combine(SampleProject.DirectoryName, sut.Include[0].OutFile);
             var sourceFiles = new[] { SampleProject.GetAppTS().FullName, SampleProject.GetButtonTS().FullName };
 
             // Act
             var case1 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
             var case2 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[1]);
 
-            sut.Include[0].EntryPoint = null;
+            sut.Include[0].OutFile = null;
             var case3 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
 
-            sut.Include[0].EntryPoint = "Shared/_Layout.cshtml";
+            sut.Include[0].OutFile = "Shared/_Layout.cshtml";
             var case4 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
 
             // Assert
@@ -96,14 +96,14 @@ namespace Acklann.WebFlow.Tests
                 WorkingDirectory = SampleProject.DirectoryName,
                 Include = new List<TypescriptItemGroup.Bundle>
                 {
-                    new TypescriptItemGroup.Bundle("*.ts") { EntryPoint = "Views/Shared/_Layout.*html" }
+                    new TypescriptItemGroup.Bundle("*.ts") { OutFile = "Views/Shared/_Layout.*html" }
                 }
             };
 
             // Act
             var entryPoint = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
 
-            sut.Include[0].EntryPoint = string.Empty;
+            sut.Include[0].OutFile = string.Empty;
             var allFiles = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
 
             // Assert

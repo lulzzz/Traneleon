@@ -9,7 +9,7 @@
     </exclude>
   </sass>
   <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
-    <include entryPoint="index.min.js">
+    <include outFile="index.min.js">
       <pattern>*.ts</pattern>
     </include>
     <exclude>
