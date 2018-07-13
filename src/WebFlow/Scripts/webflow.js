@@ -20,9 +20,9 @@ var root = {
         this.outputDirectory = (this.outputFile ? path.dirname(process.argv[5]) : false);
 
         let pattern = /true/i;
+        this.sourceFile = process.argv[4];
         this.generateSourceMaps = (pattern.test(process.argv[3]));
         this.keepIntermediateFiles = (pattern.test(process.argv[2]));
-        this.sourceFiles = (process.argv[4] ? process.argv[4].split(';') : "");
         this.bundling = pattern.test(process.argv[8]);
     },
 
@@ -45,7 +45,7 @@ var root = {
         }
 
         let expectedName = path.basename(outFile.path);
-        let compiler = ts.createProgram(args.sourceFiles, options);
+        let compiler = ts.createProgram(args.sourceFile.split(';'), options);
         let target = (args.bundling ? null : compiler.getSourceFile(outFile.path));
         let emitResult = compiler.emit(target, function (filePath, contents, bom, onError) {
             if (path.basename(filePath).startsWith(expectedName)) {
