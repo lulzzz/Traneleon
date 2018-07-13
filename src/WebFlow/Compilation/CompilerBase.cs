@@ -17,10 +17,18 @@ namespace Acklann.WebFlow.Compilation
 
         public ICompilierResult Execute(ICompilierOptions options)
         {
-            SetArguments((TOptions)options);
-            Shell.Start();
-            Shell.WaitForExit(10_000);
-            return GetResult((TOptions)options);
+            try
+            {
+                SetArguments((TOptions)options);
+                Shell.Start();
+                Shell.WaitForExit(10_000);
+                return GetResult((TOptions)options);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                return new CompilerResult(options.Kind, options.SourceFile, new CompilerError(ex.Message, options.SourceFile, 0));
+            }
         }
 
         public bool CanExecute(ICompilierOptions options) => CanExecute((TOptions)options);

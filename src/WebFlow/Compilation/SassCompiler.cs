@@ -13,7 +13,7 @@ namespace Acklann.WebFlow.Compilation
             if (Shell.CanInvokeNode())
             {
                 foreach (string extension in _supportedFileTypes)
-                    if (options.SourceFile.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                    if (options.GetFileType.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -41,8 +41,8 @@ namespace Acklann.WebFlow.Compilation
             long executionTime = (Shell.ExitTime.Ticks - Shell.StartTime.Ticks);
             IDictionary<string, string> files = Shell.StandardOutput.GetGeneratedFiles();
             files.TryGetValue("minifiedFile", out string compiliedFile);
-            
-            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile, options.SourceFile);
+
+            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile, string.Join(";", options.SourceFiles));
         }
 
         #region Private Members

@@ -31,19 +31,19 @@ namespace Acklann.WebFlow.Tests
         [TestMethod]
         public void TypescriptCompiler_can_compile_ts_files()
         {
-            RunCompileTest<TypescriptCompiler>(TestFile.GetScript1TS());
+            RunCompileTest<TypescriptCompiler>(TestFile.GetScript1TS(), ".js");
         }
 
         [TestMethod]
         public void TypescriptCompiler_can_report_errors()
         {
-            RunErrorTest<TypescriptCompiler>(TestFile.GetBadScript1TS(), 1);
+            RunErrorTest<TypescriptCompiler>(TestFile.GetBadScript1TS(), 3);
         }
 
         [TestMethod]
         public void SassCompiler_can_compile_scss_files()
         {
-            RunCompileTest<SassCompiler>(TestFile.GetStyle1SCSS());
+            RunCompileTest<SassCompiler>(TestFile.GetStyle1SCSS(), ".css");
         }
 
         [TestMethod]
@@ -52,17 +52,18 @@ namespace Acklann.WebFlow.Tests
             RunErrorTest<SassCompiler>(TestFile.GetBadStyle1SCSS(), 2);
         }
 
-        private static void RunCompileTest<T>(FileInfo sourceFile) where T : ICompiler
+        private static void RunCompileTest<T>(FileInfo sourceFile, string ext) where T : ICompiler
         {
             string folder(string name) => Path.Combine(ResultDirectory, name);
+            string outFile(string outDir) => Path.Combine(folder(outDir), Path.ChangeExtension(sourceFile.Name, ext));
 
             // Arrange
             using (var sut = (ICompiler)Activator.CreateInstance(typeof(T)))
             {
                 var cases = new(int, TranspilierSettings)[]
                 {
-                    (1, new TranspilierSettings(sourceFile.FullName, folder("case1"), folder("case1"), ".min", false, false, false)),
-                    (4, new TranspilierSettings(sourceFile.FullName, folder("case2"), folder("case2\\maps"), ".min", true, true, true))
+                    (1, new TranspilierSettings(outFile("case1"), new string[1] { sourceFile.FullName }, ".min", null, false, false, false)),
+                    (4, new TranspilierSettings(outFile("case2"), new string[1] { sourceFile.FullName }, ".min", folder("case2/maps"), true, true, true))
                 };
 
                 // Act
@@ -111,7 +112,7 @@ namespace Acklann.WebFlow.Tests
             // Arrange
             using (var sut = (ICompiler)Activator.CreateInstance(typeof(T)))
             {
-                var options = new TranspilierSettings(sourceFile.FullName, ResultDirectory);
+                var options = new TranspilierSettings(Path.ChangeExtension(Path.Combine(ResultDirectory, sourceFile.Name), ".js"), sourceFile.FullName);
 
                 // Act
                 var result = (TranspilierResult)sut.Execute(options);

@@ -37,7 +37,11 @@ namespace Acklann.WebFlow
 
                 if (fileOperator.CanExecute(options))
                 {
-                    if (!_compilers.Contains(type.Name)) _compilers.Add(type.Name, fileOperator);
+                    if (!_compilers.Contains(type.Name))
+                    {
+                        _compilers.Add(type.Name, fileOperator);
+                    }
+
                     try
                     {
                         ICompilierResult result = fileOperator.Execute(options);

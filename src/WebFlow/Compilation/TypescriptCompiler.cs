@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Acklann.WebFlow.Compilation
@@ -9,7 +8,7 @@ namespace Acklann.WebFlow.Compilation
     {
         protected override bool CanExecute(TranspilierSettings options)
         {
-            return Shell.CanInvokeNode() && options.SourceFile.EndsWith(".ts", StringComparison.OrdinalIgnoreCase);
+            return Shell.CanInvokeNode() && options.GetFileType.EndsWith(".ts", StringComparison.OrdinalIgnoreCase);
         }
 
         protected override void SetArguments(TranspilierSettings options)
@@ -29,10 +28,9 @@ namespace Acklann.WebFlow.Compilation
         protected override ICompilierResult GetResult(TranspilierSettings options)
         {
             long executionTime = (Shell.ExitTime.Ticks - Shell.StartTime.Ticks);
-            IDictionary<string, string> files = Shell.StandardOutput.GetGeneratedFiles();
-            files.TryGetValue("minifiedFile", out string compiliedFile);
+            Shell.StandardOutput.GetGeneratedFiles().TryGetValue("minifiedFile", out string compiliedFile);
 
-            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile, options.SourceFile);
+            return new TranspilierResult(Shell.ExitCode, executionTime, Shell.StandardError.GetErrors(), compiliedFile, string.Join(";", options.SourceFiles));
         }
     }
 }

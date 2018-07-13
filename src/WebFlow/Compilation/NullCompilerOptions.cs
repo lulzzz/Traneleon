@@ -2,8 +2,10 @@
 {
     public struct NullCompilerOptions : ICompilierOptions
     {
-        public Kind Kind => Kind.Bundle;
+        public Kind Kind => Kind.Minify;
 
-        public string Ext() => string.Empty;
+        public string SourceFile => string.Empty;
+
+        public string GetFileType => string.Empty;
     }
 }

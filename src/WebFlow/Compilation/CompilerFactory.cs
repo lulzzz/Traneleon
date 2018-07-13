@@ -54,7 +54,7 @@ namespace Acklann.WebFlow.Compilation
                     where
                         prospect.Capability.Kind == options.Kind
                         &&
-                        prospect.Capability.Supports(options.Ext())
+                        prospect.Capability.Supports(options.GetFileType)
                     orderby prospect.Capability.Rank
                     select prospect.Type);
         }

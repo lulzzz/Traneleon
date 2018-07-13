@@ -48,8 +48,9 @@ namespace Acklann.WebFlow.Compilation
             force = true;
 #endif
             string lockFile = Path.Combine(ResourceDirectory, "webflow-lock.json");
+            IsNotLoaded = File.Exists(lockFile) == false;
 
-            if (IsNotLoaded && (!File.Exists(lockFile) || force))
+            if (IsNotLoaded || force)
                 try
                 {
                     var resources = new Stack<string>();

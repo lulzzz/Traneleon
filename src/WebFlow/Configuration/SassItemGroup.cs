@@ -67,8 +67,9 @@ namespace Acklann.WebFlow.Configuration
             {
                 string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
                 string mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
+                string outFile = Path.ChangeExtension(Path.Combine(outDir, name), ".css");
 
-                return new TranspilierSettings(filePath, outDir, mapDir, Suffix, KeepIntermediateFiles, GenerateSourceMaps, false);
+                return new TranspilierSettings(outFile, new string[] { filePath }, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, false);
             }
 
             return new NullCompilerOptions();

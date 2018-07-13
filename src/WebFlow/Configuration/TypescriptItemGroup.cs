@@ -3,7 +3,6 @@ using Acklann.WebFlow.Compilation;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,10 +36,10 @@ namespace Acklann.WebFlow.Configuration
 
         public override bool CanAccept(string filePath)
         {
-            return CanAccept(filePath, out Bundle tmp);
+            return CanAccept(filePath, Include, out Bundle tmp);
         }
 
-        public bool CanAccept(string filePath, out Bundle bundle)
+        public bool CanAccept(string filePath, IEnumerable<Bundle> bundles, out Bundle bundle)
         {
             bundle = null;
 
@@ -56,8 +55,8 @@ namespace Acklann.WebFlow.Configuration
                         return false;
                     }
 
-            if (Include != null)
-                foreach (Bundle set in Include)
+            if (bundles != null)
+                foreach (Bundle set in bundles)
                     foreach (Glob pattern in set.Patterns)
                         if (pattern.IsMatch(filePath))
                         {
@@ -73,20 +72,43 @@ namespace Acklann.WebFlow.Configuration
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
             Bundle bundle = GetBundle(Include, filePath);
-            if (bundle.IsNotEmpty)
+            if (bundle?.IsNotEmpty ?? false)
             {
+                string[] src;
                 bool concat = false;
-                string sourceFile = filePath;
+                string outFile, mapDir, outDir;
 
-                if (!string.IsNullOrEmpty(bundle.EntryPoint))
+                if (string.IsNullOrEmpty(bundle.EntryPoint))
+                {
+                    src = new[] { filePath };
+                    outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
+                    outFile = Path.ChangeExtension(Path.Combine(outDir, Path.GetFileName(filePath)), ".js");
+                }
+                else
                 {
                     concat = true;
-                    sourceFile = GetEntryPoint(bundle);
+                    if (Path.IsPathRooted(bundle.EntryPoint))
+                    {
+                        outFile = bundle.EntryPoint;
+                        outDir = Path.GetDirectoryName(outFile);
+                    }
+                    else if (bundle.EntryPoint.EndsWith(".js") || bundle.EntryPoint.EndsWith(".ts"))
+                    {
+                        outDir = (string.IsNullOrEmpty(OutputDirectory) ? WorkingDirectory : OutputDirectory);
+                        outFile = Path.Combine(outDir, bundle.EntryPoint);
+                    }
+                    else
+                    {
+                        outFile = GetEntryPoint(bundle);
+                        outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(outFile) : OutputDirectory);
+                        outFile = Path.ChangeExtension(Path.Combine(outDir, Path.GetFileName(outFile)), ".js");
+                    }
+
+                    src = EnumerateFiles(new[] { bundle }).ToArray();
                 }
 
-                string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(sourceFile) : OutputDirectory);
-                string mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
-                return new TranspilierSettings(sourceFile, outDir, mapDir, Suffix, KeepIntermediateFiles, GenerateSourceMaps, concat);
+                mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
+                return new TranspilierSettings(outFile, src, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, concat);
             }
 
             return new NullCompilerOptions();
@@ -94,16 +116,21 @@ namespace Acklann.WebFlow.Configuration
 
         public override IEnumerable<string> EnumerateFiles()
         {
-            string src;
-            var usedList = new Hashtable();
+            return EnumerateFiles(Include);
+        }
+
+        public IEnumerable<string> EnumerateFiles(IEnumerable<Bundle> bundles)
+        {
+            var usedList = new Dictionary<string, bool>();
 
             foreach (string file in EnumerateFiles("*.ts"))
-                if (CanAccept(file, out Bundle bundle))
+                if (CanAccept(file, bundles, out Bundle bundle))
                 {
                     if (string.IsNullOrEmpty(bundle.EntryPoint)) yield return file;
-                    else
+                    else if (!usedList.ContainsKey(bundle.EntryPoint))
                     {
-                        src = GetEntryPoint(bundle);
+                        usedList.Add(bundle.EntryPoint, true);
+                        string src = GetEntryPoint(bundle);
                         if (!string.IsNullOrEmpty(src) && !usedList.ContainsKey(src))
                         {
                             usedList.Add(src, true);
@@ -116,12 +143,14 @@ namespace Acklann.WebFlow.Configuration
         internal static Bundle GetBundle(IEnumerable<Bundle> bundles, string filePath)
         {
             foreach (Bundle group in bundles)
+            {
                 foreach (Glob pattern in group.Patterns)
                 {
                     if (pattern.IsMatch(filePath)) return group;
                 }
+            }
 
-            return new Bundle();
+            return null;
         }
 
         internal string GetEntryPoint(Bundle bundle)

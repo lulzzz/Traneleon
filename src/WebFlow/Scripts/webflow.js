@@ -12,17 +12,18 @@ const mssMerger = require("multi-stage-sourcemap");
 var root = {
     // #region OPTIONS
     // ==========================================================================================
-
+    
     TranspilierOptions: function () {
-        this.suffix = process.argv[7];
-        this.outputDirectory = process.argv[6];
-        this.sourceMapDirectory = process.argv[8];
-        this.sourceFile = (new root.FileInfo(process.argv[5]));
+        this.suffix = process.argv[6];
+        this.outputFile = process.argv[5];
+        this.sourceMapDirectory = process.argv[7];
+        this.outputDirectory = (this.outputFile ? path.dirname(process.argv[5]) : false);
 
         let pattern = /true/i;
-        this.concat = (pattern.test(process.argv[2]));
-        this.generateSourceMaps = (pattern.test(process.argv[4]));
-        this.keepIntermediateFiles = (pattern.test(process.argv[3]));
+        this.generateSourceMaps = (pattern.test(process.argv[3]));
+        this.keepIntermediateFiles = (pattern.test(process.argv[2]));
+        this.sourceFiles = (process.argv[4] ? process.argv[4].split(';') : "");
+        this.bundling = pattern.test(process.argv[8]);
     },
 
     // #endregion
@@ -30,70 +31,80 @@ var root = {
     // METHODS
     // ==========================================================================================
 
-    compileTs: function (sourceFile, args, onSuccess) {
-        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, ".ts") + ".js"));
-        let options = {
-            sourceMap: true,
-            noEmitOnError: true,
-            mapRoot: args.sourceMapDirectory
-        };
-        if (args.concat) {
+    compileTs: function (args, onSuccess) {
+        let outFile = new root.FileInfo(args.outputFile);
+
+        let options = {};
+        options.sourceMap = true;
+        options.noEmitOnError = true;
+        options.mapRoot = args.sourceMapDirectory;
+
+        if (args.bundling) {
             options["allowJs"] = true;
-            options["outFile"] = outFile;
+            options["outFile"] = outFile.path;
         }
 
-        let compiler = ts.createProgram([sourceFile.path], options);
-        let target = (options.outFile ? null : compiler.getSourceFile(sourceFile.path));
-        let emitResult = compiler.emit(target, function (filePath, contents, bom, onError, inputFiles) {
-            switch (path.extname(filePath).toLowerCase()) {
-                case ".map":
-                    let map = JSON.parse(contents);
-                    map.file = path.relative(args.sourceMapDirectory, outFile);
-                    sourceFile.sourceMap = JSON.stringify(map, null, 2);
-                    if (args.generateSourceMaps && args.keepIntermediateFiles) {
-                        root.createFile(path.join(args.sourceMapDirectory, path.basename(filePath)), sourceFile.sourceMap, "sourceMapFile2");
-                    }
-                    break;
+        let expectedName = path.basename(outFile.path);
+        let compiler = ts.createProgram(args.sourceFiles, options);
+        let target = (args.bundling ? null : compiler.getSourceFile(outFile.path));
+        let emitResult = compiler.emit(target, function (filePath, contents, bom, onError) {
+            if (path.basename(filePath).startsWith(expectedName)) {
+                switch (path.extname(filePath).toLowerCase()) {
+                    case ".map":
+                        let map = JSON.parse(contents);
+                        map.file = path.relative(args.sourceMapDirectory, outFile.path);
+                        outFile.sourceMap = JSON.stringify(map, null, 2);
+                        if (args.generateSourceMaps && args.keepIntermediateFiles) {
+                            root.createFile(path.join(args.sourceMapDirectory, path.basename(filePath)), outFile.sourceMap, "sourceMapFile2");
+                        }
+                        break;
 
-                case ".js":
-                    let mapPath = path.join(args.sourceMapDirectory, (path.basename(filePath) + ".map"));
-                    sourceFile.contents = root.changeSourceMapUrl(contents, path.relative(args.outputDirectory, mapPath));
-                    sourceFile.path = filePath;
+                    case ".js":
+                        let mapPath = path.join(args.sourceMapDirectory, (path.basename(filePath) + ".map"));
+                        outFile.contents = root.changeSourceMapUrl(contents, path.relative(args.outputDirectory, mapPath));
+                        outFile.path = filePath;
 
-                    if (args.keepIntermediateFiles) {
-                        let transientFile = path.join(args.outputDirectory, path.basename(filePath));
-                        root.createFile(transientFile, sourceFile.contents, "intermediateFile");
-                    }
+                        if (args.keepIntermediateFiles) {
+                            let transientFile = path.join(args.outputDirectory, path.basename(filePath));
+                            root.createFile(transientFile, outFile.contents, "intermediateFile");
+                        }
 
-                    root.minifyJs(sourceFile, {
-                        suffix: args.suffix,
-                        outputDirectory: args.outputDirectory,
-                        sourceMapDirectory: args.sourceMapDirectory,
-                        generateSourceMaps: args.generateSourceMaps
-                    }, onSuccess);
-                    break;
+                        root.minifyJs(outFile, {
+                            suffix: args.suffix,
+                            outputDirectory: args.outputDirectory,
+                            sourceMapDirectory: args.sourceMapDirectory,
+                            generateSourceMaps: args.generateSourceMaps
+                        }, onSuccess);
+                        break;
+                }
             }
         });
 
-        var diagnostic = ts.getPreEmitDiagnostics(compiler).concat(emitResult.diagnostics);
+        let usedDict = {}, key, err;
+        let diagnostic = ts.getPreEmitDiagnostics(compiler).concat(emitResult.diagnostics);
         for (var i = 0; i < diagnostic.length; i++) {
             err = diagnostic[i];
             if (err.file) {
                 var position = err.file.getLineAndCharacterOfPosition(err.start);
                 let description = ts.flattenDiagnosticMessageText(err.messageText, '\n');
+                key = (err.file.fileName + position.line + position.character);
 
-                console.error(JSON.stringify({
-                    code: err.code,
-                    file: err.file.fileName,
-                    line: (position.line + 1),
-                    column: (position.character + 1),
-                    message: description.replace(/\s/, " ")
-                }));
+                if (usedDict.hasOwnProperty(key) === false) {
+                    usedDict[key] = true;
+                    console.error(JSON.stringify({
+                        code: err.code,
+                        file: err.file.fileName,
+                        line: (position.line + 1),
+                        column: (position.character + 1),
+                        message: description.replace(/\s/, " ")
+                    }));
+                }
             }
         }
 
         if (emitResult.emitSkipped) {
-            process.exit(emitResult.emitSkipped ? 1 : 0);
+            onSuccess();
+            throw "Compilation errors detected.";
         }
     },
 
@@ -123,14 +134,14 @@ var root = {
     },
 
     compileSass: function (sourceFile, args, onSuccess) {
-        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, path.extname(sourceFile.path)) + ".css"));
-        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile) + ".map"));
+        let outFile = new root.FileInfo(args.outputFile);
+        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile.path) + ".map"));
 
         let options = {
-            outFile: outFile,
+            file: sourceFile,
             sourceMap: mapFile,
             sourceComments: false,
-            file: sourceFile.path,
+            outFile: outFile.path,
             outputStyle: "expanded",
             omitSourceMapUrl: (!args.generateSourceMaps)
         };
@@ -147,19 +158,18 @@ var root = {
                 process.exit(err.status);
             }
             else {
-                sourceFile.path = outFile;
-                sourceFile.contents = result.css.toString();
-                sourceFile.sourceMap = result.map.toString();
+                outFile.contents = result.css.toString();
+                outFile.sourceMap = result.map.toString();
 
                 if (args.keepIntermediateFiles) {
-                    root.createFile(outFile, result.css, "intermediateFile");
+                    root.createFile(outFile.path, result.css, "intermediateFile");
 
                     if (args.generateSourceMaps) {
                         root.createFile(mapFile, result.map, "sourceMapFile2");
                     }
                 }
 
-                root.minifyCss(sourceFile, {
+                root.minifyCss(outFile, {
                     suffix: args.suffix,
                     outputDirectory: args.outputDirectory,
                     sourceMapDirectory: args.sourceMapDirectory,

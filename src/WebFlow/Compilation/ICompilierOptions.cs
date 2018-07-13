@@ -4,6 +4,8 @@
     {
         Kind Kind { get; }
 
-        string Ext();
+        string SourceFile { get; }
+
+        string GetFileType { get; }
     }
 }

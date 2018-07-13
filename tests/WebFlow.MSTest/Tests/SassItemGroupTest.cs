@@ -54,7 +54,7 @@ namespace Acklann.WebFlow.Tests
             empty.ShouldBeOfType<NullCompilerOptions>();
 
             result.ShouldBeOfType<TranspilierSettings>();
-            result.SourceFile.ShouldBe(sample);
+            result.SourceFiles[0].ShouldBe(sample);
             result.OutputDirectory.ShouldBe(TestFile.DirectoryName);
         }
     }

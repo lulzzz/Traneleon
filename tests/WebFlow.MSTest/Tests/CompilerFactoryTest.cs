@@ -34,8 +34,8 @@ namespace Acklann.WebFlow.Tests
             string outputDir = Path.GetTempPath();
             var cases = new(Type, ICompilierOptions)[]
             {
-                (typeof(SassCompiler), new TranspilierSettings("file.scss", outputDir)),
-                (typeof(TypescriptCompiler), new TranspilierSettings("file.ts", outputDir)),
+                (typeof(SassCompiler), new TranspilierSettings("file.css", "file.scss")),
+                (typeof(TypescriptCompiler), new TranspilierSettings("file.js", "file.ts")),
             };
 
             var sut = new CompilerFactory();
