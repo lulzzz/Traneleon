@@ -93,7 +93,26 @@ namespace Acklann.WebFlow.Tests
                     Exclude = new List<string> { "_*.ts" },
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                        new TypescriptItemGroup.Bundle("*.ts"){ OutFile = "index.min.js"}
+                        new TypescriptItemGroup.Bundle("**/views/*.ts"),
+                        new TypescriptItemGroup.Bundle("*.ts") { OutputFile = "index.min.js"}
+                    }
+                },
+                ImageItemGroup = new ImageItemGroup()
+                {
+                    Enabled = true,
+                    Suffix = ".min",
+                    OptimizationTargets = new List<ImageItemGroup.OptimizationBundle>()
+                    {
+                        new ImageItemGroup.OptimizationBundle()
+                        {
+                            Include = new List<string>() { "*.jpg" }
+                        },
+                        new ImageItemGroup.OptimizationBundle()
+                        {
+                            Quality = 50,
+                            Kind = CompressionKind.Lossy,
+                            Include = new List<string>() { "*.png" }
+                        }
                     }
                 }
             };
@@ -110,10 +129,13 @@ namespace Acklann.WebFlow.Tests
                               select m).ToArray();
 
             // Assert
-            result.FullName.ShouldNotBeNullOrEmpty();
             properties.ShouldAllBe(x => x.GetValue(result) != null);
+
+            result.FullName.ShouldNotBeNullOrEmpty();
             result.TypescriptItemGroup.Include.Count.ShouldBe(1);
-            result.TypescriptItemGroup.Include[0].OutFile.ShouldNotBeNullOrEmpty();
+            result.ImageItemGroup.OptimizationTargets.Count.ShouldBeGreaterThan(1);
+            result.ImageItemGroup.OptimizationTargets[0].Include.ShouldNotBeEmpty();
+            result.TypescriptItemGroup.Include[0].OutputFile.ShouldNotBeNullOrEmpty();
         }
     }
 }

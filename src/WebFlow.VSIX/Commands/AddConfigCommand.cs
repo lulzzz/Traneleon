@@ -74,7 +74,8 @@ namespace Acklann.WebFlow.Commands
 
         public static void Initialize(VSPackage package)
         {
-            Instance = new AddConfigCommand(package._commandService, package.DTE, package._watchList, package._activator);
+            var service = package.GetService<IMenuCommandService>();
+            Instance = new AddConfigCommand(service, package.DTE, package._watchList, package._activator);
         }
 
         #endregion Singleton

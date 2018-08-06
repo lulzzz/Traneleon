@@ -1,7 +1,8 @@
 ﻿using Acklann.GlobN;
 using Acklann.WebFlow.Compilation;
-using Akka.Actor;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,32 +10,39 @@ namespace Acklann.WebFlow.Configuration
 {
     public static class ConfigurationExtensions
     {
-        public static Task<ICompilierResult[]> CompileAsync(this Project project, IActorObserver observer = null, int millisecondsTimeout = 30_000)
+        public static ICompilierResult[] Compile(this Project project, IProgress<ICompilierResult> progress = default, IObserver<ICompilierOptions> observer = default)
+            => CompileAsync(project, progress, observer).Result;
+
+        public static Task<ICompilierResult[]> CompileAsync(this Project project, IProgress<ICompilierResult> progress = default, IObserver<ICompilierOptions> observer = default, System.Threading.CancellationToken cancellationToken = default)
         {
-            return Task.Run(() =>
-            {
-                using (var akka = ActorSystem.Create(Guid.NewGuid().ToString("n"), Akka.Configuration.ConfigurationFactory.ParseString("akka { loglevel = WARNING }")))
-                {
-                    if (observer == null) observer = new FileProcessorObserver();
-                    IActorRef processor = akka.ActorOf(FileProcessor.GetProps(observer));
+            var factory = new CompilerFactory();
+            var tasks = new Stack<Task<ICompilierResult>>();
 
-                    int max = 0;
-                    foreach (IItemGroup itemGroup in project.GetItempGroups())
-                        if (itemGroup.Enabled)
-                            foreach (string file in itemGroup.EnumerateFiles())
+            foreach (string path in Directory.EnumerateFiles(project.DirectoryName, "*", SearchOption.AllDirectories))
+                foreach (IItemGroup itemGroup in project.GetItempGroups())
+                    if (itemGroup.Enabled && itemGroup.CanAccept(path))
+                        foreach (ICompilierOptions options in itemGroup.CreateCompilerOptions(path))
+                        {
+                            ICompiler compiler = factory.CreateInstance(options);
+                            tasks.Push(Task.Run(() =>
                             {
-                                max++;
-                                processor.Tell(itemGroup.CreateCompilerOptions(file));
-                            }
+                                using (compiler)
+                                {
+                                    if (compiler.CanExecute(options))
+                                    {
+                                        observer?.OnNext(options);
+                                        ICompilierResult result = compiler.Execute(options);
+                                        progress?.Report(result);
+                                        return result;
+                                    }
 
-                    observer?.WaitForCompletion(max, millisecondsTimeout);
-                    return observer?.GetResults().ToArray();
-                }
-            });
+                                    return new EmptyResult();
+                                }
+                            }, cancellationToken));
+                        }
+
+            return Task.WhenAll(tasks);
         }
-
-        public static ICompilierResult[] Compile(this Project project, IActorObserver observer = null, int millisecondsTimeout = 30_000)
-            => CompileAsync(project, observer, millisecondsTimeout).Result;
 
         internal static bool NotDependency(this string path)
         {

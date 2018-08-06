@@ -14,6 +14,10 @@
         <xs:element name="sass"
                     type="SassItemGroup"
                     minOccurs="0" />
+
+        <xs:element name="image"
+                    type="ImageItemGroup"
+                    minOccurs="0" />
       </xs:all>
 
       <xs:attribute name="enable"
@@ -24,7 +28,7 @@
                     type="xs:string" />
 
       <xs:attribute name="outputDirectory"
-                  type="xs:string" />
+                    type="xs:string" />
     </xs:complexType>
   </xs:element>
 
@@ -67,6 +71,91 @@
     <xs:attributeGroup ref="TranspilierAttributes" />
   </xs:complexType>
 
+  <xs:complexType name="ImageItemGroup">
+    <xs:sequence>
+      <!--<xs:element name="resize"
+                  type="ImageResizer"
+                  minOccurs="0"
+                  maxOccurs="unbounded" />-->
+
+      <xs:element name="optimize"
+                  type="ImageCompressor"
+                  minOccurs="0"
+                  maxOccurs="unbounded" />
+    </xs:sequence>
+
+    <xs:attributeGroup ref="ItemGroupAttributes" />
+  </xs:complexType>
+
+  <xs:complexType name="ImageResizer">
+    <xs:complexContent>
+      <xs:extension base="FileList">
+        <xs:attribute name="width"
+                      type="xs:int" />
+
+        <xs:attribute name="height"
+                      type="xs:int" />
+
+        <xs:attribute name="percentage"
+                      type="xs:string" />
+
+        <xs:attribute name="preserve"
+                      type="xs:boolean"
+                      default="true" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ImageConverter">
+    <xs:complexContent>
+      <xs:extension base="FileList">
+        <xs:attribute name="to" type="ConversionFormat" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ImageCompressor">
+    <xs:complexContent>
+      <xs:extension base="FileList">
+        <xs:attribute name="compression"
+                      type="CompressionType"
+                      default="lossless" />
+
+        <xs:attribute name="progressive"
+                      type="xs:boolean"
+                      default="true" />
+
+        <xs:attribute name="quality"
+                      type="xs:int"
+                      default="80" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="SpriteBuilder">
+    <xs:complexContent>
+      <xs:extension base="FileList">
+        <xs:attribute name="outFile"
+                      type="xs:string"
+                      use="required" />
+
+        <xs:attribute name="orientation"
+                      type="Orientation"
+                      default="landscape" />
+
+        <xs:attribute name="css-prefix"
+                      type="xs:string" />
+
+        <xs:attribute name="css-suffix"
+                      type="xs:string" />
+
+        <xs:attribute name="format"
+                      type="CSS"
+                      default="sass" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="Bundle">
     <xs:sequence>
       <xs:element name="pattern"
@@ -87,6 +176,43 @@
                   maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
+
+  <xs:simpleType name="ImageSize">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(\d+[xX]\d+(\\.)?|\d+.)" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ENUMERATION -->
+
+  <xs:simpleType name="CompressionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="lossy" />
+      <xs:enumeration value="lossless" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ConversionFormat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="png" />
+      <xs:enumeration value="svg" />
+      <xs:enumeration value="jpeg" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Orientation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="portrait" />
+      <xs:enumeration value="landscape" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CSS">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="css" />
+      <xs:enumeration value="sass" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <!-- GROUPS -->
 
@@ -117,6 +243,11 @@
                   default=".min" />
 
     <xs:attribute name="outputDirectory"
+                  type="xs:string" />
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Foo">
+    <xs:attribute name="percentage"
                   type="xs:string" />
   </xs:attributeGroup>
 </xs:schema>

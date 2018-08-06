@@ -6,10 +6,21 @@
     <include outFile="shared/_layout.*html">
       <pattern>wwwroot/**/*.ts</pattern>
     </include>
+
     <exclude>
       <pattern>_*.ts</pattern>
     </exclude>
   </typescript>
 
   <sass />
+
+  <image>
+    <optimize compression="lossless">
+      <pattern>*.jpg</pattern>
+    </optimize>
+
+    <optimize compression="lossy" quality="50">
+      <pattern>*.png</pattern>
+    </optimize>
+  </image>
 </project>

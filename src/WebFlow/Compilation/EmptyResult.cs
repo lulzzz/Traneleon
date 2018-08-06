@@ -1,17 +1,17 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public class EmptyResult : ICompilierResult
+    public readonly struct EmptyResult : ICompilierResult
     {
         public bool Succeeded => true;
 
+        public Kind Kind => Kind.None;
+
         public long ExecutionTime => 0;
-
-        public CompilerError[] ErrorList => new CompilerError[0];
-
-        public Kind Kind => Kind.Minify;
 
         public string SourceFile => string.Empty;
 
         string ICompilierResult.OutputFile => string.Empty;
+
+        public CompilerError[] ErrorList => new CompilerError[0];
     }
 }

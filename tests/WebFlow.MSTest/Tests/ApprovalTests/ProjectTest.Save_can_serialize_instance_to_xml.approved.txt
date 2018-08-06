@@ -8,7 +8,18 @@
       <pattern>_*.scss</pattern>
     </exclude>
   </sass>
+  <image enable="true" suffix=".min">
+    <optimize quality="80" compression="lossless" progressive="true">
+      <pattern>*.jpg</pattern>
+    </optimize>
+    <optimize quality="50" compression="lossy" progressive="true">
+      <pattern>*.png</pattern>
+    </optimize>
+  </image>
   <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
+    <include>
+      <pattern>**/views/*.ts</pattern>
+    </include>
     <include outFile="index.min.js">
       <pattern>*.ts</pattern>
     </include>

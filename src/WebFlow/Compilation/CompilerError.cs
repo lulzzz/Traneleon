@@ -1,15 +1,18 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public struct CompilerError
+    public readonly struct CompilerError
     {
-        public CompilerError(string description, string file, int lineNumber, int column = 0, int code = 0)
+        public CompilerError(string description, string file, int lineNumber, int column = 0, int code = 0, int category = 0)
         {
             File = file;
             Code = code;
             Column = column;
-            Message = description;
             Line = lineNumber;
+            Category = category;
+            Message = description;
         }
+
+        public int Category { get; }
 
         public int Code { get; }
 

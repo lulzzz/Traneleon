@@ -1,23 +1,36 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public class CompilerResult : ICompilierResult
+    public struct CompilerResult : ICompilierResult
     {
-        public CompilerResult(Kind kind, string sourceFile, params CompilerError[] errors)
+        public CompilerResult(Kind kind, string sourceFile, string outFile, ShellBase shell)
+        {
+            Kind = kind;
+            OutputFile = outFile;
+            SourceFile = sourceFile;
+            Succeeded = (shell.ExitCode == 0);
+            ErrorList = shell.StandardError.GetErrors();
+            ExecutionTime = (shell.ExitTime.Ticks - shell.StartTime.Ticks);
+        }
+
+        public CompilerResult(Kind kind, bool succeeded, long executionTime, string sourceFile, string outFile, params CompilerError[] errors)
         {
             Kind = kind;
             ErrorList = errors;
+            OutputFile = outFile;
+            Succeeded = succeeded;
             SourceFile = sourceFile;
+            ExecutionTime = executionTime;
         }
 
         public Kind Kind { get; }
 
-        public bool Succeeded => false;
-
-        public long ExecutionTime => 0;
+        public bool Succeeded { get; }
 
         public string SourceFile { get; }
 
-        public string OutputFile => string.Empty;
+        public string OutputFile { get; }
+
+        public long ExecutionTime { get; }
 
         public CompilerError[] ErrorList { get; }
     }

@@ -5,10 +5,11 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Acklann.WebFlow.Utilities
 {
-    public class Reporter : IObserver<ICompilierResult>
+    public class Reporter : IProgress<ProgressToken>
     {
         public Reporter(string projectFile, VSPackage package) : this(projectFile, package._errorListProvider, package._outputPane, package.DTE, package._solution)
         {
@@ -27,27 +28,34 @@ namespace Acklann.WebFlow.Utilities
             solution.GetProjectOfUniqueName(projectFile, out _hierarchy);
         }
 
-        public void OnNext(ICompilierResult result)
+        public async void Report(ProgressToken token)
         {
-            if (result.Succeeded)
+            if (token.Result.Succeeded)
             {
-                RemoveError(result.SourceFile ?? string.Empty);
-                _pane.OutputStringThreadSafe($"[{result.Kind}] '{result.SourceFile.GetRelativePath(_workingDirectory)}' => '{result.OutputFile.GetRelativePath(_workingDirectory)}' in {TimeSpan.FromTicks(result.ExecutionTime).ToString(@"mm\:ss\.fff")}\n");
+                UpdateErrorList(token.Result.SourceFile ?? string.Empty);
+
+                string msg = $"[{token.Result.Kind}] '{normalize(token.Result.SourceFile)}' => '{normalize(token.Result.OutputFile)}' in {TimeSpan.FromTicks(token.Result.ExecutionTime).ToString(@"mm\:ss\.fff")}\r\n";
+                System.Diagnostics.Debug.WriteLine(msg);
+                _pane.OutputStringThreadSafe(msg);
             }
             else
             {
-                foreach (CompilerError error in result.ErrorList)
+                System.Diagnostics.Debug.WriteLine("FAILED");
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                foreach (CompilerError error in token.Result.ErrorList)
                 {
                     var newError = new ErrorTask()
                     {
+                        CanDelete = true,
                         Line = error.Line,
                         Column = error.Column,
-                        Text = error.Message,
                         Document = error.File,
                         HierarchyItem = _hierarchy,
+                        Text = $"(WF) {error.Message}",
                         Category = TaskCategory.BuildCompile,
-                        ErrorCategory = TaskErrorCategory.Error
+                        ErrorCategory = ((TaskErrorCategory)error.Category)
                     };
+
                     newError.Navigate += delegate (object sender, EventArgs e)
                     {
                         newError.Line++;
@@ -55,20 +63,23 @@ namespace Acklann.WebFlow.Utilities
                         newError.Line--;
                     };
                     _errorList.Tasks.Add(newError);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[{newError.ErrorCategory}] '{Path.GetFileName(newError.Document)}' {newError.Line}");
+                    System.Diagnostics.Debug.WriteLine($"{newError.Text}");
+#endif
                 }
                 _errorList.Show();
             }
+
+            string normalize(string path)
+            {
+                string[] files = path.Split(';');
+                if (files.Length > 2) return $"[{files.Length} files]";
+                else return string.Join(" + ", (from x in path.Split(';') select x.GetRelativePath(_workingDirectory).TrimStart('.', '/', '\\')));
+            }
         }
 
-        public void OnError(Exception error)
-        {
-        }
-
-        public void OnCompleted()
-        {
-        }
-
-        private void RemoveError(Glob filePath)
+        private void UpdateErrorList(Glob filePath)
         {
             for (int i = 0; i < _errorList.Tasks.Count; i++)
             {

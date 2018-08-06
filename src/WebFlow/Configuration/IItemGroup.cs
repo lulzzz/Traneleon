@@ -17,6 +17,6 @@ namespace Acklann.WebFlow.Configuration
 
         IEnumerable<string> EnumerateFiles();
 
-        ICompilierOptions CreateCompilerOptions(string filePath);
+        IEnumerable<ICompilierOptions> CreateCompilerOptions(string filePath);
     }
 }

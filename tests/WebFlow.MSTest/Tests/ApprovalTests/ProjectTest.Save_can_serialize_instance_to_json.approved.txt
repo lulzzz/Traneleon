@@ -12,12 +12,39 @@
     "enabled": true,
     "suffix": ".min"
   },
+  "image": {
+    "optimize": [
+      {
+        "quality": 80,
+        "compression": 0,
+        "progressive": true,
+        "patterns": [
+          "*.jpg"
+        ]
+      },
+      {
+        "quality": 50,
+        "compression": 1,
+        "progressive": true,
+        "patterns": [
+          "*.png"
+        ]
+      }
+    ],
+    "enabled": true,
+    "suffix": ".min"
+  },
   "typescript": {
     "keepIntermediateFiles": false,
     "generateSourceMaps": true,
     "include": [
       {
-        "entryPoint": "index.min.js",
+        "patterns": [
+          "**/views/*.ts"
+        ]
+      },
+      {
+        "outFile": "index.min.js",
         "patterns": [
           "*.ts"
         ]

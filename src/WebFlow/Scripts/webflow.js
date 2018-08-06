@@ -7,23 +7,25 @@ const sass = require("node-sass");
 const uglify = require("uglify-js");
 //const convert = require("convert-source-map");
 //const combine = require("combine-source-map");
-const mssMerger = require("multi-stage-sourcemap");
+const mssMerger = require("multi-stage-sourcemap").transfer;
 
 var root = {
     // #region OPTIONS
     // ==========================================================================================
-    
+
     TranspilierOptions: function () {
-        this.suffix = process.argv[6];
-        this.outputFile = process.argv[5];
-        this.sourceMapDirectory = process.argv[7];
-        this.outputDirectory = (this.outputFile ? path.dirname(process.argv[5]) : false);
+        var me = this;
 
         let pattern = /true/i;
-        this.sourceFile = process.argv[4];
-        this.generateSourceMaps = (pattern.test(process.argv[3]));
-        this.keepIntermediateFiles = (pattern.test(process.argv[2]));
-        this.bundling = pattern.test(process.argv[8]);
+        me.sourceFile = process.argv[4];
+        me.bundling = pattern.test(process.argv[8]);
+        me.generateSourceMaps = (pattern.test(process.argv[3]));
+        me.keepIntermediateFiles = (pattern.test(process.argv[2]));
+
+        me.suffix = (process.argv[6] == "false" ? false : process.argv[6]);
+        me.outputFile = (process.argv[5] == "false" ? false : process.argv[5]);
+        me.outputDirectory = (process.argv[9] == "false" ? false : process.argv[9]);
+        me.sourceMapDirectory = (process.argv[7] == "false" ? false : process.argv[7]);
     },
 
     // #endregion
@@ -31,79 +33,96 @@ var root = {
     // METHODS
     // ==========================================================================================
 
-    compileTs: function (args, onSuccess) {
-        let outFile = new root.FileInfo(args.outputFile);
+    compileTs: function (args, callback) {
+        let fileNameWithoutExtension, outDir, outFile;
+
+        if (args.bundling) {
+            outDir = path.dirname(args.outputFile);
+            fileNameWithoutExtension = path.basename(args.outputFile, path.extname(args.outputFile));
+            outFile = new root.FileInfo(path.join(outDir, (fileNameWithoutExtension + ".js")));
+        }
+        else {
+            outDir = (args.outputDirectory ? args.outputDirectory : path.dirname(args.sourceFile));
+            fileNameWithoutExtension = path.basename(args.sourceFile, path.extname(args.sourceFile));
+            outFile = new root.FileInfo(path.join(outDir, (fileNameWithoutExtension + ".js")));
+        }
+
+        let mapDir = (args.sourceMapDirectory ? args.sourceMapDirectory : outDir);
+        let mapFile = path.join(mapDir, (path.basename(outFile.path) + ".map"));
 
         let options = {};
-        options.sourceMap = true;
         options.noEmitOnError = true;
-        options.mapRoot = args.sourceMapDirectory;
+
+        if (args.generateSourceMaps) {
+            options["mapRoot"] = mapDir;
+            options["sourceMap"] = args.generateSourceMaps;
+        }
 
         if (args.bundling) {
             options["allowJs"] = true;
             options["outFile"] = outFile.path;
         }
 
-        let expectedName = path.basename(outFile.path);
         let compiler = ts.createProgram(args.sourceFile.split(';'), options);
         let target = (args.bundling ? null : compiler.getSourceFile(outFile.path));
-        let emitResult = compiler.emit(target, function (filePath, contents, bom, onError) {
-            if (path.basename(filePath).startsWith(expectedName)) {
+        let emitResult = compiler.emit(target, function (filePath, contents) {
+            if (path.basename(filePath).startsWith(fileNameWithoutExtension)) {
                 switch (path.extname(filePath).toLowerCase()) {
                     case ".map":
                         let map = JSON.parse(contents);
-                        map.file = path.relative(args.sourceMapDirectory, outFile.path);
+                        map.file = path.relative(mapDir, outFile.path);
                         outFile.sourceMap = JSON.stringify(map, null, 2);
                         if (args.generateSourceMaps && args.keepIntermediateFiles) {
-                            root.createFile(path.join(args.sourceMapDirectory, path.basename(filePath)), outFile.sourceMap, "sourceMapFile2");
+                            root.createFile(path.join(mapDir, path.basename(filePath)), outFile.sourceMap, "sourceMapFile2");
                         }
                         break;
 
                     case ".js":
-                        let mapPath = path.join(args.sourceMapDirectory, (path.basename(filePath) + ".map"));
-                        outFile.contents = root.changeSourceMapUrl(contents, path.relative(args.outputDirectory, mapPath));
                         outFile.path = filePath;
+                        outFile.contents = root.changeSourceMapUrl(contents, path.relative(outDir, mapFile));
 
                         if (args.keepIntermediateFiles) {
-                            let transientFile = path.join(args.outputDirectory, path.basename(filePath));
+                            let transientFile = path.join(outDir, path.basename(filePath));
                             root.createFile(transientFile, outFile.contents, "intermediateFile");
                         }
 
                         root.minifyJs(outFile, {
                             suffix: args.suffix,
-                            outputDirectory: args.outputDirectory,
-                            sourceMapDirectory: args.sourceMapDirectory,
+                            outputDirectory: outDir,
+                            sourceMapDirectory: mapDir,
                             generateSourceMaps: args.generateSourceMaps
-                        }, onSuccess);
+                        }, callback);
                         break;
                 }
             }
         });
 
-        let usedDict = {}, key, err;
+        let duplicateErrors = {}, key, err;
         let diagnostic = ts.getPreEmitDiagnostics(compiler).concat(emitResult.diagnostics);
         for (var i = 0; i < diagnostic.length; i++) {
             err = diagnostic[i];
             if (err.file) {
-                var position = err.file.getLineAndCharacterOfPosition(err.start);
+                let position = err.file.getLineAndCharacterOfPosition(err.start);
                 let description = ts.flattenDiagnosticMessageText(err.messageText, '\n');
                 key = (err.file.fileName + position.line + position.character);
 
-                if (usedDict.hasOwnProperty(key) === false) {
-                    usedDict[key] = true;
+                if (duplicateErrors.hasOwnProperty(key) === false && path.extname(err.file.fileName) === ".ts") {
+                    duplicateErrors[key] = true;
+
                     console.error(JSON.stringify({
                         code: err.code,
                         file: err.file.fileName,
                         line: (position.line + 1),
                         column: (position.character + 1),
-                        message: description.replace(/\s/, " ")
+                        message: description.replace(/\s/, " "),
+                        category: root.getErrorCategory(err.category)
                     }));
                 }
             }
         }
 
         if (emitResult.emitSkipped) {
-            onSuccess();
+            callback(emitResult);
             throw "Compilation errors detected.";
         }
     },
@@ -133,9 +152,14 @@ var root = {
         root.createFile(outFile, minifyResult.code, "minifiedFile", onSuccess);
     },
 
-    compileSass: function (sourceFile, args, onSuccess) {
-        let outFile = new root.FileInfo(args.outputFile);
-        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile.path) + ".map"));
+    compileSass: function (args, callback) {
+        let sourceFile = args.sourceFile;
+        let fileNameWithoutExtension = path.basename(sourceFile, path.extname(sourceFile));
+        let outDir = (args.outputDirectory ? args.outputDirectory : path.dirname(sourceFile));
+        let outFile = new root.FileInfo(path.join(outDir, (fileNameWithoutExtension + ".css")));
+
+        let mapDir = (args.sourceMapDirectory ? args.sourceMapDirectory : outDir);
+        let mapFile = path.join(mapDir, (fileNameWithoutExtension + ".css.map"));
 
         let options = {
             file: sourceFile,
@@ -150,12 +174,13 @@ var root = {
             if (err) {
                 console.error(JSON.stringify({
                     file: err.file,
-                    line: err.line,
                     code: err.status,
                     column: err.column,
-                    message: err.message
+                    message: err.message,
+                    line: (err.line - 1),
                 }));
-                process.exit(err.status);
+                callback(err);
+                throw err.message;
             }
             else {
                 outFile.contents = result.css.toString();
@@ -171,17 +196,22 @@ var root = {
 
                 root.minifyCss(outFile, {
                     suffix: args.suffix,
-                    outputDirectory: args.outputDirectory,
-                    sourceMapDirectory: args.sourceMapDirectory,
+                    outputDirectory: outDir,
+                    sourceMapDirectory: mapDir,
                     generateSourceMaps: args.generateSourceMaps
-                }, onSuccess);
+                }, callback);
             }
         });
     },
 
-    minifyCss: function (sourceFile, args, onSuccess) {
-        let outFile = path.join(args.outputDirectory, (path.basename(sourceFile.path, ".css") + args.suffix + ".css"));
-        let mapFile = path.join(args.sourceMapDirectory, (path.basename(outFile) + ".map"));
+    minifyCss: function (sourceFile, args, callback) {
+        let fileNameWitoutExtension = path.basename(sourceFile.path, path.extname(sourceFile.path));
+        let outDir = (args.outputDirectory ? args.outputDirectory : path.dirname(sourceFile.path));
+        let outFile = path.join(outDir, (fileNameWitoutExtension + args.suffix + ".css"));
+
+        let mapDir = (args.sourceMapDirectory ? args.sourceMapDirectory : outDir);
+        let mapFile = path.join(mapDir, (path.basename(outFile) + ".map"));
+
         let result = csso.minify(sourceFile.contents, {
             filename: sourceFile.path,
             sourceMap: args.generateSourceMaps
@@ -191,12 +221,12 @@ var root = {
         sourceFile.contents = result.css;
 
         if (args.generateSourceMaps) {
-            sourceFile.contents = (result.css + os.EOL + "/* # sourceMappingURL=" + path.relative(args.outputDirectory, mapFile) + " */");
-            let map = root.mergeSourceMaps(result.map.toString(), sourceFile.sourceMap, path.relative(args.sourceMapDirectory, outFile));
+            sourceFile.contents = (result.css + os.EOL + "/*# sourceMappingURL=" + path.relative(outDir, mapFile) + " */");
+            let map = root.mergeSourceMaps(result.map.toString(), sourceFile.sourceMap, path.relative(mapDir, outFile));
             root.createFile(mapFile, map, "sourceMapFile");
         }
 
-        root.createFile(outFile, sourceFile.contents, "minifiedFile", onSuccess);
+        root.createFile(outFile, sourceFile.contents, "minifiedFile", callback);
     },
 
     /* ===== HELPERS ===== */
@@ -212,7 +242,7 @@ var root = {
 
     mergeSourceMaps: function (mapB, mapA, targetFile) {
         if (mapA) {
-            var mapC = mssMerger.transfer({
+            var mapC = mssMerger({
                 fromSourceMap: mapB,
                 toSourceMap: mapA
             });
@@ -226,20 +256,45 @@ var root = {
     },
 
     createFile: function (filePath, contents, label, done) {
-        fs.writeFile(filePath, contents, function (err) {
+        var dir = path.dirname(filePath);
+        fs.access(dir, (fs.constants.F_OK | fs.constants.W_OK), function (err) {
             if (err) {
-                console.debug(err);
+                fs.mkdirSync(dir);
             }
 
-            if (label) {
-                process.env["foo"] = filePath;
-                let obj = {};
-                obj[label] = filePath;
-                console.log(JSON.stringify(obj));
-            }
+            fs.writeFile(filePath, contents, function (err) {
+                if (err) {
+                    console.debug(err);
+                }
 
-            if (done) { done(); }
+                if (label) {
+                    let obj = {};
+                    obj[label] = filePath;
+                    console.log(JSON.stringify(obj));
+                }
+
+                if (done) { done(); }
+            });
         });
+    },
+
+    getErrorCategory: function (value) {
+        let category;
+        switch (value) {
+            case 1:
+                category = 0; /* error */
+                break;
+
+            case 0:
+                category = 1; /* warn */
+                break;
+
+            default:
+                category = 2; /* info */
+                break;
+        }
+
+        return category;
     },
 
     // STRUCTS

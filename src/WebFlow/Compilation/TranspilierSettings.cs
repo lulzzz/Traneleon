@@ -4,21 +4,22 @@ namespace Acklann.WebFlow.Compilation
 {
     public struct TranspilierSettings : ICompilierOptions
     {
-        public TranspilierSettings(string outputFile, params string[] sourceFiles) : this(outputFile, sourceFiles, ".min", Path.GetDirectoryName(outputFile), true, false, (sourceFiles.Length > 1))
+        public TranspilierSettings(string outputFile, params string[] sourceFiles) : this(outputFile, sourceFiles, ".min", null, true, false, (sourceFiles.Length > 1), null)
         {
         }
 
-        public TranspilierSettings(string outputFile, string[] sourceFiles, string suffix, string sourceMapDirectory, bool generateSourceMaps, bool keepIntermediateFiles, bool shouldBundle)
+        public TranspilierSettings(string outputFile, string[] sourceFiles, string suffix = ".min", string sourceMapDirectory = null, bool generateSourceMaps = true, bool keepIntermediateFiles = false, bool shouldBundle = false, string outputDirectory = null)
         {
             Suffix = suffix;
             Kind = Kind.Transpile;
             OutputFile = outputFile;
             SourceFiles = sourceFiles;
             ShouldBundleFiles = shouldBundle;
-            SourceMapDirectory = sourceMapDirectory;
             GenerateSourceMaps = generateSourceMaps;
             KeepIntermediateFiles = keepIntermediateFiles;
-            GetFileType = (sourceFiles?.Length > 0 ? Path.GetExtension(sourceFiles[0]) : string.Empty);
+            FileType = Path.GetExtension(sourceFiles[0]);
+            OutputDirectory = outputDirectory ?? Path.GetDirectoryName(outputFile);
+            SourceMapDirectory = sourceMapDirectory ?? OutputDirectory;
         }
 
         public Kind Kind { get; }
@@ -26,24 +27,20 @@ namespace Acklann.WebFlow.Compilation
 
         public string OutputFile { get; }
         public string[] SourceFiles { get; }
+        public string OutputDirectory { get; }
         public bool GenerateSourceMaps { get; }
         public string SourceMapDirectory { get; }
         public bool KeepIntermediateFiles { get; }
         public bool ShouldBundleFiles { get; }
 
-        public string OutputDirectory
-        {
-            get { return (string.IsNullOrEmpty(OutputFile) ? string.Empty : Path.GetDirectoryName(OutputFile)); }
-        }
-
         string ICompilierOptions.SourceFile => string.Join(";", SourceFiles);
 
-        public string GetFileType { get; }
+        public string FileType { get; }
 
         public string ToArgs()
         {
             string escape(string val) => (string.IsNullOrEmpty(val) ? "false" : $"\"{val}\"");
-            return $"{KeepIntermediateFiles} {GenerateSourceMaps} {string.Join(";", SourceFiles)} {escape(OutputFile)} {escape(Suffix)} {escape(SourceMapDirectory)} {ShouldBundleFiles}";
+            return $"{KeepIntermediateFiles} {GenerateSourceMaps} {string.Join(";", SourceFiles)} {escape(OutputFile)} {escape(Suffix)} {escape(SourceMapDirectory)} {ShouldBundleFiles} {escape(OutputDirectory)}";
         }
     }
 }

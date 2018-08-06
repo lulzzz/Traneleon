@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Acklann.WebFlow.Compilation
+﻿namespace Acklann.WebFlow.Compilation
 {
     public enum Kind
     {
+        None,
         Transpile,
-        Minify,
-        Bundle
+        Optimize,
+        Bundle,
+        Transform
     }
 }

@@ -26,7 +26,7 @@ namespace Acklann.WebFlow.Tests
                     KeepIntermediateFiles = true,
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                        new TypescriptItemGroup.Bundle("*.ts") { OutFile = "Shared/_Layout.cshtml"}
+                        new TypescriptItemGroup.Bundle("*.ts") { OutputFile = "build.ts"}
                     }
                 }
             };

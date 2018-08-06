@@ -4,8 +4,8 @@
     {
         Kind Kind { get; }
 
-        string SourceFile { get; }
+        string FileType { get; }
 
-        string GetFileType { get; }
+        string SourceFile { get; }
     }
 }

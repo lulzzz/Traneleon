@@ -8,7 +8,7 @@ namespace Acklann.WebFlow.Compilation
     {
         protected override bool CanExecute(TranspilierSettings options)
         {
-            return Shell.CanInvokeNode() && options.GetFileType.EndsWith(".ts", StringComparison.OrdinalIgnoreCase);
+            return Shell.CanInvokeNode() && options.FileType.EndsWith(".ts", StringComparison.OrdinalIgnoreCase);
         }
 
         protected override void SetArguments(TranspilierSettings options)

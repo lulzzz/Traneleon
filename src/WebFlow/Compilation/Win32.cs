@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Acklann.WebFlow.Compilation
@@ -24,6 +25,8 @@ namespace Acklann.WebFlow.Compilation
                 TryRun(proc, "magick", "-version", @"imageMagick\magick.exe", out _imageMagickPath, out _imageMagickIsAvailable);
             }
         }
+
+        public override PlatformID OS => PlatformID.Win32NT;
 
         public override void InvokeNode(string args)
         {

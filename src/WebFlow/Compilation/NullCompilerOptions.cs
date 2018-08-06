@@ -2,10 +2,10 @@
 {
     public struct NullCompilerOptions : ICompilierOptions
     {
-        public Kind Kind => Kind.Minify;
+        public Kind Kind => Kind.Optimize;
 
         public string SourceFile => string.Empty;
 
-        public string GetFileType => string.Empty;
+        public string FileType => string.Empty;
     }
 }

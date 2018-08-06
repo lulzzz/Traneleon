@@ -3,6 +3,7 @@ using Acklann.WebFlow.Compilation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace Acklann.WebFlow.Configuration
@@ -58,21 +59,23 @@ namespace Acklann.WebFlow.Configuration
             return false;
         }
 
-        public override ICompilierOptions CreateCompilerOptions(string filePath)
+        public override IEnumerable<ICompilierOptions> CreateCompilerOptions(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
+            IEnumerable<string> sourcFiles;
             string name = Path.GetFileName(filePath);
-            if (name.StartsWith("_") == false)
+            if (name.StartsWith("_")) sourcFiles = EnumerateFiles("*.scss").Where(x => Path.GetFileName(x).StartsWith("_") == false);
+            else sourcFiles = new[] { filePath };
+
+            foreach (string src in sourcFiles)
             {
-                string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
+                string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(src) : OutputDirectory);
                 string mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
-                string outFile = Path.ChangeExtension(Path.Combine(outDir, name), ".css");
+                string outFile = Path.ChangeExtension(Path.Combine(outDir, Path.GetFileName(src)), ".css");
 
-                return new TranspilierSettings(outFile, new string[] { filePath }, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, false);
+                yield return new TranspilierSettings(outFile, new[] { src }, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, false, outDir);
             }
-
-            return new NullCompilerOptions();
         }
     }
 }

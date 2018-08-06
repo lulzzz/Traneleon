@@ -1,34 +1,32 @@
-﻿using Acklann.WebFlow.Configuration;
+﻿using Acklann.WebFlow.Compilation;
+using Acklann.WebFlow.Configuration;
 using Akka.Actor;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Schema;
 
 namespace Acklann.WebFlow
 {
     public class ProjectMonitor : IDisposable
     {
-        public ProjectMonitor() : this(new Compilation.FileProcessorObserver(), CreateActorSystem(), CreateWatch())
+        public ProjectMonitor(ValidationEventHandler eventHandler = default, IProgress<ProgressToken> reporter = default, IObserver<ICompilierOptions> observer = default) : this(eventHandler, reporter, observer, CreateWatcher())
         {
         }
 
-        public ProjectMonitor(IObserver<Compilation.ICompilierResult> observer) : this(observer, CreateActorSystem(), CreateWatch())
+        public ProjectMonitor(ValidationEventHandler validationEventHandler, IProgress<ProgressToken> reporter, IObserver<ICompilierOptions> observer, FileSystemWatcher fileSystemWatcher)
         {
-        }
+            _watcher = fileSystemWatcher ?? throw new ArgumentNullException(nameof(fileSystemWatcher));
 
-        public ProjectMonitor(IObserver<Compilation.ICompilierResult> observer, ActorSystem actorSystem) : this(observer, actorSystem, CreateWatch())
-        {
-        }
-
-        public ProjectMonitor(IObserver<Compilation.ICompilierResult> observer, ActorSystem actorSystem, FileSystemWatcher fileSystemWatcher)
-        {
-            _watcher = fileSystemWatcher;
             _watcher.Created += OnFileWasModified;
             _watcher.Changed += OnFileWasModified;
             _watcher.Renamed += OnFileWasModified;
 
-            _akka = actorSystem;
-            _processor = _akka.ActorOf(Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount)));
+            _reporter = reporter;
+            _observer = observer;
+            _factory = new CompilerFactory();
+            _validationHandler = validationEventHandler;
         }
 
         public string DirectoryName
@@ -66,9 +64,10 @@ namespace Acklann.WebFlow
             foreach (IItemGroup itemGroup in project.GetItempGroups())
                 if (itemGroup.Enabled)
                     foreach (string file in itemGroup.EnumerateFiles())
-                    {
-                        _processor.Tell(itemGroup.CreateCompilerOptions(file));
-                    }
+                        foreach (ICompilierOptions options in itemGroup.CreateCompilerOptions(file))
+                        {
+                            Process(options);
+                        }
         }
 
         public void Compile(string filePath)
@@ -77,10 +76,11 @@ namespace Acklann.WebFlow
 
             if (filePath.Equals(_project?.FullName))
             {
-                if (Project.TryLoad(filePath, out Project project, out string error))
+                if (Project.TryLoad(filePath, _validationHandler, out Project project))
                 {
                     _project = project;
                 }
+                else System.Diagnostics.Debug.WriteLine($"'{filePath}' is not well-formed.");
             }
             else if (filePath.NotDependency())
             {
@@ -89,15 +89,41 @@ namespace Acklann.WebFlow
                 if (itemGroups != null)
                     foreach (IItemGroup itemGroup in itemGroups)
                         if (itemGroup.Enabled && itemGroup.CanAccept(filePath))
-                        {
-                            _processor.Tell(itemGroup.CreateCompilerOptions(filePath));
-                        }
+                            foreach (ICompilierOptions options in itemGroup.CreateCompilerOptions(filePath))
+                            {
+                                Process(options);
+                            }
             }
         }
 
         public void Compile() => Compile(_project);
 
-        protected virtual void OnFileWasModified(object sender, FileSystemEventArgs e) => Compile(e.FullPath);
+        internal void Process(ICompilierOptions options)
+        {
+            foreach (Type type in _factory.GetCompilerTypesThatSupports(options))
+            {
+                ICompiler fileOperator = _factory.CreateInstance(type);
+
+                if (fileOperator.CanExecute(options))
+                {
+                    _observer?.OnNext(options);
+                    Task.Run(() =>
+                    {
+                        using (fileOperator)
+                        {
+                            ICompilierResult result = fileOperator.Execute(options);
+                            _reporter?.Report(new ProgressToken(result));
+                        }
+                    });
+                    break;
+                }
+            }
+        }
+
+        protected virtual void OnFileWasModified(object sender, FileSystemEventArgs e)
+        {
+            if (Path.HasExtension(e.FullPath)) Compile(e.FullPath);
+        }
 
         #region IDisposable
 
@@ -111,8 +137,8 @@ namespace Acklann.WebFlow
         {
             if (disposing)
             {
+                _observer?.OnCompleted();
                 _watcher?.Dispose();
-                _akka?.Dispose();
             }
         }
 
@@ -120,13 +146,15 @@ namespace Acklann.WebFlow
 
         #region Private Members
 
+        private readonly ICompilerFactory _factory;
         private readonly FileSystemWatcher _watcher;
-        private readonly IActorRef _processor;
-        private readonly ActorSystem _akka;
+        private readonly IProgress<ProgressToken> _reporter;
+        private readonly IObserver<ICompilierOptions> _observer;
+        private readonly ValidationEventHandler _validationHandler;
 
         private Project _project;
 
-        private static FileSystemWatcher CreateWatch()
+        private static FileSystemWatcher CreateWatcher()
         {
             return new FileSystemWatcher
             {

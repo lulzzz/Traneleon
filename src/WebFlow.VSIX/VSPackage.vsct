@@ -112,6 +112,15 @@
           <ButtonText>Add Configuration File</ButtonText>
         </Strings>
       </Button>
+
+      <Button guid="CmdSet" id="RefreshCommandId">
+        <Icon guid="ImageCatalogGuid" id="Refresh" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Refresh</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -170,6 +179,10 @@
       <Parent guid="CmdSet" id="GlobalCommandGroup" />
     </CommandPlacement>
 
+    <CommandPlacement guid="CmdSet" id="RefreshCommandId" priority="0x003">
+      <Parent guid="CmdSet" id="GlobalCommandGroup" />
+    </CommandPlacement>
+
     <!-- === -->
 
     <CommandPlacement guid="CmdSet" id="SettingsCommandId" priority="0x040">
@@ -222,6 +235,7 @@
       <!-- Commands -->
       <IDSymbol name="WatchCommandId" value="0x0301" />
       <IDSymbol name="DonateCommandId" value="0x0302" />
+      <IDSymbol name="RefreshCommandId" value="0x0310" />
       <IDSymbol name="SettingsCommandId" value="0x0303" />
       <IDSymbol name="GotoWebsiteCommandId" value="0x0307" />
       <IDSymbol name="AddConfigFileCommandId" value="0x0304" />

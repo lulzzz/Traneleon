@@ -1,6 +1,6 @@
 ﻿namespace Acklann.WebFlow.Compilation
 {
-    public struct TranspilierResult : ICompilierResult
+    public readonly struct TranspilierResult : ICompilierResult
     {
         public TranspilierResult(int exitCode, long elapse, CompilerError[] errors, string outFile, string sourceFile)
         {

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Acklann.WebFlow.Compilation
 {
@@ -26,13 +27,15 @@ namespace Acklann.WebFlow.Compilation
                         error.TryGetValue("file", out JToken path);
                         error.TryGetValue("column", out JToken column);
                         error.TryGetValue("message", out JToken message);
+                        error.TryGetValue("category", out JToken category);
 
                         errorList.Enqueue(new CompilerError(
                             (message?.Value<string>() ?? string.Empty),
                             (path?.Value<string>() ?? string.Empty),
                             (line?.Value<int>() ?? 0),
                             (column?.Value<int>() ?? 0),
-                            (code?.Value<int>() ?? 0)
+                            (code?.Value<int>() ?? 0),
+                            (category?.Value<int>() ?? 0)
                             ));
                     }
                     catch (JsonReaderException)
@@ -74,6 +77,17 @@ namespace Acklann.WebFlow.Compilation
             }
 
             return files;
+        }
+
+        public static CapabilityAttribute AsCapability(this ICompiler compiler)
+        {
+            var attribute = compiler.GetType().GetCustomAttribute<CapabilityAttribute>();
+            if (attribute != null)
+            {
+                return attribute;
+            }
+
+            return null;
         }
     }
 }

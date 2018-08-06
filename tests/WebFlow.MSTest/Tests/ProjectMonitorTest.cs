@@ -37,14 +37,14 @@ namespace Acklann.WebFlow.Tests
             config.AssignDefaults();
 
             int calls = 0, expectedCalls = 2;
-            var observer = Mock.Create<IObserver<ICompilierResult>>();
-            observer.Arrange((x) => x.OnNext(Arg.IsAny<ICompilierResult>()))
-                .DoInstead<ICompilierResult>((x) => { calls++; })
+            var reporter = Mock.Create<IProgress<ProgressToken>>();
+            reporter.Arrange((x) => x.Report(Arg.IsAny<ProgressToken>()))
+                .DoInstead<ProgressToken>((x) => { calls++; })
                 .OccursAtLeast(expectedCalls);
 
             Action waitForFilesToBeGenerated = () => { do { System.Threading.Thread.Sleep(500); } while (calls <= expectedCalls); };
 
-            var sut = new ProjectMonitor(observer);
+            var sut = new ProjectMonitor(reporter: reporter);
 
             // Act
             if (Directory.Exists(cwd)) Directory.Delete(cwd, recursive: true);
@@ -70,7 +70,7 @@ namespace Acklann.WebFlow.Tests
             files.Count.ShouldBe((expectedCalls * 5) + 1);
             files.ShouldContain((x) => x.EndsWith(".min.css"));
             files.ShouldContain((x) => x.EndsWith(".map"));
-            observer.AssertAll();
+            reporter.AssertAll();
         }
 
         [TestMethod]
@@ -85,26 +85,28 @@ namespace Acklann.WebFlow.Tests
                 SassItemGroup = new SassItemGroup()
                 {
                     Enabled = true,
+                    KeepIntermediateFiles = false,
                     Include = new List<string> { "*.scss" }
                 },
                 TypescriptItemGroup = new TypescriptItemGroup()
                 {
                     Enabled = true,
+                    KeepIntermediateFiles = false,
                     Include = new List<TypescriptItemGroup.Bundle>
                     {
-                        new TypescriptItemGroup.Bundle("*.ts") { OutFile = "Shared/_Layout.cshtml" }
+                        new TypescriptItemGroup.Bundle("*.ts") { OutputFile = "build.ts" }
                     }
                 }
             };
             config.AssignDefaults();
 
             var expectedCalls = 1;
-            var mockObserver = Mock.Create<IObserver<ICompilierResult>>();
-            mockObserver.Arrange(x => x.OnNext(Arg.IsAny<ICompilierResult>()))
+            var mockObserver = Mock.Create<IProgress<ProgressToken>>();
+            mockObserver.Arrange(x => x.Report(Arg.IsAny<ProgressToken>()))
                 .DoInstead(() => { expectedCalls--; })
                 .OccursAtLeast(expectedCalls);
 
-            var sut = new ProjectMonitor(mockObserver);
+            var sut = new ProjectMonitor(reporter: mockObserver);
 
             // Act
             if (Directory.Exists(outDir)) Directory.Delete(outDir, recursive: true);

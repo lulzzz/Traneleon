@@ -31,9 +31,9 @@ namespace Acklann.WebFlow.Compilation
 
         public ICompiler CreateInstance(ICompilierOptions options)
         {
-            foreach (var item in GetCompilerTypesThatSupports(options))
+            foreach (var prospect in GetCompilerTypesThatSupports(options))
             {
-                var compiler = (ICompiler)Activator.CreateInstance(item);
+                var compiler = (ICompiler)Activator.CreateInstance(prospect);
                 if (compiler.CanExecute(options))
                 {
                     return compiler;
@@ -54,7 +54,7 @@ namespace Acklann.WebFlow.Compilation
                     where
                         prospect.Capability.Kind == options.Kind
                         &&
-                        prospect.Capability.Supports(options.GetFileType)
+                        prospect.Capability.Supports(options.FileType)
                     orderby prospect.Capability.Rank
                     select prospect.Type);
         }

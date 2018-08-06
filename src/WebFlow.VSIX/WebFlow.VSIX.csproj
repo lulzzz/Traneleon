@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="Commands\AddConfigCommand.cs" />
     <Compile Include="Commands\CompileOnBuildCommand.cs" />
+    <Compile Include="Commands\RefreshCommand.cs" />
     <Compile Include="Commands\TranspileCommand.cs" />
     <Compile Include="Commands\WatchCommand.cs" />
     <Compile Include="OptionsPage.cs">

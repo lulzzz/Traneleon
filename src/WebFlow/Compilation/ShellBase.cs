@@ -32,6 +32,8 @@ namespace Acklann.WebFlow.Compilation
         public static readonly string ResourceDirectory, Version;
         public static bool IsNotLoaded = true;
 
+        public abstract PlatformID OS { get; }
+
         public static ShellBase GetShell()
         {
             switch (Environment.OSVersion.Platform)

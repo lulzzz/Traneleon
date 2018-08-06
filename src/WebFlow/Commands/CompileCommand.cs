@@ -15,7 +15,7 @@ namespace Acklann.WebFlow.Commands
         [UseConstructor]
         public CompileCommand(string configFile, bool enableWatcher)
         {
-            _observer = new FileProcessorObserver();
+            _reporter = new Reporter();
             EnableWatcher = _continueWatching = enableWatcher;
             ConfigFile = configFile.ResolvePath(Environment.CurrentDirectory, expandVariables: true).FirstOrDefault();
         }
@@ -43,7 +43,7 @@ namespace Acklann.WebFlow.Commands
 
         public void StartWatcher()
         {
-            using (_monitor = new ProjectMonitor(_observer))
+            using (_monitor = new ProjectMonitor(reporter: _reporter))
             {
                 _monitor.Start(_project);
                 Log.Debug("monitoring project files for changes...");
@@ -73,7 +73,10 @@ namespace Acklann.WebFlow.Commands
         {
             long startTime = DateTime.Now.Ticks;
             Log.Debug(format($"Build started", '-'));
-            ICompilierResult[] results = _project.Compile();
+            ICompilierResult[] results = _project.Compile(new Progress<ICompilierResult>((x) =>
+            {
+
+            }));
             string elapse = TimeSpan.FromTicks(DateTime.Now.Ticks - startTime).ToString();
             Log.Debug(format($"Build: finished in ({elapse}); {results.Count(x => x.Succeeded)} succeeded, {results.Count(x => !x.Succeeded)} failed", '='));
 
@@ -86,12 +89,20 @@ namespace Acklann.WebFlow.Commands
 
         #region Private Members
 
-        private readonly IActorObserver _observer;
+        private readonly IProgress<ProgressToken> _reporter;
 
         private Project _project;
         private ProjectMonitor _monitor;
         private volatile bool _continueWatching;
 
         #endregion Private Members
+
+        internal class Reporter : IProgress<ProgressToken>
+        {
+            public void Report(ProgressToken value)
+            {
+                
+            }
+        }
     }
 }

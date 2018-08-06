@@ -37,7 +37,7 @@ namespace Acklann.WebFlow.Configuration
         [JsonProperty("name")]
         public string Name
         {
-            get { return string.IsNullOrEmpty(_name) ? Path.GetFileNameWithoutExtension(FullName) : _name; }
+            get { return string.IsNullOrEmpty(_name) ? Path.GetFileName(Path.GetDirectoryName(FullName)) : _name; }
             set { _name = value; }
         }
 
@@ -49,14 +49,19 @@ namespace Acklann.WebFlow.Configuration
         [JsonProperty("sass")]
         public SassItemGroup SassItemGroup { get; set; }
 
+        [XmlElement("image")]
+        [JsonProperty("image")]
+        public ImageItemGroup ImageItemGroup { get; set; }
+
         [XmlElement("typescript")]
         [JsonProperty("typescript")]
         public TypescriptItemGroup TypescriptItemGroup { get; set; }
 
-        public static Project CreateDefault(string filePath)
+        public static Project CreateDefault(string filePath, string name = default)
         {
             return new Project(filePath)
             {
+                Name = name,
                 SassItemGroup = new SassItemGroup()
                 {
                     Include = new List<string>() { "*.scss" }
@@ -121,22 +126,52 @@ namespace Acklann.WebFlow.Configuration
             error = null;
             project = null;
 
-            using (Stream file = File.OpenRead(filePath))
+            try
             {
-                if (Validate(file, out error))
+                using (Stream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    file.Position = 0;
-                    project = Load(file);
-                    project.FullName = filePath;
-                    project.AssignDefaults();
+                    if (Validate(file, out error))
+                    {
+                        file.Position = 0;
+                        project = Load(file);
+                        project.FullName = filePath;
+                        project.AssignDefaults();
+                    }
+                    else return false;
+                    return true;
                 }
-                else return false;
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
         }
 
-        public static void Validate(Stream stream, ValidationEventHandler handler)
+        public static bool TryLoad(string filePath, ValidationEventHandler handler, out Project project)
+        {
+            project = null;
+
+            try
+            {
+                using (Stream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    if (Validate(file, handler))
+                    {
+                        file.Position = 0;
+                        project = Load(file);
+                        project.FullName = filePath;
+                        project.AssignDefaults();
+                        return true;
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        public static bool Validate(Stream stream, ValidationEventHandler handler)
         {
             var schema = new XmlSchemaSet();
             foreach (string path in Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)), $"{nameof(WebFlow)}.xsd", SearchOption.TopDirectoryOnly))
@@ -144,11 +179,18 @@ namespace Acklann.WebFlow.Configuration
                 schema.Add(XMLNS, path);
             }
 
-            if (handler == null) handler = delegate (object sender, ValidationEventArgs e) { };
+            //if (handler == null) handler = delegate (object sender, ValidationEventArgs e) { };
 
+            bool isValid = true;
             var doc = XDocument.Load(stream, LoadOptions.SetLineInfo);
-            doc.Validate(schema, handler);
+            doc.Validate(schema, (sender, e) =>
+            {
+                handler?.Invoke(sender, e);
+                isValid = false;
+            });
             stream.Position = 0;
+
+            return isValid;
         }
 
         public static bool Validate(Stream stream, out string error)
@@ -234,6 +276,7 @@ namespace Acklann.WebFlow.Configuration
         public IEnumerable<IItemGroup> GetItempGroups()
         {
             if (SassItemGroup != null) yield return SassItemGroup;
+            if (ImageItemGroup != null) yield return ImageItemGroup;
             if (TypescriptItemGroup != null) yield return TypescriptItemGroup;
         }
 

@@ -21,6 +21,8 @@ namespace <#= GetMSBuildProperty("//ms:RootNamespace") #>
 	{
 		public const string FOLDER_NAME = "<#= FolderName #>";
 
+		public static string GetTempDir(string name) => Path.Combine(Path.GetTempPath(), name);
+
 		public static string DirectoryName
         {
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME); }

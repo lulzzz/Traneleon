@@ -6,8 +6,8 @@ using NuGet.VisualStudio;
 using System;
 using System.ComponentModel.Design;
 using System.Linq;
-using Task =  System.Threading.Tasks.Task;
 using System.Windows.Forms;
+using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -73,7 +73,8 @@ namespace Acklann.WebFlow.Commands
 
         public static void Initialize(VSPackage package)
         {
-            Instance = new CompileOnBuildCommand(package._commandService, package.DTE);
+            var service = package.GetService<IMenuCommandService>();
+            Instance = new CompileOnBuildCommand(service, package.DTE);
         }
 
         #endregion Singleton

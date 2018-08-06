@@ -1,7 +1,5 @@
 ﻿using Acklann.WebFlow.Commands;
-using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Utilities;
-using Akka.Actor;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -10,7 +8,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -24,25 +21,78 @@ namespace Acklann.WebFlow
 
     [Guid(Symbols.Package.GuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideOptionPage(typeof(OptionsPage), nameof(WebFlow), "General", 0, 0, true)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    public sealed class VSPackage : Package
+    public sealed class VSPackage : AsyncPackage
     {
-        public VSPackage()
-        {
-            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
-            _akka = ActorSystem.Create("webflow");
-        }
-
-        internal const string ConfigName = "webflow-compiler.config";
+        internal const string ConfigName = "webflow.config";
         internal DTE2 DTE;
 
         internal T GetService<T>()
         {
             return (T)GetService(typeof(T));
+        }
+
+        internal void ClearWatchList()
+        {
+            foreach (ProjectMonitor monitor in _watchList.Values)
+            {
+                monitor?.Pause();
+                monitor?.Dispose();
+            }
+            _watchList.Clear();
+        }
+
+        internal void LoadSolution(bool autoConfg)
+        {
+            foreach (EnvDTE.Project project in DTE.GetActiveProjects())
+                if (_watchList.Contains(project.FullName) == false)
+                {
+                    string folder = Path.GetDirectoryName(project.FullName);
+                    string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
+                    string msg = string.Format("[{1}] Monitoring '{0}' for changes...", project.Name, nameof(WebFlow));
+
+                    if (!string.IsNullOrEmpty(configFile))
+                    {
+                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
+                        if (_watchList.Contains(project.FullName)) return;
+                        else _watchList.Add(project.FileName, monitor);
+
+                        if (Configuration.Project.TryLoad(configFile, out Configuration.Project config, out string error))
+                        {
+                            monitor?.Start(config);
+                            if (UserState.Instance.WatcherEnabled)
+                            {
+                                DTE.StatusBar.Text = msg;
+                                System.Diagnostics.Debug.WriteLine(msg);
+                            }
+                            else monitor?.Pause();
+                        }
+                        else
+                        {
+                            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
+                            System.Diagnostics.Debug.WriteLine(error);
+                        }
+                    }
+                    else if (autoConfg && project.IsaWebProject())
+                    {
+                        var config = Configuration.Project.CreateDefault(Path.Combine(folder, ConfigName), project.Name);
+                        config.Save();
+
+                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
+                        _watchList.Add(project.FileName, monitor);
+                        monitor?.Start(config);
+                        if (UserState.Instance.WatcherEnabled)
+                        {
+                            DTE.StatusBar.Text = msg;
+                            System.Diagnostics.Debug.WriteLine(msg);
+                        }
+                        else monitor?.Pause();
+                    }
+                }
         }
 
         private void SubscribeToEvents()
@@ -51,37 +101,31 @@ namespace Acklann.WebFlow
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
         }
 
-        private void LoadEmbeddedModules()
-        {
-            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] loading modules ...";
-            Task.Run(() =>
-            {
-                ShellBase.LoadModules();
-                System.Diagnostics.Debug.WriteLine($"Loaded the resources at {ShellBase.ResourceDirectory}.");
-            });
-        }
-
-        private void InitializeComponents()
+        private async void InitializeComponents()
         {
             System.Diagnostics.Debug.WriteLine("Initializing components ...");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
+
+            DTE = (DTE2)GetService(typeof(DTE));
             _outputPane = CreateOutputPane();
             _errorListProvider = new ErrorListProvider(this);
-            _solution = (IVsSolution)GetService<SVsSolution>();
+            _solution = (IVsSolution)GetService(typeof(SVsSolution));
             _activator = delegate (string projectFile)
             {
-                return new ProjectMonitor(new Reporter(projectFile, this), _akka);
+                return new ProjectMonitor(OnValidationError, reporter: new Reporter(projectFile, this));
             };
 
             System.Diagnostics.Debug.WriteLine("components initialized!");
         }
 
-        private void RegisterCommands(CancellationToken cancellationToken = default)
+        private async Task RegisterCommandsAsync(CancellationToken cancellationToken = default)
         {
-            _commandService = GetService<IMenuCommandService>();
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             WatchCommand.Initialize(this);
+            RefreshCommand.Initialize(this);
             TranspileCommand.Initialize(this);
             AddConfigCommand.Initialize(this);
             CompileOnBuildCommand.Initialize(this);
@@ -99,85 +143,58 @@ namespace Acklann.WebFlow
         // Event Handlers
         // ================================================================================
 
-        private void OnSolutionLoaded(object sender = null, EventArgs e = null)
-        {
-            System.Diagnostics.Debug.WriteLine("soltion was opened");
-            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
-
-            if (_notLoading)
-            //Task.Run(() =>
-            {
-                _notLoading = false;
-                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
-
-                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
-                    if (_watchList.Contains(project.FullName) == false)
-                    {
-                        string folder = Path.GetDirectoryName(project.FullName);
-                        string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
-
-                        if (!string.IsNullOrEmpty(configFile))
-                        {
-                            ProjectMonitor monitor = _activator.Invoke(project.FullName);
-                            if (_watchList.Contains(project.FullName)) return;
-                            else _watchList.Add(project.FileName, monitor);
-
-                            if (Configuration.Project.TryLoad(configFile, out Configuration.Project config, out string error))
-                            {
-                                monitor?.Start(config);
-                                if (UserState.Instance.WatcherEnabled) DTE.StatusBar.Text = $"Monitoring '{project.Name}' for changes ...";
-                                else monitor?.Pause();
-                            }
-                            else
-                            {
-                                DTE.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
-                            }
-                        }
-                        else if (userOptions.AutoConfig && project.IsaWebProject())
-                        {
-                            var config = Configuration.Project.CreateDefault(Path.Combine(folder, ConfigName));
-                            config.Save();
-
-                            ProjectMonitor monitor = _activator.Invoke(project.FullName);
-                            _watchList.Add(project.FileName, monitor);
-                            monitor?.Start(config);
-                            if (UserState.Instance.WatcherEnabled) DTE.StatusBar.Text = $"Monitoring '{project.Name}' for changes ...";
-                            else monitor?.Pause();
-                        }
-                    }
-                _notLoading = true;
-                //});
-            }
-        }
-
         private void OnSolutionClosing(object sender = null, EventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine("solution closed");
-            foreach (string projectFile in _watchList.Keys)
-            {
-                if (_watchList[projectFile] is ProjectMonitor monitor)
+
+            if (_watchList != null)
+                foreach (string projectFile in _watchList.Keys)
                 {
-                    monitor.Pause();
-                    System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
+                    if (_watchList[projectFile] is ProjectMonitor monitor)
+                    {
+                        monitor.Pause();
+                        System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
+                    }
                 }
+        }
+
+        private async void OnSolutionLoaded(object sender = null, EventArgs e = null)
+        {
+            System.Diagnostics.Debug.WriteLine("soltion was opened");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
+
+            if (_notLoading)
+            {
+                _notLoading = false;
+                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
+                LoadSolution(userOptions.AutoConfig);
+                _notLoading = true;
             }
+        }
+
+        private async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] Configuration file is not well-formed.";
+            string msg = $"[{e.Severity}] {e.Message}{Environment.NewLine}";
+            _outputPane?.OutputStringThreadSafe(msg);
         }
 
         #region Base Members
 
-        protected override void Initialize()
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            DTE = (DTE2)GetService(typeof(DTE));
-
             InitializeComponents();
             SubscribeToEvents();
-            RegisterCommands();
-            LoadEmbeddedModules();
-            //OnSolutionLoaded();
+            await RegisterCommandsAsync();
+            OnSolutionLoaded();
+            System.Diagnostics.Debug.WriteLine($"----- exited {nameof(InitializeAsync)} -----");
         }
 
         protected override void Dispose(bool disposing)
@@ -185,7 +202,6 @@ namespace Acklann.WebFlow
             System.Diagnostics.Debug.WriteLine("!!!!! Disposing !!!!!");
             if (disposing)
             {
-                _akka?.Dispose();
                 _errorListProvider?.Dispose();
                 UserState.Instance?.Dispose();
 
@@ -199,13 +215,11 @@ namespace Acklann.WebFlow
 
         #region Private Members
 
-        internal ActorSystem _akka;
         internal IVsSolution _solution;
         internal IDictionary _watchList;
         internal IVsOutputWindowPane _outputPane;
         internal volatile bool _notLoading = true;
         internal ProjectMonitorActivator _activator;
-        internal IMenuCommandService _commandService;
         internal ErrorListProvider _errorListProvider;
 
         #endregion Private Members

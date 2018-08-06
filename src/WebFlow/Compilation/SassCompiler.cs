@@ -13,7 +13,7 @@ namespace Acklann.WebFlow.Compilation
             if (Shell.CanInvokeNode())
             {
                 foreach (string extension in _supportedFileTypes)
-                    if (options.GetFileType.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                    if (options.FileType.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -26,8 +26,8 @@ namespace Acklann.WebFlow.Compilation
         {
             // DOCUMENTATION: https://github.com/sass/node-sass
 
-            if (!Directory.Exists(options.OutputDirectory)) Directory.CreateDirectory(options.OutputDirectory);
-            if (options.GenerateSourceMaps && !Directory.Exists(options.SourceMapDirectory))
+            if (!string.IsNullOrEmpty(options.OutputDirectory) && !Directory.Exists(options.OutputDirectory)) Directory.CreateDirectory(options.OutputDirectory);
+            if (options.GenerateSourceMaps && !string.IsNullOrEmpty(options.SourceMapDirectory) && !Directory.Exists(options.SourceMapDirectory))
             {
                 Directory.CreateDirectory(options.SourceMapDirectory);
             }

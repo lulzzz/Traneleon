@@ -43,7 +43,7 @@ namespace Acklann.WebFlow.Configuration
         {
             bundle = null;
 
-            if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith(string.Concat(Suffix, Path.GetExtension(filePath)), StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith($"{Suffix}{Path.GetExtension(filePath)}", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -67,87 +67,78 @@ namespace Acklann.WebFlow.Configuration
             return false;
         }
 
-        public override ICompilierOptions CreateCompilerOptions(string filePath)
+        public override IEnumerable<ICompilierOptions> CreateCompilerOptions(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
             Bundle bundle = GetBundle(Include, filePath);
-            if (bundle?.IsNotEmpty ?? false)
+            if (bundle?.IsNotNullOrEmpty ?? false)
             {
-                string[] src;
-                bool concat = false;
                 string outFile, mapDir, outDir;
 
-                if (string.IsNullOrEmpty(bundle.OutFile))
+                if (string.IsNullOrEmpty(bundle.OutputFile))
                 {
-                    src = new[] { filePath };
                     outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(filePath) : OutputDirectory);
-                    outFile = Path.ChangeExtension(Path.Combine(outDir, Path.GetFileName(filePath)), ".js");
+                    outFile = Path.Combine(outDir, Path.GetFileName(filePath));
+                    mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
+
+                    yield return new TranspilierSettings(outFile, new[] { filePath }, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, false, outDir);
                 }
                 else
                 {
-                    concat = true;
-                    if (Path.IsPathRooted(bundle.OutFile))
+                    if (Path.IsPathRooted(bundle.OutputFile))
                     {
-                        outFile = bundle.OutFile;
+                        outFile = bundle.OutputFile;
                         outDir = Path.GetDirectoryName(outFile);
-                    }
-                    else if (bundle.OutFile.EndsWith(".js") || bundle.OutFile.EndsWith(".ts"))
-                    {
-                        outDir = (string.IsNullOrEmpty(OutputDirectory) ? WorkingDirectory : OutputDirectory);
-                        outFile = Path.Combine(outDir, bundle.OutFile);
                     }
                     else
                     {
-                        outFile = GetEntryPoint(bundle);
-                        outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(outFile) : OutputDirectory);
-                        outFile = Path.ChangeExtension(Path.Combine(outDir, Path.GetFileName(outFile)), ".js");
+                        outFile = GetOutFile(bundle);
+                        outDir = Path.GetDirectoryName(outFile);
                     }
 
-                    src = EnumerateFiles(new[] { bundle }).ToArray();
+                    string[] src = EnumerateFiles(new[] { bundle }).ToArray();
+
+                    mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
+                    yield return new TranspilierSettings(Path.ChangeExtension(outFile, ".js"), src, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, true, outDir);
                 }
-
-                mapDir = (string.IsNullOrEmpty(SourceMapDirectory) ? outDir : SourceMapDirectory);
-                return new TranspilierSettings(outFile, src, Suffix, mapDir, GenerateSourceMaps, KeepIntermediateFiles, concat);
             }
-
-            return new NullCompilerOptions();
         }
 
-        public override IEnumerable<string> EnumerateFiles()
-        {
-            return EnumerateFiles(Include);
-        }
+        public override IEnumerable<string> EnumerateFiles() => EnumerateFiles(Include, returnOutFileIfExists: true);
 
-        public IEnumerable<string> EnumerateFiles(IEnumerable<Bundle> bundles)
+        internal IEnumerable<string> EnumerateFiles(IEnumerable<Bundle> bundles, bool returnOutFileIfExists = false)
         {
-            var usedList = new Dictionary<string, bool>();
+            string value;
+            var duplicateFiles = new Dictionary<string, bool>();
 
             foreach (string file in EnumerateFiles("*.ts"))
                 if (CanAccept(file, bundles, out Bundle bundle))
                 {
-                    if (string.IsNullOrEmpty(bundle.OutFile)) yield return file;
-                    else if (!usedList.ContainsKey(bundle.OutFile))
+                    if (string.IsNullOrEmpty(bundle.OutputFile)) value = file;
+                    else if (returnOutFileIfExists) value = GetOutFile(bundle);
+                    else value = file;
+
+                    if (returnOutFileIfExists && duplicateFiles.ContainsKey(value) == false)
                     {
-                        usedList.Add(bundle.OutFile, true);
-                        string src = GetEntryPoint(bundle);
-                        if (!string.IsNullOrEmpty(src) && !usedList.ContainsKey(src))
-                        {
-                            usedList.Add(src, true);
-                            yield return src;
-                        }
+                        duplicateFiles.Add(value, true);
+                        yield return value;
+                        continue;
                     }
+                    else if (returnOutFileIfExists) continue;
+                    else yield return file;
                 }
         }
 
-        internal static Bundle GetBundle(IEnumerable<Bundle> bundles, string filePath)
+        internal Bundle GetBundle(IEnumerable<Bundle> bundles, string filePath)
         {
             foreach (Bundle group in bundles)
             {
-                foreach (Glob pattern in group.Patterns)
-                {
-                    if (pattern.IsMatch(filePath)) return group;
-                }
+                if (!string.IsNullOrEmpty(group.OutputFile) && Glob.IsMatch(filePath, $"**/{group.OutputFile}")) return group;
+                else foreach (Glob pattern in group.Patterns)
+                    {
+                        if (pattern.IsMatch(filePath)) return group;
+                    }
             }
 
             return null;
@@ -155,7 +146,7 @@ namespace Acklann.WebFlow.Configuration
 
         internal string GetEntryPoint(Bundle bundle)
         {
-            string entryPoint = bundle.OutFile.ResolvePath(WorkingDirectory, SearchOption.AllDirectories).FirstOrDefault();
+            string entryPoint = bundle.OutputFile.ResolvePath(WorkingDirectory, SearchOption.AllDirectories).FirstOrDefault();
 
             if (string.IsNullOrEmpty(entryPoint)) return string.Empty;
             else if (entryPoint.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)) return entryPoint;
@@ -196,6 +187,11 @@ namespace Acklann.WebFlow.Configuration
             }
         }
 
+        private string GetOutFile(Bundle bundle)
+        {
+            return Path.Combine((string.IsNullOrEmpty(OutputDirectory) ? WorkingDirectory : OutputDirectory), bundle.OutputFile);
+        }
+
         /* ===== NESTED TYPES ===== */
 
         public class Bundle
@@ -206,18 +202,20 @@ namespace Acklann.WebFlow.Configuration
 
             public Bundle(params string[] patterns)
             {
-                OutFile = string.Empty;
+                OutputFile = null;
                 Patterns = new List<string>(patterns);
             }
 
             [XmlAttribute("outFile")]
-            public string OutFile;
+            [JsonProperty("outFile")]
+            public string OutputFile;
 
             [XmlElement("pattern")]
+            [JsonProperty("patterns")]
             public List<string> Patterns { get; set; }
 
             [XmlIgnore, JsonIgnore]
-            public bool IsNotEmpty
+            public bool IsNotNullOrEmpty
             {
                 get { return Patterns?.Count > 0; }
             }

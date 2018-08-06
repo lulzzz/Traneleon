@@ -6,7 +6,7 @@
     "include":
     [
       {
-        "entryPoint": "_Layout.cshtml",
+        "outFile": "_Layout.cshtml",
         "patterns":
         [
           "*.ts"
@@ -19,6 +19,25 @@
     "include":
     [
       "*.scss"
+    ]
+  },
+  "image":
+  {
+    "optimize":
+    [
+      {
+        "quality": 75,
+        "patterns":
+        [
+          "*.png"
+        ]
+      },
+      {
+        "patterns":
+        [
+          "*.jpg"
+        ]
+      }
     ]
   }
 }

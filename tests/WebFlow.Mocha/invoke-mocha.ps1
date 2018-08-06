@@ -1,4 +1,5 @@
 ﻿Param(
+	[Alias('t')]
 	[int]$Timeout = 10000
 )
 

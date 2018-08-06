@@ -60,7 +60,8 @@ namespace Acklann.WebFlow.Commands
 
         public static void Initialize(VSPackage package)
         {
-            Instance = new TranspileCommand(package._commandService, package.DTE, package._watchList);
+            var service = package.GetService<IMenuCommandService>();
+            Instance = new TranspileCommand(service, package.DTE, package._watchList);
         }
 
         #endregion Singleton

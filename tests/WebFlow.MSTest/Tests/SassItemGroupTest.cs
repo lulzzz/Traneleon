@@ -1,9 +1,11 @@
 ﻿using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Configuration;
+using ApprovalTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Acklann.WebFlow.Tests
 {
@@ -39,6 +41,7 @@ namespace Acklann.WebFlow.Tests
             // Arrange
             var sut = new SassItemGroup
             {
+                Enabled = true,
                 Suffix = ".min",
                 WorkingDirectory = Path.GetDirectoryName(TestFile.DirectoryName),
                 Include = new List<string> { "*.sass" },
@@ -47,15 +50,22 @@ namespace Acklann.WebFlow.Tests
             var sample = TestFile.GetStyle1SCSS().FullName;
 
             // Act
-            var result = (TranspilierSettings)sut.CreateCompilerOptions(sample);
-            var empty = sut.CreateCompilerOptions(Path.Combine(TestFile.DirectoryName, "_base.scss"));
+            var single = sut.CreateCompilerOptions(sample).ToList();
+            var empty = sut.CreateCompilerOptions(TestFile.GetPartialSCSS().FullName).ToList();
+
+            sut.WorkingDirectory = SampleProject.DirectoryName;
+            var multiple = sut.CreateCompilerOptions(SampleProject.GetLayoutSCSS().FullName).Select(x=> x.SourceFile.Remove(0, SampleProject.DirectoryName.Length)).ToArray();
 
             // Assert
-            empty.ShouldBeOfType<NullCompilerOptions>();
+            empty.ShouldBeEmpty();
 
-            result.ShouldBeOfType<TranspilierSettings>();
-            result.SourceFiles[0].ShouldBe(sample);
-            result.OutputDirectory.ShouldBe(TestFile.DirectoryName);
+            single.Count.ShouldBe(1);
+            (single[0]).SourceFile.ShouldBe(sample);
+            ((TranspilierSettings)single[0]).OutputDirectory.ShouldBe(Path.GetDirectoryName(sample));
+            ((TranspilierSettings)single[0]).SourceMapDirectory.ShouldBe(Path.GetDirectoryName(sample));
+            ((TranspilierSettings)single[0]).OutputFile.ShouldBe(Path.ChangeExtension(sample, ".css"));
+
+            Approvals.VerifyAll(multiple, "path");
         }
     }
 }

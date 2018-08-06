@@ -28,6 +28,7 @@ namespace Acklann.WebFlow
 			public static readonly int ToolbarMenuId = 0x0201;
 			public static readonly int WatchCommandIdId = 0x0301;
 			public static readonly int DonateCommandIdId = 0x0302;
+			public static readonly int RefreshCommandIdId = 0x0310;
 			public static readonly int SettingsCommandIdId = 0x0303;
 			public static readonly int GotoWebsiteCommandIdId = 0x0307;
 			public static readonly int AddConfigFileCommandIdId = 0x0304;

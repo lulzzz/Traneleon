@@ -17,6 +17,9 @@ namespace Acklann.WebFlow.Compilation
 
         public ICompilierResult Execute(ICompilierOptions options)
         {
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"executing {GetType().Name} ...");
+#endif
             try
             {
                 SetArguments((TOptions)options);
@@ -27,7 +30,7 @@ namespace Acklann.WebFlow.Compilation
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                return new CompilerResult(options.Kind, options.SourceFile, new CompilerError(ex.Message, options.SourceFile, 0));
+                return new CompilerResult(options.Kind, false, 0, options.SourceFile, string.Empty);
             }
         }
 

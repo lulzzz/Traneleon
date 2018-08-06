@@ -8,6 +8,8 @@ namespace Acklann.WebFlow
 	{
 		public const string FOLDER_NAME = "TestData";
 
+		public static string GetTempDir(string name) => Path.Combine(Path.GetTempPath(), name);
+
 		public static string DirectoryName
         {
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FOLDER_NAME); }
@@ -55,7 +57,29 @@ namespace Acklann.WebFlow
 
 		public static FileInfo GetStyle1SCSS() => GetFile(@"style1.scss");
 
+		public static FileInfo GetStyle2SCSS() => GetFile(@"style2.scss");
+
 		public static FileInfo GetPartialSCSS() => GetFile(@"_partial.scss");
+
+		public static FileInfo GetImg1aGIF() => GetFile(@"images\img1A.gif");
+
+		public static FileInfo GetImg2BMP() => GetFile(@"images\img2.bmp");
+
+		public static FileInfo GetImg3GIF() => GetFile(@"images\img3.gif");
+
+		public static FileInfo GetImg4ICO() => GetFile(@"images\img4.ico");
+
+		public static FileInfo GetImg5PNG() => GetFile(@"images\img5.png");
+
+		public static FileInfo GetImg10PNG() => GetFile(@"images\lvl2\img10.png");
+
+		public static FileInfo GetImg6TIF() => GetFile(@"images\lvl2\img6.tif");
+
+		public static FileInfo GetImg7SVG() => GetFile(@"images\lvl2\img7.svg");
+
+		public static FileInfo GetImg8JPG() => GetFile(@"images\lvl2\img8.jpg");
+
+		public static FileInfo GetImg9JPG() => GetFile(@"images\lvl2\img9.jpg");
 
 	}
 
@@ -64,6 +88,14 @@ namespace Acklann.WebFlow
 		public static FileInfo GetAppTS() => GetFile(@"scripts\app.ts");
 
 		public static FileInfo GetButtonTS() => GetFile(@"scripts\components\button.ts");
+
+		public static FileInfo GetGlobalSCSS() => GetFile(@"stylesheets\global.scss");
+
+		public static FileInfo GetLayoutSCSS() => GetFile(@"stylesheets\layout\_layout.scss");
+
+		public static FileInfo GetResetSCSS() => GetFile(@"stylesheets\layout\_reset.scss");
+
+		public static FileInfo GetHomeSCSS() => GetFile(@"stylesheets\views\home.scss");
 
 	}
 }

@@ -11,22 +11,22 @@ namespace Acklann.WebFlow
         {
         }
 
-        public FileProcessor(IObserver<ICompilierResult> observer) : this(observer, new CompilerFactory())
+        public FileProcessor(IProgress<ProgressToken> reporter) : this(reporter, new CompilerFactory())
         {
         }
 
-        public FileProcessor(IObserver<ICompilierResult> observer, ICompilerFactory factory)
+        public FileProcessor(IProgress<ProgressToken> reporter, ICompilerFactory factory)
         {
-            _factory = factory;
-            _observer = observer;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _reporter = reporter;
             _compilers = new Hashtable();
 
-            Receive<ICompilierOptions>(HandleMessage, ((x) => _factory != null));
+            Receive<ICompilierOptions>(HandleMessage, ((x) => !string.IsNullOrEmpty(x.SourceFile)));
         }
 
-        public static Props GetProps(IObserver<ICompilierResult> observer)
+        public static Props GetProps(IProgress<ProgressToken> reporter)
         {
-            return Props.Create(typeof(FileProcessor), observer).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount));
+            return Props.Create(typeof(FileProcessor), reporter).WithRouter(new Akka.Routing.RoundRobinPool(Environment.ProcessorCount));
         }
 
         protected void HandleMessage(ICompilierOptions options)
@@ -42,12 +42,8 @@ namespace Acklann.WebFlow
                         _compilers.Add(type.Name, fileOperator);
                     }
 
-                    try
-                    {
-                        ICompilierResult result = fileOperator.Execute(options);
-                        _observer?.OnNext(result);
-                    }
-                    catch (Exception ex) { _observer?.OnError(ex); }
+                    ICompilierResult result = fileOperator.Execute(options);
+                    _reporter?.Report(new ProgressToken(result));
                     break;
                 }
             }
@@ -56,14 +52,13 @@ namespace Acklann.WebFlow
         protected override void PostStop()
         {
             _compilers.Clear();
-            _observer?.OnCompleted();
         }
 
         #region Private Members
 
         private readonly IDictionary _compilers;
         private readonly ICompilerFactory _factory;
-        private readonly IObserver<ICompilierResult> _observer;
+        private readonly IProgress<ProgressToken> _reporter;
 
         #endregion Private Members
     }

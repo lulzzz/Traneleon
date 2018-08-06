@@ -43,47 +43,36 @@ namespace Acklann.WebFlow.Tests
             {
                 Enabled = true,
                 Suffix = ".min",
-                WorkingDirectory = SampleProject.DirectoryName,
+                WorkingDirectory = TestFile.DirectoryName,
                 Include = new List<TypescriptItemGroup.Bundle>
                 {
                     new TypescriptItemGroup.Bundle()
                     {
-                        Patterns = new List<string> { "wwwroot/**/*.ts" },
-                        OutFile = $"wwwroot/scripts/build.js"
+                        Patterns = new List<string> { "*.ts" }
                     }
                 }
             };
 
-            var outFile = Path.Combine(SampleProject.DirectoryName, sut.Include[0].OutFile);
-            var sourceFiles = new[] { SampleProject.GetAppTS().FullName, SampleProject.GetButtonTS().FullName };
+            var sample1 = TestFile.GetScript1TS().FullName;
+            var outDir = Path.Combine(Path.GetTempPath(), nameof(TypescriptItemGroupTest));
 
             // Act
-            var case1 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
-            var case2 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[1]);
+            var single = sut.CreateCompilerOptions(sample1).First();
 
-            sut.Include[0].OutFile = null;
-            var case3 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
-
-            sut.Include[0].OutFile = "Shared/_Layout.cshtml";
-            var case4 = (TranspilierSettings)sut.CreateCompilerOptions(sourceFiles[0]);
+            sut.SourceMapDirectory = TestFile.DirectoryName;
+            sut.Include[0].OutputFile = Path.Combine(outDir, "build.ts");
+            var bundle = (TranspilierSettings)sut.CreateCompilerOptions(sample1).First();
 
             // Assert
-            case1.OutputFile.ShouldBe(outFile);
-            case1.ShouldBundleFiles.ShouldBeTrue();
-            case1.SourceFiles.ShouldBeSubsetOf(sourceFiles);
+            single.SourceFile.ShouldBe(sample1);
+            ((TranspilierSettings)single).OutputDirectory.ShouldBe(Path.GetDirectoryName(sample1));
+            ((TranspilierSettings)single).SourceMapDirectory.ShouldBe(Path.GetDirectoryName(sample1));
+            ((TranspilierSettings)single).ShouldBundleFiles.ShouldBeFalse();
 
-            case2.OutputFile.ShouldBe(outFile);
-            case2.ShouldBundleFiles.ShouldBeTrue();
-            case2.SourceFiles.ShouldBeSubsetOf(sourceFiles);
-
-            case3.SourceFiles.Length.ShouldBe(1);
-            case3.ShouldBundleFiles.ShouldBeFalse();
-            case3.SourceFiles.ShouldContain(sourceFiles[0]);
-            case3.OutputFile.ShouldBe(Path.ChangeExtension(sourceFiles[0], ".js"));
-
-            case4.SourceFiles.Length.ShouldBe(1);
-            case4.ShouldBundleFiles.ShouldBeTrue();
-            case4.SourceFiles.ShouldBeSubsetOf(sourceFiles);
+            bundle.SourceFiles.Length.ShouldBeGreaterThanOrEqualTo(2);
+            bundle.SourceMapDirectory.ShouldBe(sut.SourceMapDirectory);
+            bundle.OutputDirectory.ShouldBe(outDir);
+            bundle.ShouldBundleFiles.ShouldBeTrue();
         }
 
         [TestMethod]
@@ -96,25 +85,23 @@ namespace Acklann.WebFlow.Tests
                 WorkingDirectory = SampleProject.DirectoryName,
                 Include = new List<TypescriptItemGroup.Bundle>
                 {
-                    new TypescriptItemGroup.Bundle("*.ts") { OutFile = "Views/Shared/_Layout.*html" }
+                    new TypescriptItemGroup.Bundle("*.ts") { OutputFile = "wwwroot/scripts/build.ts" }
                 }
             };
 
             // Act
-            var entryPoint = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
+            var outFile = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
 
-            sut.Include[0].OutFile = string.Empty;
+            sut.Include[0].OutputFile = string.Empty;
             var allFiles = sut.EnumerateFiles().Select(x => Path.GetFileName(x)).ToList();
 
             // Assert
             allFiles.ShouldNotBeEmpty();
-            entryPoint.ShouldNotBeEmpty();
-
-            entryPoint.ShouldContain("app.ts");
             allFiles.ShouldContain("app.ts", "button.ts");
-
-            entryPoint.Count.ShouldBe(1);
             allFiles.Count.ShouldBeGreaterThanOrEqualTo(2);
+
+            outFile.Count.ShouldBe(1);
+            outFile.ShouldBeSubsetOf(new[] { "build.ts" });
         }
     }
 }

@@ -24,6 +24,10 @@ Task "Package-Solution" -alias "pack" -description "This task generates all delp
 	Write-Header "dotnet: pack '$($proj.BaseName)'";
 	Exec { &dotnet pack $proj.FullName --output $ArtifactsDir --configuration $Configuration /p:PackageVersion=$version; }
 
+	# VSIX
+	$vsix = Get-Item "$RootDir/src/*.VSIX/bin/$Configuration/*.vsix";
+	Copy-Item $vsix -Destination $ArtifactsDir -Force;
+
 	# Un-packing .nupkg for testing.
 	[string]$nupkg = Resolve-Path "$ArtifactsDir\*.nupkg";
 	$zip = [IO.Path]::ChangeExtension($nupkg, ".zip");

@@ -1,4 +1,5 @@
-﻿using Acklann.WebFlow.Compilation;
+﻿using Acklann.GlobN;
+using Acklann.WebFlow.Compilation;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,6 @@ namespace Acklann.WebFlow.Configuration
 
         internal static string[] GeneratedFolders = new[] { "node_modules", "bower_components", "bin", "obj", "vendor" };
 
-        [XmlIgnore, JsonIgnore]
-        public string WorkingDirectory { get; set; }
-
         [XmlAttribute("enable")]
         public bool Enabled { get; set; }
 
@@ -31,9 +29,12 @@ namespace Acklann.WebFlow.Configuration
         [XmlAttribute("outputDirectory")]
         public string OutputDirectory { get; set; }
 
+        [XmlIgnore, JsonIgnore]
+        public string WorkingDirectory { get; set; }
+
         public abstract bool CanAccept(string filePath);
 
-        public abstract ICompilierOptions CreateCompilerOptions(string filePath);
+        public abstract IEnumerable<ICompilierOptions> CreateCompilerOptions(string filePath);
 
         public virtual IEnumerable<string> EnumerateFiles()
         {
@@ -46,15 +47,27 @@ namespace Acklann.WebFlow.Configuration
 
         protected internal IEnumerable<string> EnumerateFiles(string pattern)
         {
+            Glob[] patterns = (from g in GeneratedFolders select new Glob($"**/{g}/")).ToArray();
+
             foreach (string file in Directory.EnumerateFiles(WorkingDirectory, pattern)) yield return file;
-
             foreach (string folder in Directory.EnumerateDirectories(WorkingDirectory).Where(x => notDependency(x)))
+            {
                 foreach (string file in Directory.EnumerateFiles(folder, pattern, SearchOption.AllDirectories))
-                {
-                    yield return file;
-                }
-
+                    if (canAccept(file))
+                    {
+                        yield return file;
+                    }
+            }
             /* *** local function(s) *** */
+
+            bool canAccept(string path)
+            {
+                foreach (Glob glob in patterns)
+                    if (glob.IsMatch(path)) return false;
+                    else { }
+
+                return true;
+            }
 
             bool notDependency(string path)
             {
@@ -65,6 +78,13 @@ namespace Acklann.WebFlow.Configuration
                     }
                 return true;
             }
+        }
+        
+        protected string GetOutputFile(string sourceFile)
+        {
+            string baseName = Path.GetFileNameWithoutExtension(sourceFile);
+            string outDir = (string.IsNullOrEmpty(OutputDirectory) ? Path.GetDirectoryName(sourceFile) : OutputDirectory);
+            return Path.Combine(outDir, $"{baseName}{Suffix}{Path.GetExtension(sourceFile)}");
         }
     }
 }

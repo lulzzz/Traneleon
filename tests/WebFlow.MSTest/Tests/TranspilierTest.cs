@@ -49,7 +49,7 @@ namespace Acklann.WebFlow.Tests
         [TestMethod]
         public void SassCompiler_can_report_errors()
         {
-            RunErrorTest<SassCompiler>(TestFile.GetBadStyle1SCSS(), 2);
+            RunErrorTest<SassCompiler>(TestFile.GetBadStyle1SCSS(), 2 - 1);
         }
 
         private static void RunCompileTest<T>(FileInfo sourceFile, string ext) where T : ICompiler
