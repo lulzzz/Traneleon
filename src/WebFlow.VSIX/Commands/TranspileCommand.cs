@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -33,24 +34,48 @@ namespace Acklann.WebFlow.Commands
             }
         }
 
-        public void TranspileProject(IEnumerable<EnvDTE.Project> projects)
+        public void TranspileProject(string projectFile)
         {
-            foreach (EnvDTE.Project project in projects)
+            if (_watchList.Contains(projectFile) && (_watchList[projectFile] is ProjectMonitor monitor))
             {
-                if (_watchList.Contains(project.FileName) && (_watchList[project.FileName] is ProjectMonitor monitor))
+                monitor.Compile();
+            }
+        }
+
+        public void TranspileProject(IEnumerable<string> projectFiles)
+        {
+            foreach (string fileName in projectFiles)
+            {
+                if (_watchList.Contains(fileName) && (_watchList[fileName] is ProjectMonitor monitor))
                 {
                     monitor.Compile();
                 }
             }
         }
 
+        public void TranspileProject(IEnumerable<EnvDTE.Project> projects)
+        {
+            TranspileProject(projects.Select(x => x.FullName));
+        }
+
         private void OnCommandInvoked(object sender, EventArgs e)
         {
-            foreach (EnvDTE.SelectedItem item in _dte.GetSelectedItems())
+            if (sender is MenuCommand command && command.CommandID.ID == Symbols.CmdSet.CompileSolutionCommandIdId)
             {
-                string ext = Path.GetExtension(item.Name ?? string.Empty).ToLowerInvariant();
-                if (ext.EndsWith("proj", StringComparison.OrdinalIgnoreCase) && item.Project != null) TranspileProject(new[] { item.Project });
-                else if (item.ProjectItem != null) TranspileFile(item.ProjectItem);
+                foreach (EnvDTE.Project project in _dte.GetActiveProjects())
+                {
+
+                }
+            }
+            else
+            {
+                foreach (EnvDTE.SelectedItem item in _dte.GetSelectedItems())
+                {
+                    string ext = Path.GetExtension(item.Name ?? string.Empty).ToLowerInvariant();
+                    if (ext.EndsWith("proj", StringComparison.OrdinalIgnoreCase) && item.Project != null) TranspileProject(item.Project.FullName);
+                    else if (ext.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)) TranspileProject(_dte.GetActiveProjects());
+                    else if (item.ProjectItem != null) TranspileFile(item.ProjectItem);
+                }
             }
         }
 

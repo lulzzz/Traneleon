@@ -43,7 +43,7 @@ namespace Acklann.WebFlow.Commands
 
         public void StartWatcher()
         {
-            using (_monitor = new ProjectMonitor(reporter: _reporter))
+            using (_monitor = new ProjectMonitor())
             {
                 _monitor.Start(_project);
                 Log.Debug("monitoring project files for changes...");

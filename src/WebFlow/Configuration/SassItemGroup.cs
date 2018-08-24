@@ -35,9 +35,7 @@ namespace Acklann.WebFlow.Configuration
 
         public override bool CanAccept(string filePath)
         {
-            if (!string.IsNullOrEmpty(Suffix)
-                &&
-                filePath.EndsWith(string.Concat(Suffix, Path.GetExtension(filePath)), StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith(string.Concat(Suffix, Path.GetExtension(filePath)), StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

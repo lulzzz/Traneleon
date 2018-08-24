@@ -1,4 +1,6 @@
-﻿using Acklann.WebFlow.Commands;
+﻿using Acklann.GlobN;
+using Acklann.WebFlow.Commands;
+using Acklann.WebFlow.Compilation;
 using Acklann.WebFlow.Utilities;
 using EnvDTE;
 using EnvDTE80;
@@ -6,6 +8,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
+
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -53,7 +56,7 @@ namespace Acklann.WebFlow
                 {
                     string folder = Path.GetDirectoryName(project.FullName);
                     string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
-                    string msg = string.Format("[{1}] Monitoring '{0}' for changes...", project.Name, nameof(WebFlow));
+                    string msg = string.Format("{1} | Monitoring '{0}' for changes ...", project.Name, nameof(WebFlow));
 
                     if (!string.IsNullOrEmpty(configFile))
                     {
@@ -114,7 +117,7 @@ namespace Acklann.WebFlow
             _solution = (IVsSolution)GetService(typeof(SVsSolution));
             _activator = delegate (string projectFile)
             {
-                return new ProjectMonitor(OnValidationError, reporter: new Reporter(projectFile, this));
+                return new ProjectMonitor(OnValidationError, BeforeFileCompilation, async (token, cwd) => { await AfterFileCompilationAsync(token, cwd); });
             };
 
             System.Diagnostics.Debug.WriteLine("components initialized!");
@@ -125,7 +128,7 @@ namespace Acklann.WebFlow
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             WatchCommand.Initialize(this);
-            RefreshCommand.Initialize(this);
+            ReloadCommand.Initialize(this);
             TranspileCommand.Initialize(this);
             AddConfigCommand.Initialize(this);
             CompileOnBuildCommand.Initialize(this);
@@ -173,13 +176,91 @@ namespace Acklann.WebFlow
             }
         }
 
-        private async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
+        internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] Configuration file is not well-formed.";
-            string msg = $"[{e.Severity}] {e.Message}{Environment.NewLine}";
-            _outputPane?.OutputStringThreadSafe(msg);
+            DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
+            _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
+        }
+
+        private void BeforeFileCompilation(ICompilierOptions options, string cwd)
+        {
+            if (!string.IsNullOrEmpty(options.SourceFile))
+            {
+                string msg = $"[{options.Kind}]'n {options.SourceFile.ToFriendlyName(cwd)} ...{Environment.NewLine}";
+                _outputPane.OutputStringThreadSafe(msg);
+                DTE.StatusBar.Text = $"{nameof(WebFlow)} | {msg}";
+                DTE.StatusBar.Animate(true, _statusbarIcon);
+            }
+        }
+
+        private async Task AfterFileCompilationAsync(ProgressToken token, string cwd)
+        {
+            // Stoping status bar animation.
+            DTE.StatusBar.Animate(false, _statusbarIcon);
+
+            if (token.Result.Succeeded)
+            {
+                // Updating the error-list.
+                Glob pattern = token.Result.SourceFile ?? string.Empty;
+                for (int i = 0; i < _errorListProvider.Tasks.Count; i++)
+                {
+                    if (pattern.IsMatch(_errorListProvider.Tasks[i].Document))
+                    {
+                        _errorListProvider.Tasks.RemoveAt(i);
+                        i = -1;
+                    }
+                }
+                _errorListProvider.Tasks.Clear();
+
+                // Updating the output pane with the results.
+                string msg = $"[{token.Result.Kind}] '{token.Result.SourceFile.ToFriendlyName(cwd)}' => '{token.Result.OutputFile.ToFriendlyName(cwd)}' in {TimeSpan.FromTicks(token.Result.ExecutionTime).ToString(@"mm\:ss\.fff")}\r\n";
+                System.Diagnostics.Debug.WriteLine(msg);
+                _outputPane.OutputStringThreadSafe(msg);
+            }
+            else
+            {
+                string projectFile = cwd.GetFiles("*.*proj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+
+                // Adding new error to error-list.
+                if (_solution.GetProjectOfUniqueName(projectFile, out IVsHierarchy hierarchy) == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("FAILED");
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    foreach (CompilerError error in token.Result.ErrorList)
+                    {
+                        var newError = new ErrorTask()
+                        {
+                            CanDelete = true,
+                            Line = error.Line,
+                            Column = error.Column,
+                            Document = error.File,
+                            HierarchyItem = hierarchy,
+                            Text = $"(WF) {error.Message}",
+                            Category = TaskCategory.BuildCompile,
+                            ErrorCategory = ((TaskErrorCategory)error.Category)
+                        };
+
+                        newError.Navigate += delegate (object sender, EventArgs e)
+                        {
+                            newError.Line++;
+                            _errorListProvider.Navigate(newError, _editorGuid);
+                            newError.Line--;
+                        };
+                        _errorListProvider.Tasks.Add(newError);
+#if DEBUG
+                        System.Diagnostics.Debug.WriteLine($"[{newError.ErrorCategory}] '{Path.GetFileName(newError.Document)}' {newError.Line}");
+                        System.Diagnostics.Debug.WriteLine($"{newError.Text}");
+#endif
+                    }
+                    _errorListProvider.Show();
+                }
+            }
+        }
+
+        private void OnConfigChanged(object sender, string configFile)
+        {
         }
 
         #region Base Members
@@ -214,6 +295,9 @@ namespace Acklann.WebFlow
         #endregion Base Members
 
         #region Private Members
+
+        internal readonly Guid _editorGuid = new Guid(EnvDTE.Constants.vsViewKindTextView);
+        internal readonly object _statusbarIcon = (short)Microsoft.VisualStudio.Shell.Interop.Constants.SBAI_General;
 
         internal IVsSolution _solution;
         internal IDictionary _watchList;

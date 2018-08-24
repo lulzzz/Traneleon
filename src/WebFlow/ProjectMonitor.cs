@@ -11,11 +11,11 @@ namespace Acklann.WebFlow
 {
     public class ProjectMonitor : IDisposable
     {
-        public ProjectMonitor(ValidationEventHandler eventHandler = default, IProgress<ProgressToken> reporter = default, IObserver<ICompilierOptions> observer = default) : this(eventHandler, reporter, observer, CreateWatcher())
+        public ProjectMonitor(ValidationEventHandler eventHandler = default, Action<ICompilierOptions, string> beforeCompilation = default, Action<ProgressToken, string> afterCompilation = default) : this(eventHandler, beforeCompilation, afterCompilation, CreateWatcher())
         {
         }
 
-        public ProjectMonitor(ValidationEventHandler validationEventHandler, IProgress<ProgressToken> reporter, IObserver<ICompilierOptions> observer, FileSystemWatcher fileSystemWatcher)
+        public ProjectMonitor(ValidationEventHandler validationEventHandler, Action<ICompilierOptions, string> beforeCompilationHandler, Action<ProgressToken, string> afterCompiliationHandler, FileSystemWatcher fileSystemWatcher)
         {
             _watcher = fileSystemWatcher ?? throw new ArgumentNullException(nameof(fileSystemWatcher));
 
@@ -23,10 +23,11 @@ namespace Acklann.WebFlow
             _watcher.Changed += OnFileWasModified;
             _watcher.Renamed += OnFileWasModified;
 
-            _reporter = reporter;
-            _observer = observer;
-            _factory = new CompilerFactory();
             _validationHandler = validationEventHandler;
+            _preCompilationHandler = beforeCompilationHandler;
+            _postCompilationHandler = afterCompiliationHandler;
+
+            _factory = new CompilerFactory();
         }
 
         public string DirectoryName
@@ -79,6 +80,7 @@ namespace Acklann.WebFlow
                 if (Project.TryLoad(filePath, _validationHandler, out Project project))
                 {
                     _project = project;
+                    _configurationChangedHandler?.Invoke(this, _project.FullName);
                 }
                 else System.Diagnostics.Debug.WriteLine($"'{filePath}' is not well-formed.");
             }
@@ -106,13 +108,15 @@ namespace Acklann.WebFlow
 
                 if (fileOperator.CanExecute(options))
                 {
-                    _observer?.OnNext(options);
+                    _totalActiveOperations++;
+                    _preCompilationHandler?.Invoke(options, _project?.DirectoryName);
                     Task.Run(() =>
                     {
                         using (fileOperator)
                         {
                             ICompilierResult result = fileOperator.Execute(options);
-                            _reporter?.Report(new ProgressToken(result));
+                            _postCompilationHandler?.Invoke(new ProgressToken(result), _project?.DirectoryName);
+                            _totalActiveOperations--;
                         }
                     });
                     break;
@@ -151,8 +155,12 @@ namespace Acklann.WebFlow
         private readonly IProgress<ProgressToken> _reporter;
         private readonly IObserver<ICompilierOptions> _observer;
         private readonly ValidationEventHandler _validationHandler;
+        private readonly Action<object, string> _configurationChangedHandler;
+        private readonly Action<ProgressToken, string> _postCompilationHandler;
+        private readonly Action<ICompilierOptions, string> _preCompilationHandler;
 
         private Project _project;
+        private volatile int _totalActiveOperations = 0;
 
         private static FileSystemWatcher CreateWatcher()
         {

@@ -43,7 +43,11 @@ namespace Acklann.WebFlow.Configuration
         {
             bundle = null;
 
-            if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith($"{Suffix}{Path.GetExtension(filePath)}", StringComparison.OrdinalIgnoreCase))
+            if (filePath.EndsWith(".ts", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                return false;
+            }
+            else if (!string.IsNullOrEmpty(Suffix) && filePath.EndsWith($"{Suffix}{Path.GetExtension(filePath)}", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

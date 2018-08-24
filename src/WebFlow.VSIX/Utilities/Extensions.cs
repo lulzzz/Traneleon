@@ -1,6 +1,8 @@
-﻿using EnvDTE80;
+﻿using Acklann.GlobN;
+using EnvDTE80;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Acklann.WebFlow.Utilities
 {
@@ -121,6 +123,15 @@ namespace Acklann.WebFlow.Utilities
                 }
 
             return false;
+        }
+
+        /* ***** */
+
+        internal static string ToFriendlyName(this string path, string cwd)
+        {
+            string[] files = path.Split(';');
+            if (files.Length > 2) return $"[{files.Length} files]";
+            else return string.Join(" + ", (from x in path.Split(';') select x.GetRelativePath(cwd).TrimStart('.', '/', '\\')));
         }
     }
 }
