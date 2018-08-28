@@ -19,11 +19,11 @@ namespace Acklann.WebFlow.Commands
             _activator = activator ?? throw new ArgumentNullException(nameof(activator));
             _validationHandler = validationHandler ?? throw new ArgumentNullException(nameof(validationHandler));
 
-            var command = new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.ReloadCommandIdId));
+            var command = new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.ReloadCommandId));
             commandService.AddCommand(command);
         }
 
-        public void Reload(string projectFile)
+        public void Execute(string projectFile, bool autoConfigEnabled = false)
         {
             string directory = Path.GetDirectoryName(projectFile);
             string configFile = Directory.EnumerateFiles(directory, "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault();
@@ -38,26 +38,31 @@ namespace Acklann.WebFlow.Commands
                 if (Project.TryLoad(configFile, _validationHandler, out Project config))
                 {
                     ProjectMonitor monitor = _activator.Invoke(projectFile);
+                    _watchList.Add(projectFile, monitor);
                     monitor?.Start(config);
 
                     if (UserState.Instance.WatcherEnabled)
                     {
                         string msg = $"{nameof(WebFlow)} | monitoring '{projectFile}' for changes ...";
-                        _dte.StatusBar.Text = msg;
                         System.Diagnostics.Debug.WriteLine(msg);
+                        _dte.StatusBar.Text = msg;
                     }
                     else monitor?.Pause();
                 }
             }
+            else if (autoConfigEnabled)
+            {
+                AddConfigCommand.Instance.Execute(projectFile);
+            }
         }
 
-        public void Reload(EnvDTE.Project project) => Reload(project.FullName);
+        public void Execute(EnvDTE.Project project, bool autoConfigEnabled = false) => Execute(project.FullName, autoConfigEnabled);
 
-        private void OnCommandInvoked(object sender, EventArgs e)
+        protected void OnCommandInvoked(object sender, EventArgs e)
         {
             foreach (EnvDTE.Project project in _dte.GetSelectedProjects(defaultToStartup: false))
             {
-                Reload(project.FullName);
+                Execute(project.FullName);
             }
         }
 

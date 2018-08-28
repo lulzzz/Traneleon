@@ -49,7 +49,7 @@ void GenerateMembers()
 
 					foreach (var id in guid.Elements())
 					{
-						WriteLine($"public static readonly int {id.Attribute("name").Value}Id = {id.Attribute("value").Value};");
+						WriteLine($"public const int {id.Attribute("name").Value} = {id.Attribute("value").Value};");
 					}
 
 					PopIndent();

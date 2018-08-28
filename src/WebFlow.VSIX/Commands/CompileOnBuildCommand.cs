@@ -4,7 +4,9 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Task = System.Threading.Tasks.Task;
@@ -15,21 +17,26 @@ namespace Acklann.WebFlow.Commands
     {
         private CompileOnBuildCommand(IMenuCommandService service, DTE2 dte)
         {
-            if (service == null) throw new ArgumentNullException(nameof(service));
             _dte = dte ?? throw new ArgumentNullException(nameof(dte));
+            if (service == null) throw new ArgumentNullException(nameof(service));
 
-            service.AddCommand(new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileOnBuildCommandIdId)));
+            _installations = new Dictionary<string, bool>();
+            service.AddCommand(new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileOnBuildCommandId)));
         }
 
-        private void OnCommandInvoked(object sender, EventArgs e)
+        public void Execute()
+        {
+        }
+
+        protected void OnCommandInvoked(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("setup compile-on-build command invoked.");
 
-            EnvDTE.Project selectedProject = _dte.GetSelectedProjects(defaultToStartup: false).FirstOrDefault();
-            if (selectedProject != null)
+            foreach (EnvDTE.Project selectedProject in _dte.GetSelectedProjects(defaultToStartup: false))
             {
-                AddConfigCommand.Instance.Execute(new[] { selectedProject });
-                // TODO: Add nuget package
+                AddConfigCommand.Instance.Execute(selectedProject.FullName);
+
+                // Ensuring the nuget package is installed.
                 var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
                 var nuget = componentModel.GetService<IVsPackageInstallerServices>();
                 string packageId = $"{nameof(Acklann)}.{nameof(WebFlow)}";
@@ -49,12 +56,17 @@ namespace Acklann.WebFlow.Commands
                                 _dte.StatusBar.Animate(true, EnvDTE.vsStatusAnimation.vsStatusAnimationSync);
                                 var installer = componentModel.GetService<IVsPackageInstaller>();
                                 installer.InstallPackage(null, selectedProject, packageId, version, false);
-                                _dte.StatusBar.Text = string.Format("[{1}] Finished installing the '{0}' package.", packageId, nameof(WebFlow));
+
+                                string msg = string.Format("{1} | Finished installing the '{0}' package.", packageId, nameof(WebFlow));
+                                System.Diagnostics.Debug.WriteLine(msg);
+                                _dte.StatusBar.Text = msg;
                             }
                             catch (Exception ex)
                             {
+                                string msg = string.Format("{2} | Unable to install the '{0}.{1}' package.", packageId, version, nameof(WebFlow));
                                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                                _dte.StatusBar.Text = string.Format("[{2}] Unable to install the '{0}.{1}' package.", packageId, version, nameof(WebFlow));
+                                System.Diagnostics.Debug.WriteLine(msg);
+                                _dte.StatusBar.Text = msg;
                             }
                             finally
                             {
@@ -64,6 +76,19 @@ namespace Acklann.WebFlow.Commands
                     }
                 }
                 else MessageBox.Show(string.Format("The {0} project has already been configured.", selectedProject.Name));
+            }
+        }
+
+        protected void OnQueryingStatus(object sender, EventArgs e)
+        {
+            if (sender is OleMenuCommand command)
+            {
+                EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
+                if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
+                {
+                    bool configFileExist = Directory.EnumerateFiles(Path.GetDirectoryName(item.Project.FullName), "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault() != null;
+                    command.Visible = configFileExist;
+                }
             }
         }
 
@@ -82,6 +107,7 @@ namespace Acklann.WebFlow.Commands
         #region Private Members
 
         private readonly DTE2 _dte;
+        private readonly IDictionary<string, bool> _installations;
 
         #endregion Private Members
     }

@@ -1,11 +1,13 @@
 ﻿using Acklann.WebFlow.Utilities;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
+using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -17,64 +19,81 @@ namespace Acklann.WebFlow.Commands
             _watchList = watchList ?? throw new ArgumentNullException(nameof(watchList));
             _dte = dte ?? throw new ArgumentNullException(nameof(dte));
 
-            service.AddCommand(new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSolutionCommandIdId)));
-            service.AddCommand(new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSelectionCommandIdId)));
+            var selectionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSelectionCommandId));
+            service.AddCommand(selectionCommand);
+
+            var solutionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSolutionCommandId));
+            service.AddCommand(solutionCommand);
         }
 
-        public void TranspileFile(EnvDTE.ProjectItem file)
-        {
-            if (file != null)
-            {
-                if (file.ContainingProject != null
-                    && _watchList.Contains(file.ContainingProject.FileName)
-                    && (_watchList[file.ContainingProject.FileName] is ProjectMonitor monitor))
-                {
-                    monitor.Compile(file.FileNames[0]);
-                }
-            }
-        }
-
-        public void TranspileProject(string projectFile)
+        public void Execute(string projectFile, params string[] files)
         {
             if (_watchList.Contains(projectFile) && (_watchList[projectFile] is ProjectMonitor monitor))
             {
-                monitor.Compile();
+                foreach (string fn in files)
+                    if (Path.GetExtension(fn).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        monitor?.Compile();
+                    }
+                    else if (Path.HasExtension(fn))
+                    {
+                        monitor?.Compile(fn);
+                    }
+                    else if (Directory.Exists(fn))
+                    {
+                        monitor?.Compile(new DirectoryInfo(fn));
+                    }
             }
         }
 
-        public void TranspileProject(IEnumerable<string> projectFiles)
+        public void Execute(IEnumerable<EnvDTE.Project> projects)
         {
-            foreach (string fileName in projectFiles)
-            {
-                if (_watchList.Contains(fileName) && (_watchList[fileName] is ProjectMonitor monitor))
+            foreach (EnvDTE.Project proj in projects)
+                if (!string.IsNullOrEmpty(proj?.FullName))
                 {
-                    monitor.Compile();
+                    Execute(proj.FullName, proj.FullName);
                 }
-            }
         }
 
-        public void TranspileProject(IEnumerable<EnvDTE.Project> projects)
+        protected void OnCommandInvoked(object sender, EventArgs e)
         {
-            TranspileProject(projects.Select(x => x.FullName));
+            Task.Run(() =>
+            {
+                if (sender is MenuCommand command)
+                    switch (command.CommandID.ID)
+                    {
+                        case Symbols.CmdSet.CompileSelectionCommandId:
+                            foreach (EnvDTE.SelectedItem item in _dte.GetSelectedItems())
+                            {
+                                if (item.ProjectItem?.FileCount > 0)
+                                {
+                                    string selectedFile = item.ProjectItem.FileNames[0];
+                                    string projectFile = item.ProjectItem.ContainingProject?.FullName;
+                                    Execute(projectFile, selectedFile);
+                                }
+                                else if (!string.IsNullOrEmpty(item.Project?.FullName))
+                                {
+                                    Execute(item.Project.FullName, item.Project.FullName);
+                                }
+                            }
+                            break;
+
+                        case Symbols.CmdSet.CompileSolutionCommandId:
+                            Execute(_dte.GetActiveProjects());
+                            break;
+                    }
+            });
         }
 
-        private void OnCommandInvoked(object sender, EventArgs e)
+        protected void OnQueryingStatus(object sender, EventArgs e)
         {
-            if (sender is MenuCommand command && command.CommandID.ID == Symbols.CmdSet.CompileSolutionCommandIdId)
+            if (sender is OleMenuCommand command)
             {
-                foreach (EnvDTE.Project project in _dte.GetActiveProjects())
+                EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
+                if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-
-                }
-            }
-            else
-            {
-                foreach (EnvDTE.SelectedItem item in _dte.GetSelectedItems())
-                {
-                    string ext = Path.GetExtension(item.Name ?? string.Empty).ToLowerInvariant();
-                    if (ext.EndsWith("proj", StringComparison.OrdinalIgnoreCase) && item.Project != null) TranspileProject(item.Project.FullName);
-                    else if (ext.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)) TranspileProject(_dte.GetActiveProjects());
-                    else if (item.ProjectItem != null) TranspileFile(item.ProjectItem);
+                    bool configFileExist = Directory.EnumerateFiles(Path.GetDirectoryName(item.Project.FullName), "*webflow*").FirstOrDefault() != null;
+                    command.Visible = configFileExist;
                 }
             }
         }

@@ -90,7 +90,8 @@ namespace Acklann.WebFlow.Utilities
                 if (solution?.StartupProjects != null)
                     foreach (var item in (Array)solution.StartupProjects)
                     {
-                        yield return dte.Solution.Item(item);
+                        EnvDTE.Project startupProjects = dte.Solution.Item(item);
+                        if (startupProjects != null) yield return startupProjects;
                     }
             }
         }
@@ -103,6 +104,15 @@ namespace Acklann.WebFlow.Utilities
             if (selectedItems != null)
             {
                 foreach (EnvDTE.SelectedItem item in selectedItems) yield return item;
+            }
+        }
+
+        public static IEnumerable<string> GetSelectedFiles(this DTE2 dte)
+        {
+            foreach (EnvDTE.SelectedItem item in GetSelectedItems(dte))
+            {
+                if (!string.IsNullOrEmpty(item?.Project?.FullName)) yield return item.Project.FullName;
+                else if (item?.ProjectItem?.FileCount > 0) yield return item.ProjectItem.FileNames[0];
             }
         }
 

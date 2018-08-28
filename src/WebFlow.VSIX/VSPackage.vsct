@@ -2,26 +2,37 @@
 
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable"
               xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <Include href="KnownImageIds.vsct" />
   <Extern href="stdidcmd.h" />
   <Extern href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
 
   <Commands package="Package">
     <Groups>
-      <Group guid="CmdSet" id="VSToolsMenuGroup" priority="1">
+      <Group guid="CmdSet" id="VSToolsMenuGroup" priority="0x210">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
       </Group>
 
-      <Group guid="CmdSet" id="SolutionToolbarGroup" priority="0x020">
+      <Group guid="CmdSet" id="SolutionExplorerGroup" priority="0x020">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_PROJWIN" />
       </Group>
+
+      <Group guid="CmdSet" id="FileCommandGroup" />
+      <Group guid="CmdSet" id="ProjectCommandGroup" />
+      <Group guid="CmdSet" id="SolutionCommandGroup" />
+      <Group guid="CmdSet" id="SettingsCommandGroup" />
+      <Group guid="CmdSet" id="PromotionCommandGroup" />
+      <Group guid="CmdSet" id="SolutionContextMenuGroup" />
+
+      <Group guid="CmdSet" id="FileContextMenuGroup" />
+      <Group guid="CmdSet" id="ProjectContextMenuGroup" />
     </Groups>
 
     <Menus>
-      <Menu type="Menu" guid="CmdSet" id="ToolsMenu" priority="0x001">
-        <Parent guid="CmdSet" id="VSToolsMenuGroup" />
+      <Menu type="Menu" guid="CmdSet" id="ToolsMenu">
         <Strings>
-          <ButtonText>Web Flow</ButtonText>
+          <MenuText>WebFlow</MenuText>
+          <ButtonText>WebFlow</ButtonText>
+          <CommandName>WebFlow</CommandName>
         </Strings>
       </Menu>
     </Menus>
@@ -47,6 +58,7 @@
 
       <Button guid="CmdSet" id="CompileSolutionCommandId">
         <Icon guid="ImageCatalogGuid" id="Transform" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Transpile All Files in Solution</ButtonText>
@@ -54,7 +66,8 @@
       </Button>
 
       <Button guid="CmdSet" id="CompileSelectionCommandId">
-        <Icon guid="ImageCatalogGuid" id="BuildSolution" />
+        <Icon guid="ImageCatalogGuid" id="Transform" />
+        <CommandFlag>TextChanges</CommandFlag>
         <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
@@ -67,7 +80,7 @@
         <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Enable Transpile on Build</ButtonText>
+          <ButtonText>Set Project to Transpile on Build</ButtonText>
         </Strings>
       </Button>
 
@@ -93,30 +106,104 @@
 
   <CommandPlacements>
     <!-- VS Tools Menu -->
-    <CommandPlacement guid="CmdSet" id="CompileSolutionCommandId" priority="1">
-      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+
+    <CommandPlacement guid="CmdSet" id="ToolsMenu" priority="0x210">
+      <Parent guid="CmdSet" id="VSToolsMenuGroup" />
     </CommandPlacement>
 
     <CommandPlacement guid="CmdSet" id="SolutionCommandGroup" priority="1">
       <Parent guid="CmdSet" id="ToolsMenu" />
     </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="1">
+      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="CompileSolutionCommandId" priority="2">
+      <Parent guid="CmdSet" id="SolutionCommandGroup" />
+    </CommandPlacement>
+
+    <!-- promo -->
+
+    <!-- settings -->
+
+    <CommandPlacement guid="CmdSet" id="SettingsCommandGroup" priority="9">
+      <Parent guid="CmdSet" id="ToolsMenu" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="SettingsCommandId" priority="1">
+      <Parent guid="CmdSet" id="SettingsCommandGroup" />
+    </CommandPlacement>
+
+    <!-- Solution Context-Menu -->
+
+    <CommandPlacement guid="CmdSet" id="SolutionContextMenuGroup" priority="0x0100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_SOLNNODE" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="CompileSolutionCommandId" priority="0x0100">
+      <Parent guid="CmdSet" id="SolutionContextMenuGroup" />
+    </CommandPlacement>
+
+    <!-- Project Context-Menu -->
+
+    <CommandPlacement guid="CmdSet" id="ProjectCommandGroup" priority="0x0100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="CompileSelectionCommandId" priority="1">
+      <Parent guid="CmdSet" id="ProjectCommandGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="CompileOnBuildCommandId" priority="2">
+      <Parent guid="CmdSet" id="ProjectCommandGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="AddConfigFileCommandId" priority="3">
+      <Parent guid="CmdSet" id="ProjectCommandGroup" />
+    </CommandPlacement>
+
+    <!-- File Context-Menu -->
+
+    <CommandPlacement guid="CmdSet" id="FileCommandGroup" priority="0x0100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="FileCommandGroup" priority="0x000">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_FOLDERNODE" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="FileCommandGroup" priority="0x0100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="CmdSet" id="CompileSelectionCommandId" priority="1">
+      <Parent guid="CmdSet" id="FileCommandGroup" />
+    </CommandPlacement>
+
+    <!-- Solution Explorer -->
+
+    <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="1">
+      <Parent guid="CmdSet" id="SolutionExplorerGroup" />
+    </CommandPlacement>
   </CommandPlacements>
 
-  <!--<VisibilityConstraints>
+  <VisibilityConstraints>
     <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasSingleProject" />
     <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasMultipleProjects" />
-  </VisibilityConstraints>-->
+  </VisibilityConstraints>
 
   <Symbols>
-    <GuidSymbol name="Package" value="{b7b0e0af-d860-4e41-a041-4d1f62bc423c}" />
+    <GuidSymbol name="Package" value="{D14220FC-C8B7-41FF-95E6-3C5A122354D6}" />
 
     <GuidSymbol name="CmdSet" value="{4c483e5b-2754-467e-ae2a-6b495e4ef2d4}">
       <!-- Groups -->
       <IDSymbol name="VSToolsMenuGroup" value="0x100" />
-      <IDSymbol name="SolutionToolbarGroup" value="0x102" />
+      <IDSymbol name="SolutionExplorerGroup" value="0x102" />
       <!-- ***** -->
       <IDSymbol name="FileContextMenuGroup" value="0x103" />
       <IDSymbol name="ProjectContextMenuGroup" value="0x104" />
+      <IDSymbol name="SolutionContextMenuGroup" value="0x110" />
       <!-- ***** -->
       <IDSymbol name="FileCommandGroup" value="0x0105" />
       <IDSymbol name="ProjectCommandGroup" value="0x106" />

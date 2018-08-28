@@ -98,6 +98,24 @@ namespace Acklann.WebFlow
             }
         }
 
+        public void Compile(DirectoryInfo folder)
+        {
+            IItemGroup[] itemGroups = _project?.GetItempGroups()?.ToArray();
+
+            if (itemGroups != null)
+                foreach (IItemGroup itemGroup in itemGroups.Where(x => x.Enabled))
+                {
+                    foreach (FileInfo file in folder.EnumerateFiles("*", SearchOption.AllDirectories))
+                    {
+                        if (itemGroup.CanAccept(file.FullName))
+                            foreach (ICompilierOptions options in itemGroup.CreateCompilerOptions(file.FullName))
+                            {
+                                Process(options);
+                            }
+                    }
+                }
+        }
+
         public void Compile() => Compile(_project);
 
         internal void Process(ICompilierOptions options)

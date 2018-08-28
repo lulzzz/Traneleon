@@ -79,7 +79,7 @@ namespace Acklann.WebFlow.Configuration
                 return true;
             }
         }
-        
+
         protected string GetOutputFile(string sourceFile)
         {
             string baseName = Path.GetFileNameWithoutExtension(sourceFile);

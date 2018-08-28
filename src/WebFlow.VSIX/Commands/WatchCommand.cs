@@ -13,7 +13,7 @@ namespace Acklann.WebFlow.Commands
             if (commandService == null) throw new ArgumentNullException(nameof(commandService));
             _watchList = watchList ?? throw new ArgumentNullException(nameof(watchList));
 
-            var command = new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.WatchCommandIdId)) { Checked = UserState.Instance.WatcherEnabled };
+            var command = new MenuCommand(OnCommandInvoked, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.WatchCommandId)) { Checked = UserState.Instance.WatcherEnabled };
             commandService.AddCommand(command);
         }
 

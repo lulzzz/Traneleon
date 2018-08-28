@@ -98,6 +98,14 @@ namespace Acklann.WebFlow
                 }
         }
 
+        internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
+            _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
+        }
+
         private void SubscribeToEvents()
         {
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
@@ -171,17 +179,14 @@ namespace Acklann.WebFlow
             {
                 _notLoading = false;
                 System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
-                LoadSolution(userOptions.AutoConfig);
+                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
+                {
+                    ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
+                }
+
+                //LoadSolution(userOptions.AutoConfig);
                 _notLoading = true;
             }
-        }
-
-        internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
-        {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
-            _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
         }
 
         private void BeforeFileCompilation(ICompilierOptions options, string cwd)

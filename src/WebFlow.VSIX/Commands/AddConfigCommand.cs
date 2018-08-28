@@ -1,17 +1,17 @@
 ﻿using Acklann.WebFlow.Configuration;
 using Acklann.WebFlow.Utilities;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
-    public sealed class AddConfigCommand
+    public class AddConfigCommand
     {
         public AddConfigCommand(IMenuCommandService commandService, DTE2 dte, IDictionary watchList, ProjectMonitorActivator generator)
         {
@@ -20,52 +20,50 @@ namespace Acklann.WebFlow.Commands
             _activator = generator ?? throw new ArgumentNullException(nameof(generator));
             _dte = dte ?? throw new ArgumentNullException(nameof(dte));
 
-            commandService.AddCommand(new MenuCommand((s, e) => Execute(_dte.GetSelectedProjects()), new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.AddConfigFileCommandIdId)));
+            commandService.AddCommand(new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.AddConfigFileCommandId)));
         }
 
-        public void Execute(IEnumerable<EnvDTE.Project> activeProjects)
+        public void Execute(string projectFile)
+        {
+            if (_watchList.Contains(projectFile) == false)
+            {
+                string filename = Path.Combine(Path.GetDirectoryName(projectFile), VSPackage.ConfigName);
+                var config = Project.CreateDefault(filename);
+                config.Save();
+
+                ProjectMonitor monitor = _activator.Invoke(projectFile);
+                _watchList.Add(projectFile, monitor);
+                monitor.Start(config);
+
+                if (UserState.Instance.WatcherEnabled == false) monitor.Pause();
+                System.Diagnostics.Debug.WriteLine($"created '{filename}'");
+            }
+        }
+
+        protected void OnCommandInvoked(object sender, EventArgs e)
         {
             Task.Run(() =>
             {
-                ProjectMonitor monitor;
-
-                foreach (EnvDTE.Project project in activeProjects)
+                EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
+                if (!string.IsNullOrEmpty(item?.Project?.FullName))
                 {
-                    if (_watchList.Contains(project.FullName))
-                    {
-                        monitor = _watchList[project.FullName] as ProjectMonitor;
-                    }
-                    else
-                    {
-                        // Creating a .config file if it does not already exists.
-                        string folder = Path.GetDirectoryName(project.FullName);
-                        string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
-
-                        if (configFile == null)
-                        {
-                            configFile = Path.Combine(folder, VSPackage.ConfigName);
-                            Configuration.Project.CreateDefault(configFile).Save();
-                        }
-
-                        // Initiailizing watcher.
-                        monitor = _activator.Invoke(project.FullName);
-                        _watchList.Add(project.FileName, monitor);
-
-                        if (Project.TryLoad(configFile, out Project config, out string error))
-                        {
-                            monitor?.Start(config);
-                            _dte.StatusBar.Text = $"[{nameof(WebFlow)}] Added the '{project.Name}' project to the watch-list.";
-                        }
-                        else
-                        {
-                            _dte.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
-                        }
-                    }
-
-                    if (UserState.Instance.WatcherEnabled) monitor?.Resume();
-                    else monitor?.Pause();
+                    Execute(item.Project.FullName);
                 }
             });
+        }
+
+        protected void OnQueryingStatus(object sender, EventArgs e)
+        {
+            if (sender is OleMenuCommand command)
+            {
+                EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
+                if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
+                {
+                    var dir = Path.GetDirectoryName(item.Project.FullName);
+                    bool donotHaveConfigFile = Directory.EnumerateFiles(dir, "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault() == null;
+                    command.Visible = donotHaveConfigFile;
+                }
+            }
         }
 
         #region Singleton

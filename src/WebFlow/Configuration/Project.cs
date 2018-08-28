@@ -59,7 +59,7 @@ namespace Acklann.WebFlow.Configuration
 
         public static Project CreateDefault(string filePath, string name = default)
         {
-            return new Project(filePath)
+            var proj = new Project(filePath)
             {
                 Name = name,
                 SassItemGroup = new SassItemGroup()
@@ -72,8 +72,20 @@ namespace Acklann.WebFlow.Configuration
                     {
                         new TypescriptItemGroup.Bundle("*.ts")
                     }
+                },
+                ImageItemGroup = new ImageItemGroup()
+                {
+                    OptimizationTargets = new List<ImageItemGroup.OptimizationBundle>()
+                    {
+                        new ImageItemGroup.OptimizationBundle()
+                        {
+                            Include = new List<string>() { "*.jpg", "*.png", "*.svg" }
+                        }
+                    }
                 }
             };
+            proj.AssignDefaults();
+            return proj;
         }
 
         public static Project Load(Stream stream)
