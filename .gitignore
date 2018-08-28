@@ -269,7 +269,7 @@ powershell_modules/
 mock.config
 *-lock.*
 *.min.*
-lib.zip
+*.zip
 *.map
 
 # Sensitive Files
