@@ -49,55 +49,6 @@ namespace Acklann.WebFlow
             _watchList.Clear();
         }
 
-        internal void LoadSolution(bool autoConfg)
-        {
-            foreach (EnvDTE.Project project in DTE.GetActiveProjects())
-                if (_watchList.Contains(project.FullName) == false)
-                {
-                    string folder = Path.GetDirectoryName(project.FullName);
-                    string configFile = Directory.EnumerateFiles(folder, "*webflow*").FirstOrDefault();
-                    string msg = string.Format("{1} | Monitoring '{0}' for changes ...", project.Name, nameof(WebFlow));
-
-                    if (!string.IsNullOrEmpty(configFile))
-                    {
-                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
-                        if (_watchList.Contains(project.FullName)) return;
-                        else _watchList.Add(project.FileName, monitor);
-
-                        if (Configuration.Project.TryLoad(configFile, out Configuration.Project config, out string error))
-                        {
-                            monitor?.Start(config);
-                            if (UserState.Instance.WatcherEnabled)
-                            {
-                                DTE.StatusBar.Text = msg;
-                                System.Diagnostics.Debug.WriteLine(msg);
-                            }
-                            else monitor?.Pause();
-                        }
-                        else
-                        {
-                            DTE.StatusBar.Text = $"[{nameof(WebFlow)}] {error}";
-                            System.Diagnostics.Debug.WriteLine(error);
-                        }
-                    }
-                    else if (autoConfg && project.IsaWebProject())
-                    {
-                        var config = Configuration.Project.CreateDefault(Path.Combine(folder, ConfigName), project.Name);
-                        config.Save();
-
-                        ProjectMonitor monitor = _activator.Invoke(project.FullName);
-                        _watchList.Add(project.FileName, monitor);
-                        monitor?.Start(config);
-                        if (UserState.Instance.WatcherEnabled)
-                        {
-                            DTE.StatusBar.Text = msg;
-                            System.Diagnostics.Debug.WriteLine(msg);
-                        }
-                        else monitor?.Pause();
-                    }
-                }
-        }
-
         internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -183,8 +134,6 @@ namespace Acklann.WebFlow
                 {
                     ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
                 }
-
-                //LoadSolution(userOptions.AutoConfig);
                 _notLoading = true;
             }
         }

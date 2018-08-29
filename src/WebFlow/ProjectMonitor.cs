@@ -159,7 +159,6 @@ namespace Acklann.WebFlow
         {
             if (disposing)
             {
-                _observer?.OnCompleted();
                 _watcher?.Dispose();
             }
         }
@@ -170,8 +169,6 @@ namespace Acklann.WebFlow
 
         private readonly ICompilerFactory _factory;
         private readonly FileSystemWatcher _watcher;
-        private readonly IProgress<ProgressToken> _reporter;
-        private readonly IObserver<ICompilierOptions> _observer;
         private readonly ValidationEventHandler _validationHandler;
         private readonly Action<object, string> _configurationChangedHandler;
         private readonly Action<ProgressToken, string> _postCompilationHandler;

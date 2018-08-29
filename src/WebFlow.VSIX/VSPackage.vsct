@@ -30,9 +30,8 @@
     <Menus>
       <Menu type="Menu" guid="CmdSet" id="ToolsMenu">
         <Strings>
-          <MenuText>WebFlow</MenuText>
-          <ButtonText>WebFlow</ButtonText>
-          <CommandName>WebFlow</CommandName>
+          <MenuText>Web Flow</MenuText>
+          <ButtonText>Web Flow</ButtonText>
         </Strings>
       </Menu>
     </Menus>

@@ -62,13 +62,11 @@ namespace Acklann.WebFlow.Compilation
         #region Private Member
 
         private static readonly string[] _supportedFileTypes = (typeof(ImageOptimizer)).GetCustomAttribute<CapabilityAttribute>()?.SupportedFileTypes;
-        private string _toolUsed;
 
         private void UsePingo(ImageOptimizerOptions options)
         {
             // Manual: https://css-ig.net/pingo#use
 
-            _toolUsed = "pingo";
             File.Copy(options.SourceFile, options.OutputFile, overwrite: true);
             string progressive = (options.Progressive ? "-progressive" : string.Empty);
 
@@ -88,7 +86,6 @@ namespace Acklann.WebFlow.Compilation
         {
             // Manual: https://pngquant.org/#manual
 
-            _toolUsed = "pngquant";
             Shell.Invoke("pngquant.exe", $"\"{options.SourceFile}\" --output \"{options.OutputFile}\" --strip --speed 1 --quality 0-{options.Quality} --force");
         }
 
@@ -96,7 +93,6 @@ namespace Acklann.WebFlow.Compilation
         {
             // Manual: https://www.lcdf.org/gifsicle/man.html
 
-            _toolUsed = "gifsicle";
             Shell.Invoke("gifsicle.exe", $"-O3 --batch \"{options.SourceFile}\" --output=\"{options.OutputFile}\"");
         }
 
