@@ -23,11 +23,19 @@ Param(
 
     [Alias('h', '?')]
     [switch]$Help,
+
+    [Alias('no-commit')]
+    [switch]$NoCommit,
 	
 	[string]$TaskFile = "$PSScriptRoot\build\_.psake*.ps1",
+    [switch]$DeleteExistingFiles,
+	[switch]$NonInteractive,
+	[switch]$Debug,
 	[switch]$Major,
 	[switch]$Minor
 )
+
+if ($Debug) { $Configuration = "Debug"; }
 
 # Getting the current branch of source control.
 $branchName = $env:BUILD_SOURCEBRANCHNAME;
@@ -38,12 +46,12 @@ if ([string]::IsNullOrEmpty($branchName))
 }
 
 # Installing then invoking the Psake tasks.
-$psModulesDir = "$PSScriptRoot\build\powershell_modules";
-$psakeModule = "$psModulesDir\psake\*\*.psd1";
+$toolsDir = "$PSScriptRoot\tools";
+$psakeModule = "$toolsDir\psake\*\*.psd1";
 if (-not (Test-Path $psakeModule))
 { 
-	if (-not (Test-Path $psModulesDir)) { New-Item $psModulesDir -ItemType Directory | Out-Null; }
-	Save-Module "psake" -Path $psModulesDir; 
+	if (-not (Test-Path $toolsDir)) { New-Item $toolsDir -ItemType Directory | Out-Null; }
+	Save-Module "psake" -Path $toolsDir; 
 }
 Import-Module $psakeModule -Force;
 
@@ -56,13 +64,19 @@ else
     Write-Host -ForegroundColor DarkGray "Configuration: $Configuration";
 	Invoke-psake $taskFile -nologo -taskList $Tasks -properties @{
 		"Secrets"=$Secrets;
+        "ToolsDir"=$toolsDir;
 		"Branch"=$branchName;
+        "RootDir"=$PSScriptRoot;
 		"Major"=$Major.IsPresent;
 		"Minor"=$Minor.IsPresent;
-		"PoshModulesDir"=$psModulesDir;
+		"Debug"=$Debug.IsPresent;
 		"Configuration"=$Configuration;
+        "Commit"=(-not $NoCommit.IsPresent);
+		"NonInteractive"=$NonInteractive.IsPresent;
 		"SkipCompilation"=$SkipCompilation.IsPresent;
         "SolutionName"=(Split-Path $PSScriptRoot -Leaf);
+        "DeleteExistingFiles"=$DeleteExistingFiles.IsPresent;
+		"FlywayPath"=(Join-Path $toolsDir "flyway/*/flyway");
 	}
 	if (-not $psake.build_success) { exit 1; }
 }

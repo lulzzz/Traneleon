@@ -25,6 +25,11 @@ Task "Package-Solution" -alias "pack" -description "This task generates all delp
 	Exec { &dotnet pack $proj.FullName --output $ArtifactsDir --configuration $Configuration /p:PackageVersion=$version; }
 
 	# VSIX
+	$msbuild = Get-MSBuild;
+	$proj = Get-Item "$RootDir/src/*.VSIX/*.csproj";
+	Write-Header "msbuild: '$($proj.BaseName)'";
+	Exec { &$msbuild /p:"Configuration=$Configuration;Platform=AnyCPU" /verbosity:minimal $proj.FullName; }
+
 	$vsix = Get-Item "$RootDir/src/*.VSIX/bin/$Configuration/*.vsix";
 	Copy-Item $vsix -Destination $ArtifactsDir -Force;
 

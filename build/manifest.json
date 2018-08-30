@@ -1,25 +1,26 @@
 ﻿{
-    "Version":  {
-                    "Major":  0,
-                    "Minor":  0,
-                    "Patch":  29,
-                    "Suffix":  "rc"
-                },
-    "Id":  "Acklann.WebFlow",
-    "Name":  "WebFlow",
-    "Summary":  "",
-    "Description":  "This package allows you to compile, minify and bundle your web assets.",
-    "Author":  "Ackara",
-    "Company":  "Ackara",
-    "License":  "MIT License",
-    "Copyright":  "All rigths reserved",
-    "Website":  "https://github.com/ackara/webflow",
-    "RepositoryUrl":  "https://github.com/ackara/webflow/webflow.git",
-    "Icon":  "https://github.com/ackara/webflow/raw/master/art/icon.png",
-    "ReleaseNotes":  "https://github.com/ackara/webflow/raw/master/releaseNotes.txt",
-    "Tags":  "web compile minify typescript sass images",
-    "BranchSuffixMap":  {
-                            "master":  "",
-                            "*":  "rc"
-                        }
+  "Version":
+  {
+    "Major": 0,
+    "Minor": 0,
+    "Patch": 29
+  },
+  "Id": "Acklann.WebFlow",
+  "Name": "WebFlow",
+  "Summary": "",
+  "Description": "This package allows you to transpile, minify and bundle your web assets.",
+  "Author": "Ackara",
+  "Company": "Ackara",
+  "License": "MIT License",
+  "Copyright": "All rigths reserved",
+  "Website": "https://github.com/ackara/webflow",
+  "RepositoryUrl": "https://github.com/ackara/webflow/webflow.git",
+  "Icon": "https://github.com/ackara/webflow/raw/development/art/icon.svg",
+  "ReleaseNotes": "https://github.com/ackara/webflow/raw/master/releaseNotes.txt",
+  "Tags": "web compile minify typescript sass images",
+  "BranchSuffixMap":
+  {
+    "master": "",
+    "*": "rc"
+  }
 }

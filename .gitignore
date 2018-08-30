@@ -264,13 +264,15 @@ __pycache__/
 * - Copy/
 
 # Generated Files
-powershell_modules/
+stylesheets/**/*.css
+[Tt]ools/
+# -----
+[Mm]ock.config
 *.received.*
-mock.config
 *-lock.*
 *.min.*
 *.zip
 *.map
 
 # Sensitive Files
-secrets.*
+[Ss]ecrets.*
