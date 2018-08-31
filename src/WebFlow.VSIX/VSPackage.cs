@@ -63,7 +63,7 @@ namespace Acklann.WebFlow
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
         }
 
-        private async void InitializeComponents()
+        private async Task InitializeComponentsAsync()
         {
             System.Diagnostics.Debug.WriteLine("Initializing components ...");
             await JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -225,7 +225,7 @@ namespace Acklann.WebFlow
             // Do any initialization that requires the UI thread after switching to the UI thread.
             //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            InitializeComponents();
+            await InitializeComponentsAsync();
             SubscribeToEvents();
             await RegisterCommandsAsync();
             OnSolutionLoaded();
