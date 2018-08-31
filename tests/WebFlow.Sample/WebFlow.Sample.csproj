@@ -5,6 +5,7 @@
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <AssemblyName>Acklann.WebFlow.Sample</AssemblyName>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
+    <TranspileOnBuild>true</TranspileOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

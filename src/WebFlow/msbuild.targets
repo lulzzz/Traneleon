@@ -2,7 +2,7 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <TranspileOnBuild Condition="$(TranspileOnBuild) == ''">true</TranspileOnBuild>
+    <TranspileOnBuild Condition="$(TranspileOnBuild)==''">true</TranspileOnBuild>
     <WebFlowConfigFile Condition="$(WebFlowConfigFile)==''">$(MSBuildProjectDirectory)\*webflow*</WebFlowConfigFile>
     <WebFlowRootDirectory>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))))</WebFlowRootDirectory>
   </PropertyGroup>

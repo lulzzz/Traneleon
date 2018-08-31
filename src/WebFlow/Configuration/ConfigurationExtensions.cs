@@ -10,10 +10,10 @@ namespace Acklann.WebFlow.Configuration
 {
     public static class ConfigurationExtensions
     {
-        public static ICompilierResult[] Compile(this Project project, IProgress<ICompilierResult> progress = default, IObserver<ICompilierOptions> observer = default)
-            => CompileAsync(project, progress, observer).Result;
+        public static ICompilierResult[] Compile(this Project project, IProgress<ICompilierResult> progress = default)
+            => CompileAsync(project, progress).Result;
 
-        public static Task<ICompilierResult[]> CompileAsync(this Project project, IProgress<ICompilierResult> progress = default, IObserver<ICompilierOptions> observer = default, System.Threading.CancellationToken cancellationToken = default)
+        public static Task<ICompilierResult[]> CompileAsync(this Project project, IProgress<ICompilierResult> progress = default, System.Threading.CancellationToken cancellationToken = default)
         {
             var factory = new CompilerFactory();
             var tasks = new Stack<Task<ICompilierResult>>();
@@ -30,7 +30,6 @@ namespace Acklann.WebFlow.Configuration
                                 {
                                     if (compiler.CanExecute(options))
                                     {
-                                        observer?.OnNext(options);
                                         ICompilierResult result = compiler.Execute(options);
                                         progress?.Report(result);
                                         return result;

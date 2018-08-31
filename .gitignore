@@ -262,9 +262,10 @@ __pycache__/
 
 # Temporary Files
 * - Copy/
+old/
 
 # Generated Files
-stylesheets/**/*.css
+[Tt]ests/*.[Ss]ample/**/*.css
 [Tt]ools/
 # -----
 [Mm]ock.config
