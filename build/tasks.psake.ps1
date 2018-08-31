@@ -40,3 +40,22 @@ Task "Package-Solution" -alias "pack" -description "This task generates all delp
 	Expand-Archive $zip -DestinationPath "$ArtifactsDir\msbuild";
 	if (Test-Path $zip) { Remove-Item $zip; }
 }
+
+Task "Stage-VSIXPackage" -alias "push-vsix" -description "This task publish all .vsix packages to vsixgallery.com." `
+-depends @("restore") -action {
+	$script = Join-Path $ToolsDir "vsix/1.0/vsix.ps1";
+
+	if (-not (Test-Path $script))
+	{
+		$dir  = Split-Path $script -Parent;
+		if (-not (Test-Path $dir -PathType Container)) { New-Item $dir -ItemType Directory | Out-Null; }
+		Invoke-WebRequest "https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1" -OutFile $script;
+	}
+	Import-Module $script -Force;
+
+	foreach ($package in (Get-ChildItem $ArtifactsDir -Filter "*.vsix"))
+	{
+		Write-Header "vsix: publish '$($package.Basename)'";
+		Vsix-PublishToGallery $package.FullName;
+	}
+}

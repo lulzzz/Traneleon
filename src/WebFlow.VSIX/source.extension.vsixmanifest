@@ -5,8 +5,8 @@
         <DisplayName>WebFlow</DisplayName>
         <Description xml:space="preserve">This package allows you to transpile, minify and bundle your web assets.</Description>
         <License>Resources\license.txt</License>
-        <Icon>Resources\icon-90.png</Icon>
-        <PreviewImage>Resources\icon-175.png</PreviewImage>
+        <Icon>Resources\icon.png</Icon>
+        <PreviewImage>Resources\preview.png</PreviewImage>
         <Tags>web compile minify typescript sass images</Tags>
     </Metadata>
     <Installation>
