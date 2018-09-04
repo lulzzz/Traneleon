@@ -47,14 +47,6 @@
         </Strings>
       </Button>
 
-      <Button guid="CmdSet" id="SettingsCommandId">
-        <Icon guid="ImageCatalogGuid" id="Settings" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
-        <Strings>
-          <ButtonText>Options...</ButtonText>
-        </Strings>
-      </Button>
-
       <Button guid="CmdSet" id="CompileSolutionCommandId">
         <Icon guid="ImageCatalogGuid" id="Transform" />
         <CommandFlag>IconIsMoniker</CommandFlag>
@@ -104,6 +96,7 @@
   </Commands>
 
   <CommandPlacements>
+
     <!-- VS Tools Menu -->
 
     <CommandPlacement guid="CmdSet" id="ToolsMenu" priority="0x210">
@@ -120,18 +113,6 @@
 
     <CommandPlacement guid="CmdSet" id="CompileSolutionCommandId" priority="2">
       <Parent guid="CmdSet" id="SolutionCommandGroup" />
-    </CommandPlacement>
-
-    <!-- promo -->
-
-    <!-- settings -->
-
-    <CommandPlacement guid="CmdSet" id="SettingsCommandGroup" priority="9">
-      <Parent guid="CmdSet" id="ToolsMenu" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="CmdSet" id="SettingsCommandId" priority="1">
-      <Parent guid="CmdSet" id="SettingsCommandGroup" />
     </CommandPlacement>
 
     <!-- Solution Context-Menu -->
@@ -185,6 +166,8 @@
     <CommandPlacement guid="CmdSet" id="WatchCommandId" priority="1">
       <Parent guid="CmdSet" id="SolutionExplorerGroup" />
     </CommandPlacement>
+
+    <!-- Links -->
   </CommandPlacements>
 
   <VisibilityConstraints>

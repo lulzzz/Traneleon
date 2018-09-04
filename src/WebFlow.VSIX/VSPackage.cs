@@ -8,7 +8,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
-
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -24,7 +23,7 @@ namespace Acklann.WebFlow
 
     [Guid(Symbols.Package.GuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [ProvideOptionPage(typeof(OptionsPage), nameof(WebFlow), "General", 0, 0, true)]
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
@@ -33,11 +32,6 @@ namespace Acklann.WebFlow
     {
         internal const string ConfigName = "webflow.config";
         internal DTE2 DTE;
-
-        internal T GetService<T>()
-        {
-            return (T)GetService(typeof(T));
-        }
 
         internal void ClearWatchList()
         {
@@ -49,104 +43,17 @@ namespace Acklann.WebFlow
             _watchList.Clear();
         }
 
+        internal T GetService<T>()
+        {
+            return (T)GetService(typeof(T));
+        }
+
         internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
             _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
-        }
-
-        private void SubscribeToEvents()
-        {
-            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
-            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
-        }
-
-        private async Task InitializeComponentsAsync()
-        {
-            System.Diagnostics.Debug.WriteLine("Initializing components ...");
-            await JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
-
-            DTE = (DTE2)GetService(typeof(DTE));
-            _outputPane = CreateOutputPane();
-            _errorListProvider = new ErrorListProvider(this);
-            _solution = (IVsSolution)GetService(typeof(SVsSolution));
-            _activator = delegate (string projectFile)
-            {
-                return new ProjectMonitor(OnValidationError, BeforeFileCompilation, async (token, cwd) => { await AfterFileCompilationAsync(token, cwd); });
-            };
-
-            System.Diagnostics.Debug.WriteLine("components initialized!");
-        }
-
-        private async Task RegisterCommandsAsync(CancellationToken cancellationToken = default)
-        {
-            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
-            WatchCommand.Initialize(this);
-            ReloadCommand.Initialize(this);
-            TranspileCommand.Initialize(this);
-            AddConfigCommand.Initialize(this);
-            CompileOnBuildCommand.Initialize(this);
-        }
-
-        private IVsOutputWindowPane CreateOutputPane(string title = nameof(WebFlow))
-        {
-            var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
-            var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
-            outputWindow.CreatePane(ref guid, title, 1, 1);
-            outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
-            return pane;
-        }
-
-        // Event Handlers
-        // ================================================================================
-
-        private void OnSolutionClosing(object sender = null, EventArgs e = null)
-        {
-            System.Diagnostics.Debug.WriteLine("solution closed");
-
-            if (_watchList != null)
-                foreach (string projectFile in _watchList.Keys)
-                {
-                    if (_watchList[projectFile] is ProjectMonitor monitor)
-                    {
-                        monitor.Pause();
-                        System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
-                    }
-                }
-        }
-
-        private async void OnSolutionLoaded(object sender = null, EventArgs e = null)
-        {
-            System.Diagnostics.Debug.WriteLine("soltion was opened");
-            await JoinableTaskFactory.SwitchToMainThreadAsync();
-            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
-
-            if (_notLoading)
-            {
-                _notLoading = false;
-                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
-                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
-                {
-                    ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
-                }
-                _notLoading = true;
-            }
-        }
-
-        private void BeforeFileCompilation(ICompilierOptions options, string cwd)
-        {
-            if (!string.IsNullOrEmpty(options.SourceFile))
-            {
-                string msg = $"[{options.Kind}]'n {options.SourceFile.ToFriendlyName(cwd)} ...{Environment.NewLine}";
-                _outputPane.OutputStringThreadSafe(msg);
-                DTE.StatusBar.Text = $"{nameof(WebFlow)} | {msg}";
-                DTE.StatusBar.Animate(true, _statusbarIcon);
-            }
         }
 
         private async Task AfterFileCompilationAsync(ProgressToken token, string cwd)
@@ -213,24 +120,102 @@ namespace Acklann.WebFlow
             }
         }
 
+        private void BeforeFileCompilation(ICompilierOptions options, string cwd)
+        {
+            if (!string.IsNullOrEmpty(options.SourceFile))
+            {
+                string msg = $"[{options.Kind}]'n {options.SourceFile.ToFriendlyName(cwd)} ...{Environment.NewLine}";
+                _outputPane.OutputStringThreadSafe(msg);
+                DTE.StatusBar.Text = $"{nameof(WebFlow)} | {msg}";
+                DTE.StatusBar.Animate(true, _statusbarIcon);
+            }
+        }
+
+        private IVsOutputWindowPane CreateOutputPane(string title = nameof(WebFlow))
+        {
+            var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
+            var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
+            outputWindow.CreatePane(ref guid, title, 1, 1);
+            outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
+            return pane;
+        }
+
+        private async Task InitializeComponentsAsync()
+        {
+            System.Diagnostics.Debug.WriteLine("Initializing components ...");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
+
+            DTE = (DTE2)GetService(typeof(DTE));
+            _outputPane = CreateOutputPane();
+            _errorListProvider = new ErrorListProvider(this);
+            _solution = (IVsSolution)GetService(typeof(SVsSolution));
+            _activator = delegate (string projectFile)
+            {
+                return new ProjectMonitor(OnValidationError, BeforeFileCompilation, async (token, cwd) => { await AfterFileCompilationAsync(token, cwd); });
+            };
+
+            System.Diagnostics.Debug.WriteLine("components initialized!");
+        }
+
         private void OnConfigChanged(object sender, string configFile)
         {
         }
 
-        #region Base Members
-
-        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        private void OnSolutionClosing(object sender = null, EventArgs e = null)
         {
-            // When initialized asynchronously, the current thread may be a background thread at this point.
-            // Do any initialization that requires the UI thread after switching to the UI thread.
-            //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            System.Diagnostics.Debug.WriteLine("solution closed");
 
-            await InitializeComponentsAsync();
-            SubscribeToEvents();
-            await RegisterCommandsAsync();
-            OnSolutionLoaded();
-            System.Diagnostics.Debug.WriteLine($"----- exited {nameof(InitializeAsync)} -----");
+            if (_watchList != null)
+                foreach (string projectFile in _watchList.Keys)
+                {
+                    if (_watchList[projectFile] is ProjectMonitor monitor)
+                    {
+                        monitor.Pause();
+                        System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
+                    }
+                }
         }
+
+        // Event Handlers
+        // ================================================================================
+        private async void OnSolutionLoaded(object sender = null, EventArgs e = null)
+        {
+            System.Diagnostics.Debug.WriteLine("soltion was opened");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
+
+            if (_notLoading)
+            {
+                _notLoading = false;
+                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
+                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
+                {
+                    ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
+                }
+                _notLoading = true;
+            }
+        }
+
+        private async Task RegisterCommandsAsync(CancellationToken cancellationToken = default)
+        {
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            WatchCommand.Initialize(this);
+            ReloadCommand.Initialize(this);
+            TranspileCommand.Initialize(this);
+            AddConfigCommand.Initialize(this);
+            CompileOnBuildCommand.Initialize(this);
+        }
+
+        private void SubscribeToEvents()
+        {
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
+        }
+
+        #region Base Members
 
         protected override void Dispose(bool disposing)
         {
@@ -246,6 +231,19 @@ namespace Acklann.WebFlow
             base.Dispose(disposing);
         }
 
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        {
+            // When initialized asynchronously, the current thread may be a background thread at this point.
+            // Do any initialization that requires the UI thread after switching to the UI thread.
+            //await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            await InitializeComponentsAsync();
+            SubscribeToEvents();
+            await RegisterCommandsAsync();
+            OnSolutionLoaded();
+            System.Diagnostics.Debug.WriteLine($"----- exited {nameof(InitializeAsync)} -----");
+        }
+
         #endregion Base Members
 
         #region Private Members
@@ -253,12 +251,12 @@ namespace Acklann.WebFlow
         internal readonly Guid _editorGuid = new Guid(EnvDTE.Constants.vsViewKindTextView);
         internal readonly object _statusbarIcon = (short)Microsoft.VisualStudio.Shell.Interop.Constants.SBAI_General;
 
-        internal IVsSolution _solution;
-        internal IDictionary _watchList;
-        internal IVsOutputWindowPane _outputPane;
-        internal volatile bool _notLoading = true;
         internal ProjectMonitorActivator _activator;
         internal ErrorListProvider _errorListProvider;
+        internal volatile bool _notLoading = true;
+        internal IVsOutputWindowPane _outputPane;
+        internal IVsSolution _solution;
+        internal IDictionary _watchList;
 
         #endregion Private Members
     }

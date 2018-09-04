@@ -2,7 +2,7 @@
 #>
 
 Task "Publish-Packages" -alias "push" -description "This task executes a full deployment of the application." `
--depends @("push-nuget");
+-depends @("test", "version", "pack", "push-nuget", "push-vsix");
 
 # -----
 

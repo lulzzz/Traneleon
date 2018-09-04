@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Acklann.WebFlow.Compilation
 {
@@ -36,12 +37,20 @@ namespace Acklann.WebFlow.Compilation
 
         public static ShellBase GetShell()
         {
-            switch (Environment.OSVersion.Platform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                default:
-                case PlatformID.Win32NT:
-                    return new Win32();
+                return new Win32();
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new PlatformNotSupportedException();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                throw new PlatformNotSupportedException();
+            }
+
+            throw new PlatformNotSupportedException();
         }
 
         public static void LoadModules(bool force = false)
@@ -49,7 +58,7 @@ namespace Acklann.WebFlow.Compilation
 #if DEBUG
             force = true;
 #endif
-            string lockFile = Path.Combine(ResourceDirectory, "webflow-lock.json");
+            string lockFile = Path.Combine(ResourceDirectory, $"{nameof(WebFlow)}-lock.json".ToLowerInvariant());
             IsNotLoaded = File.Exists(lockFile) == false;
 
             if (IsNotLoaded || force)
@@ -107,18 +116,18 @@ namespace Acklann.WebFlow.Compilation
             bool isFile(string filePath) => !(filePath.EndsWith("\\") || filePath.EndsWith("/"));
         }
 
-        public abstract void InvokeJava(string args);
-
-        public abstract void InvokeNode(string args);
-
-        public abstract void InvokeImageMagick(string args);
-
-        public abstract void Invoke(string filename, string args);
+        public abstract bool CanInvokeImageMagick();
 
         public abstract bool CanInvokeJava();
 
         public abstract bool CanInvokeNode();
 
-        public abstract bool CanInvokeImageMagick();
+        public abstract void Invoke(string filename, string args);
+
+        public abstract void InvokeImageMagick(string args);
+
+        public abstract void InvokeJava(string args);
+
+        public abstract void InvokeNode(string args);
     }
 }
