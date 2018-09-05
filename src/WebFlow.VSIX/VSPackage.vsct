@@ -173,6 +173,7 @@
   <VisibilityConstraints>
     <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasSingleProject" />
     <VisibilityItem guid="CmdSet" id="WatchCommandId" context="UICONTEXT_SolutionHasMultipleProjects" />
+    <VisibilityItem guid="CmdSet" id="CompileSolutionCommandId" context="UICONTEXT_SolutionHasSingleProject" />
   </VisibilityConstraints>
 
   <Symbols>

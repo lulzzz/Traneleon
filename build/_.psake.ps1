@@ -14,7 +14,7 @@ Properties {
     $ToolsDir = "";
 
 	# Args
-    $DeleteExistingFiles = $true;
+    $DeleteExistingFiles = $false;
 	$FallbackBranch = "preview";
 	$SkipCompilation = $false;
 	$NonInteractive = $false;
@@ -33,7 +33,7 @@ Task "Default" -depends @("restore", "compile", "test", "pack");
 
 Task "Import-Dependencies" -alias "restore" -description "This task imports all build dependencies." -action {
 	#  Importing all required powershell modules.
-	foreach ($moduleId in @("Ncrement", "Pester", "VSSetup"))
+	foreach ($moduleId in @("Ncrement", "Pester"))
 	{
 		$modulePath = "$ToolsDir/$moduleId/*/*.psd1";
 		if (-not (Test-Path $modulePath))
@@ -291,12 +291,6 @@ function Get-Flyway([string]$version="5.1.4")
 	}
 
     return $flyway;
-}
-
-function Get-MSBuild()
-{
-    [string]$msbuild = Get-VSSetupInstance -All | Select-VSSetupInstance -Latest | Select-Object -ExpandProperty InstallationPath;
-    return Join-Path $msbuild "MSBuild/*/bin/msbuild.exe" | Resolve-Path | Select-Object -ExpandProperty Path;
 }
 
 function Get-WAWSDeploy([string]$version="1.8.0")
