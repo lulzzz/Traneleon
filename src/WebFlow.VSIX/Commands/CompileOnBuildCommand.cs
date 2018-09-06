@@ -6,7 +6,6 @@ using NuGet.VisualStudio;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Task = System.Threading.Tasks.Task;
@@ -86,7 +85,7 @@ namespace Acklann.WebFlow.Commands
                 EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-                    bool configFileExist = Directory.EnumerateFiles(Path.GetDirectoryName(item.Project.FullName), "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault() != null;
+                    bool configFileExist = string.IsNullOrEmpty(Configuration.Project.FindConfigurationFile(item.Project.FullName)) == false;
                     command.Visible = configFileExist;
                 }
             }

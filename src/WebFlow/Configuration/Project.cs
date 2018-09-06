@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -25,13 +26,13 @@ namespace Acklann.WebFlow.Configuration
         }
 
         [XmlIgnore, JsonIgnore]
-        public string FullName { get; private set; }
-
-        [XmlIgnore, JsonIgnore]
         public string DirectoryName
         {
             get { return Path.GetDirectoryName(FullName); }
         }
+
+        [XmlIgnore, JsonIgnore]
+        public string FullName { get; private set; }
 
         [XmlAttribute("name")]
         [JsonProperty("name")]
@@ -56,6 +57,17 @@ namespace Acklann.WebFlow.Configuration
         [XmlElement("typescript")]
         [JsonProperty("typescript")]
         public TypescriptItemGroup TypescriptItemGroup { get; set; }
+
+        public static string FindConfigurationFile(string projectDirectory)
+        {
+            return (from file in Directory.EnumerateFiles(projectDirectory)
+                    let basename = Path.GetFileNameWithoutExtension(file).ToLowerInvariant()
+                    where
+                        basename == "transpiler"
+                        ||
+                        basename.Contains(nameof(WebFlow).ToLowerInvariant())
+                    select basename).FirstOrDefault();
+        }
 
         public static Project CreateDefault(string filePath, string name = default)
         {
@@ -119,6 +131,11 @@ namespace Acklann.WebFlow.Configuration
             return project;
         }
 
+        public static Project LoadJson(string json)
+        {
+            return JsonConvert.DeserializeObject<Project>(json);
+        }
+
         public static Project LoadXml(string xml)
         {
             var serializer = new XmlSerializer(typeof(Project));
@@ -126,11 +143,6 @@ namespace Acklann.WebFlow.Configuration
             {
                 return (Project)serializer.Deserialize(stream);
             }
-        }
-
-        public static Project LoadJson(string json)
-        {
-            return JsonConvert.DeserializeObject<Project>(json);
         }
 
         public static bool TryLoad(string filePath, out Project project, out string error)
@@ -241,6 +253,13 @@ namespace Acklann.WebFlow.Configuration
             }
         }
 
+        public IEnumerable<IItemGroup> GetItempGroups()
+        {
+            if (SassItemGroup != null) yield return SassItemGroup;
+            if (ImageItemGroup != null) yield return ImageItemGroup;
+            if (TypescriptItemGroup != null) yield return TypescriptItemGroup;
+        }
+
         public void Save() => Save(FullName);
 
         public void Save(string filePath)
@@ -283,13 +302,6 @@ namespace Acklann.WebFlow.Configuration
                 var serializer = new XmlSerializer(typeof(Project));
                 serializer.Serialize(writer, this, _namespace);
             }
-        }
-
-        public IEnumerable<IItemGroup> GetItempGroups()
-        {
-            if (SassItemGroup != null) yield return SassItemGroup;
-            if (ImageItemGroup != null) yield return ImageItemGroup;
-            if (TypescriptItemGroup != null) yield return TypescriptItemGroup;
         }
 
         #region Private Members

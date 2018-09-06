@@ -7,7 +7,6 @@ using System.Collections;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -42,14 +41,11 @@ namespace Acklann.WebFlow.Commands
 
         protected void OnCommandInvoked(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
+            if (!string.IsNullOrEmpty(item?.Project?.FullName))
             {
-                EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
-                if (!string.IsNullOrEmpty(item?.Project?.FullName))
-                {
-                    Execute(item.Project.FullName);
-                }
-            });
+                Execute(item.Project.FullName);
+            }
         }
 
         protected void OnQueryingStatus(object sender, EventArgs e)
@@ -60,7 +56,7 @@ namespace Acklann.WebFlow.Commands
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
                     var dir = Path.GetDirectoryName(item.Project.FullName);
-                    bool donotHaveConfigFile = Directory.EnumerateFiles(dir, "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault() == null;
+                    bool donotHaveConfigFile = Project.FindConfigurationFile(dir) == null;
                     command.Visible = donotHaveConfigFile;
                 }
             }

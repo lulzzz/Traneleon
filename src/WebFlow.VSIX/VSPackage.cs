@@ -30,7 +30,7 @@ namespace Acklann.WebFlow
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class VSPackage : AsyncPackage
     {
-        internal const string ConfigName = "webflow.config";
+        internal const string ConfigName = "transpiler.config";
         internal DTE2 DTE;
 
         internal void ClearWatchList()
@@ -48,12 +48,100 @@ namespace Acklann.WebFlow
             return (T)GetService(typeof(T));
         }
 
-        internal async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
+        private async Task InitializeComponentsAsync()
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            System.Diagnostics.Debug.WriteLine("Initializing components ...");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
-            _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
+            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
+
+            DTE = (DTE2)GetService(typeof(DTE));
+            _outputPane = CreateOutputPane();
+            _errorListProvider = new ErrorListProvider(this);
+            _solution = (IVsSolution)GetService(typeof(SVsSolution));
+            _activator = delegate (string projectFile)
+            {
+                return new ProjectMonitor(OnValidationError, BeforeFileCompilation, async (token, cwd) => { await AfterFileCompilationAsync(token, cwd); });
+            };
+
+            System.Diagnostics.Debug.WriteLine("components initialized!");
+        }
+
+        private IVsOutputWindowPane CreateOutputPane(string title = nameof(WebFlow))
+        {
+            var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
+            var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
+            outputWindow.CreatePane(ref guid, title, 1, 1);
+            outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
+            return pane;
+        }
+
+        private async Task RegisterCommandsAsync(CancellationToken cancellationToken = default)
+        {
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            WatchCommand.Initialize(this);
+            TranspileCommand.Initialize(this);
+            AddConfigCommand.Initialize(this);
+            CompileOnBuildCommand.Initialize(this);
+            ReloadCommand.Initialize(this, OnValidationError);
+        }
+
+        private void SubscribeToEvents()
+        {
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
+        }
+
+        // Event Handlers
+        // ================================================================================
+
+        private async void OnSolutionLoaded(object sender = null, EventArgs e = null)
+        {
+            System.Diagnostics.Debug.WriteLine("soltion was opened");
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
+
+            if (_notLoading)
+            {
+                _notLoading = false;
+                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
+                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
+                {
+                    ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
+                }
+                _notLoading = true;
+            }
+        }
+
+        private void OnSolutionClosing(object sender = null, EventArgs e = null)
+        {
+            System.Diagnostics.Debug.WriteLine("solution closed");
+
+            if (_watchList != null)
+                foreach (string projectFile in _watchList.Keys)
+                {
+                    if (_watchList[projectFile] is ProjectMonitor monitor)
+                    {
+                        monitor.Pause();
+                        System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
+                    }
+                }
+        }
+
+        private void OnConfigChanged(object sender, string configFile)
+        {
+        }
+
+        private void BeforeFileCompilation(ICompilierOptions options, string cwd)
+        {
+            if (!string.IsNullOrEmpty(options.SourceFile))
+            {
+                string msg = $"[{options.Kind}]'n {options.SourceFile.ToFriendlyName(cwd)} ...{Environment.NewLine}";
+                _outputPane.OutputStringThreadSafe(msg);
+                DTE.StatusBar.Text = $"{nameof(WebFlow)} | {msg}";
+                DTE.StatusBar.Animate(true, _statusbarIcon);
+            }
         }
 
         private async Task AfterFileCompilationAsync(ProgressToken token, string cwd)
@@ -120,99 +208,12 @@ namespace Acklann.WebFlow
             }
         }
 
-        private void BeforeFileCompilation(ICompilierOptions options, string cwd)
+        private async void OnValidationError(object sender, System.Xml.Schema.ValidationEventArgs e)
         {
-            if (!string.IsNullOrEmpty(options.SourceFile))
-            {
-                string msg = $"[{options.Kind}]'n {options.SourceFile.ToFriendlyName(cwd)} ...{Environment.NewLine}";
-                _outputPane.OutputStringThreadSafe(msg);
-                DTE.StatusBar.Text = $"{nameof(WebFlow)} | {msg}";
-                DTE.StatusBar.Animate(true, _statusbarIcon);
-            }
-        }
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private IVsOutputWindowPane CreateOutputPane(string title = nameof(WebFlow))
-        {
-            var outputWindow = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
-            var guid = new Guid("74DD798D-3460-4724-82DC-82E3EB70AC2B");
-            outputWindow.CreatePane(ref guid, title, 1, 1);
-            outputWindow.GetPane(ref guid, out IVsOutputWindowPane pane);
-            return pane;
-        }
-
-        private async Task InitializeComponentsAsync()
-        {
-            System.Diagnostics.Debug.WriteLine("Initializing components ...");
-            await JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            _watchList = new ConcurrentDictionary<string, ProjectMonitor>();
-
-            DTE = (DTE2)GetService(typeof(DTE));
-            _outputPane = CreateOutputPane();
-            _errorListProvider = new ErrorListProvider(this);
-            _solution = (IVsSolution)GetService(typeof(SVsSolution));
-            _activator = delegate (string projectFile)
-            {
-                return new ProjectMonitor(OnValidationError, BeforeFileCompilation, async (token, cwd) => { await AfterFileCompilationAsync(token, cwd); });
-            };
-
-            System.Diagnostics.Debug.WriteLine("components initialized!");
-        }
-
-        private void OnConfigChanged(object sender, string configFile)
-        {
-        }
-
-        private void OnSolutionClosing(object sender = null, EventArgs e = null)
-        {
-            System.Diagnostics.Debug.WriteLine("solution closed");
-
-            if (_watchList != null)
-                foreach (string projectFile in _watchList.Keys)
-                {
-                    if (_watchList[projectFile] is ProjectMonitor monitor)
-                    {
-                        monitor.Pause();
-                        System.Diagnostics.Debug.WriteLine($"[{nameof(WebFlow)}] Stopped watching '{monitor.DirectoryName}'.");
-                    }
-                }
-        }
-
-        // Event Handlers
-        // ================================================================================
-        private async void OnSolutionLoaded(object sender = null, EventArgs e = null)
-        {
-            System.Diagnostics.Debug.WriteLine("soltion was opened");
-            await JoinableTaskFactory.SwitchToMainThreadAsync();
-            var userOptions = (OptionsPage)GetDialogPage(typeof(OptionsPage));
-
-            if (_notLoading)
-            {
-                _notLoading = false;
-                System.Diagnostics.Debug.WriteLine("entered soltuion load thread. " + _notLoading);
-                foreach (EnvDTE.Project project in DTE.GetActiveProjects())
-                {
-                    ReloadCommand.Instance.Execute(project, (userOptions.AutoConfig && project.IsaWebProject()));
-                }
-                _notLoading = true;
-            }
-        }
-
-        private async Task RegisterCommandsAsync(CancellationToken cancellationToken = default)
-        {
-            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
-            WatchCommand.Initialize(this);
-            ReloadCommand.Initialize(this);
-            TranspileCommand.Initialize(this);
-            AddConfigCommand.Initialize(this);
-            CompileOnBuildCommand.Initialize(this);
-        }
-
-        private void SubscribeToEvents()
-        {
-            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterOpenSolution += OnSolutionLoaded;
-            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnBeforeCloseSolution += OnSolutionClosing;
+            DTE.StatusBar.Text = $"{nameof(WebFlow)} | Configuration file is not well-formed.";
+            _outputPane?.OutputStringThreadSafe($"[{e.Severity}] {e.Message}{Environment.NewLine}");
         }
 
         #region Base Members

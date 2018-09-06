@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Acklann.WebFlow</RootNamespace>
@@ -62,7 +62,7 @@ Features:
     <EmbeddedResource Include="Scripts\tsc.js" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="webFlow.xsd">
+    <None Update="intellisense.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Xmlns.tt">

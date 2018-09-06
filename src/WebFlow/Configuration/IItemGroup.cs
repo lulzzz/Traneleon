@@ -7,10 +7,8 @@ namespace Acklann.WebFlow.Configuration
     {
         bool Enabled { get; set; }
 
-        string Suffix { get; set; }
-
         string OutputDirectory { get; set; }
-
+        string Suffix { get; set; }
         string WorkingDirectory { get; set; }
 
         bool CanAccept(string filePath);

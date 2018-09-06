@@ -14,11 +14,11 @@ try
 	Push-Location $PSScriptRoot;
 
 	# Package lib resources.
-	$lib = "$PWD\$([System.IO.Path]::GetFileNameWithoutExtension($Archive))\*";
+    $lib = Join-Path $PWD ([System.IO.Path]::GetFileNameWithoutExtension($Archive));
 	if ($PSCmdlet.ShouldProcess($lib, "Compress"))
 	{
 		if (Test-Path $Archive) { Remove-Item $Archive -Force; }
-		Compress-Archive $lib -DestinationPath $Archive -CompressionLevel Fastest;
+		Compress-Archive "$lib/*" -DestinationPath $Archive -CompressionLevel Fastest;
 		Write-Host "$ProjectName -> $Archive";
 	}
 

@@ -89,11 +89,15 @@ namespace Acklann.WebFlow
 
 		public static FileInfo GetButtonTS() => GetFile(@"scripts\components\button.ts");
 
+		public static FileInfo GetGlobalCSS() => GetFile(@"stylesheets\global.css");
+
 		public static FileInfo GetGlobalSCSS() => GetFile(@"stylesheets\global.scss");
 
 		public static FileInfo GetLayoutSCSS() => GetFile(@"stylesheets\layout\_layout.scss");
 
 		public static FileInfo GetResetSCSS() => GetFile(@"stylesheets\layout\_reset.scss");
+
+		public static FileInfo GetHomeCSS() => GetFile(@"stylesheets\views\home.css");
 
 		public static FileInfo GetHomeSCSS() => GetFile(@"stylesheets\views\home.scss");
 

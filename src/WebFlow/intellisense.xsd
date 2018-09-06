@@ -2,8 +2,8 @@
 <xs:schema id="webFlow"
            elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd"
-           targetNamespace="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd">
+           xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/intellisense.xsd"
+           targetNamespace="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/intellisense.xsd">
   <xs:element name="project">
     <xs:complexType>
       <xs:all>

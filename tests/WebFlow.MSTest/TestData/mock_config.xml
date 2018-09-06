@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project name="webflow-compiler" xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd">
+<project name="webflow-compiler" xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/intellisense.xsd">
   <sass enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
     <include>
       <pattern>*.scss</pattern>
     </include>
   </sass>
   <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
-    <include entryPoint="">
+    <include outFile="">
       <pattern>*.ts</pattern>
     </include>
   </typescript>

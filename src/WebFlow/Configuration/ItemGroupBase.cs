@@ -18,16 +18,14 @@ namespace Acklann.WebFlow.Configuration
             Suffix = ".min";
         }
 
-        internal static string[] GeneratedFolders = new[] { "node_modules", "bower_components", "bin", "obj", "vendor" };
-
         [XmlAttribute("enable")]
         public bool Enabled { get; set; }
 
-        [XmlAttribute("suffix")]
-        public string Suffix { get; set; }
-
         [XmlAttribute("outputDirectory")]
         public string OutputDirectory { get; set; }
+
+        [XmlAttribute("suffix")]
+        public string Suffix { get; set; }
 
         [XmlIgnore, JsonIgnore]
         public string WorkingDirectory { get; set; }
@@ -44,6 +42,8 @@ namespace Acklann.WebFlow.Configuration
                     yield return file;
                 }
         }
+
+        internal static string[] GeneratedFolders = new[] { "node_modules", "bower_components", "bin", "obj", "vendor" };
 
         protected internal IEnumerable<string> EnumerateFiles(string pattern)
         {

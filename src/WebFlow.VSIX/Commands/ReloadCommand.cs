@@ -26,7 +26,7 @@ namespace Acklann.WebFlow.Commands
         public void Execute(string projectFile, bool autoConfigEnabled = false)
         {
             string directory = Path.GetDirectoryName(projectFile);
-            string configFile = Directory.EnumerateFiles(directory, "*webflow*", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            string configFile = Project.FindConfigurationFile(directory);
 
             if (!string.IsNullOrEmpty(configFile))
             {
@@ -70,10 +70,10 @@ namespace Acklann.WebFlow.Commands
 
         public static ReloadCommand Instance { get; private set; }
 
-        public static void Initialize(VSPackage package)
+        public static void Initialize(VSPackage package, ValidationEventHandler validationHandler)
         {
             var service = package.GetService<IMenuCommandService>();
-            Instance = new ReloadCommand(service, package._watchList, package.DTE, package.OnValidationError, package._activator);
+            Instance = new ReloadCommand(service, package._watchList, package.DTE, validationHandler, package._activator);
         }
 
         #endregion Singleton

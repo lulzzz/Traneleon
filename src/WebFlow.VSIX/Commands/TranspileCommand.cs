@@ -13,6 +13,19 @@ namespace Acklann.WebFlow.Commands
 {
     public class TranspileCommand
     {
+        private TranspileCommand(IMenuCommandService service, DTE2 dte, IDictionary watchList)
+        {
+            if (service == null) throw new ArgumentNullException(nameof(service));
+            _watchList = watchList ?? throw new ArgumentNullException(nameof(watchList));
+            _dte = dte ?? throw new ArgumentNullException(nameof(dte));
+
+            var selectionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSelectionCommandId));
+            service.AddCommand(selectionCommand);
+
+            var solutionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSolutionCommandId));
+            service.AddCommand(solutionCommand);
+        }
+
         public void Execute(string projectFile, params string[] files)
         {
             if (_watchList.Contains(projectFile) && (_watchList[projectFile] is ProjectMonitor monitor))
@@ -79,23 +92,10 @@ namespace Acklann.WebFlow.Commands
                 EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-                    bool configFileExist = Directory.EnumerateFiles(Path.GetDirectoryName(item.Project.FullName), "*webflow*").FirstOrDefault() != null;
+                    bool configFileExist = string.IsNullOrEmpty(Configuration.Project.FindConfigurationFile(item.Project.FullName)) == false;
                     command.Visible = configFileExist;
                 }
             }
-        }
-
-        private TranspileCommand(IMenuCommandService service, DTE2 dte, IDictionary watchList)
-        {
-            if (service == null) throw new ArgumentNullException(nameof(service));
-            _watchList = watchList ?? throw new ArgumentNullException(nameof(watchList));
-            _dte = dte ?? throw new ArgumentNullException(nameof(dte));
-
-            var selectionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSelectionCommandId));
-            service.AddCommand(selectionCommand);
-
-            var solutionCommand = new OleMenuCommand(OnCommandInvoked, null, OnQueryingStatus, new CommandID(Symbols.CmdSet.Guid, Symbols.CmdSet.CompileSolutionCommandId));
-            service.AddCommand(solutionCommand);
         }
 
         #region Singleton

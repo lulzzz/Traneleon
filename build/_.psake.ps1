@@ -33,7 +33,7 @@ Task "Default" -depends @("restore", "compile", "test", "pack");
 
 Task "Import-Dependencies" -alias "restore" -description "This task imports all build dependencies." -action {
 	#  Importing all required powershell modules.
-	foreach ($moduleId in @("Ncrement", "Pester"))
+	foreach ($moduleId in @("Ncrement", "Pester", "VSSetup"))
 	{
 		$modulePath = "$ToolsDir/$moduleId/*/*.psd1";
 		if (-not (Test-Path $modulePath))
@@ -262,6 +262,12 @@ Task "Tag-Release" -alias "tag" -description "This task tags the last commit wit
 #endregion
 
 #region ----- HELPER FUNCTIONS -----
+
+function Get-MSBuild([string]$version = "*")
+{
+    $instance = Get-VSSetupInstance -All | Select-VSSetupInstance -Latest;
+    return (Join-Path $instance.InstallationPath "msbuild\$version\bin\msbuild.exe" | Resolve-Path) -as [string];
+}
 
 function Get-Flyway([string]$version="5.1.4")
 {

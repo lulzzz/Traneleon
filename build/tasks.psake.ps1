@@ -2,9 +2,16 @@
 #>
 
 Task "Publish-Packages" -alias "push" -description "This task executes a full deployment of the application." `
--depends @("test", "version", "pack", "push-nuget", "push-vsix");
+-depends @("version", "msbuild", "test", "pack", "push-nuget", "push-vsix");
 
 # -----
+
+Task "MSBuild-Solution" -alias "msbuild" -description "" `
+-depends @("restore") -action {
+	$msbuild = Get-MSBuild;
+	[string]$sln = Resolve-Path "$RootDir/*.sln";
+	Exec { &$msbuild $sln /p:Configuration=$Configuration /verbosity:minimal; }
+}
 
 Task "Package-Solution" -alias "pack" -description "This task generates all delployment packages." `
 -depends @("restore") -action {
@@ -57,5 +64,10 @@ Task "Stage-VSIXPackage" -alias "push-vsix" -description "This task publish all 
 	{
 		Write-Header "vsix: publish '$($package.Basename)'";
 		Vsix-PublishToGallery $package.FullName;
+
+		if (-not $NonInteractive)
+		{
+			Start-Process "http://vsixgallery.com/";
+		}
 	}
 }

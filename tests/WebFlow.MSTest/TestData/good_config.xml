@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/webFlow.xsd"
+<project xmlns="https://raw.githubusercontent.com/Ackara/WebFlow/master/src/WebFlow/intellisense.xsd"
          name="test"
          outputDirectory="%temp%\webflow">
   <typescript>
