@@ -80,7 +80,6 @@ namespace Acklann.WebFlow
                 if (Project.TryLoad(filePath, _validationHandler, out Project project))
                 {
                     _project = project;
-                    _configurationChangedHandler?.Invoke(this, _project.FullName);
                 }
                 else System.Diagnostics.Debug.WriteLine($"'{filePath}' is not well-formed.");
             }
@@ -170,7 +169,6 @@ namespace Acklann.WebFlow
         private readonly ICompilerFactory _factory;
         private readonly FileSystemWatcher _watcher;
         private readonly ValidationEventHandler _validationHandler;
-        private readonly Action<object, string> _configurationChangedHandler;
         private readonly Action<ProgressToken, string> _postCompilationHandler;
         private readonly Action<ICompilierOptions, string> _preCompilationHandler;
 

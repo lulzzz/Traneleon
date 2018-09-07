@@ -213,7 +213,6 @@ Task "Publish-Database" -alias "push-db" -description "This task publishes the a
 Task "Publish-Websites" -alias "push-web" -description "This task publish all websites to their respective host." `
 -precondition { return Test-Path $ArtifactsDir -PathType Container } `
 -depends @("restore")  -action {
-	$version = "1.8.0";
 	[string]$waws = Get-WAWSDeploy;
 
 	foreach ($package in (Get-ChildItem $ArtifactsDir -Recurse -Filter "web-*"))
@@ -239,7 +238,11 @@ Task "Publish-Websites" -alias "push-web" -description "This task publish all we
 			if (-not $NonInteractive)
 			{
 				[xml]$doc = Get-Content $publishData;
-				Start-Process $doc.SelectSingleNode("//publishProfile[@destinationAppUrl]").Attributes["destinationAppUrl"].Value;
+				$appUrl = $doc.SelectSingleNode("//publishProfile[@destinationAppUrl]").Attributes["destinationAppUrl"].Value;
+                if (-not [string]::IsNullOrEmpty($appUrl))
+                {
+                    Start-Process $appUrl;
+                }
 			}
 		}
 	}
@@ -266,7 +269,15 @@ Task "Tag-Release" -alias "tag" -description "This task tags the last commit wit
 function Get-MSBuild([string]$version = "*")
 {
     $instance = Get-VSSetupInstance -All | Select-VSSetupInstance -Latest;
-    return (Join-Path $instance.InstallationPath "msbuild\$version\bin\msbuild.exe" | Resolve-Path) -as [string];
+    return (Join-Path $instance.InstallationPath "msbuild/$version/bin/msbuild.exe" | Resolve-Path) -as [string];
+}
+
+function Get-Dotfuscator()
+{
+    $instance = Get-VSSetupInstance -All | Select-VSSetupInstance -Latest;
+    $dotfuscator = Join-Path $instance.InstallationPath "Common7/IDE/Extensions/PreEmptiveSolutions/DotfuscatorCE/dotfuscatorCLI.exe";
+
+    return (Test-Path $dotfuscator) | CND $dotfuscator "";
 }
 
 function Get-Flyway([string]$version="5.1.4")

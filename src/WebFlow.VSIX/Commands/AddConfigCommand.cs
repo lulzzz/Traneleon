@@ -27,7 +27,7 @@ namespace Acklann.WebFlow.Commands
             if (_watchList.Contains(projectFile) == false)
             {
                 string filename = Path.Combine(Path.GetDirectoryName(projectFile), VSPackage.ConfigName);
-                var config = Project.CreateDefault(filename);
+                var config = Project.CreateInstance(filename);
                 config.Save();
 
                 ProjectMonitor monitor = _activator.Invoke(projectFile);

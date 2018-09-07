@@ -69,7 +69,7 @@ namespace Acklann.WebFlow.Configuration
                     select basename).FirstOrDefault();
         }
 
-        public static Project CreateDefault(string filePath, string name = default)
+        public static Project CreateInstance(string filePath, string name = default)
         {
             var proj = new Project(filePath)
             {
