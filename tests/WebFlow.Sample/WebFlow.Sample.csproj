@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <TranspileOnBuild>true</TranspileOnBuild>
-    <WebFlowConfigName>webflow.config</WebFlowConfigName>
+    <WebFlowConfigName>webFlow.config</WebFlowConfigName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -21,7 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\WebFlow\webFlow.xsd" Link="webFlow.xsd" />
+    <None Include="..\..\src\WebFlow\intellisense.xsd" Link="intellisense.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
