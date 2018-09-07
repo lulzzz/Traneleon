@@ -1,28 +1,28 @@
-{
-    "name": "WebFlow",
-    "version": "0.0.30",
-    "private": true,
-    "devDependencies": {
-        "csso": "^3.5.1",
-        "multi-stage-sourcemap": "^0.3.1",
-        "node-sass": "^4.9.0",
-        "svgo": "^1.0.5",
-        "typescript": "^2.9.2",
-        "uglify-js": "^3.4.2"
-    },
-    "author": "Ackara",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ackara/webflow/webflow.git"
-    },
-    "homepage": "https://github.com/ackara/webflow",
-    "keywords": [
-        "web",
-        "compile",
-        "minify",
-        "typescript",
-        "sass",
-        "images"
-    ],
-    "description": "This package allows you to transpile, minify and bundle your web assets."
+﻿{
+    "name":  "WebFlow",
+    "version":  "0.0.31",
+    "private":  true,
+    "devDependencies":  {
+                            "csso":  "^3.5.1",
+                            "multi-stage-sourcemap":  "^0.3.1",
+                            "node-sass":  "^4.9.0",
+                            "svgo":  "^1.0.5",
+                            "typescript":  "^2.9.2",
+                            "uglify-js":  "^3.4.2"
+                        },
+    "author":  "Ackara",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/ackara/webflow/webflow.git"
+                   },
+    "homepage":  "https://github.com/ackara/webflow",
+    "keywords":  [
+                     "web",
+                     "compile",
+                     "minify",
+                     "typescript",
+                     "sass",
+                     "images"
+                 ],
+    "description":  "Automatically transpile, minify and/or bundle your web assets when your file is saved or before your project is built."
 }

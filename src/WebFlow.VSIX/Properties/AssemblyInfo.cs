@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WebFlow")]
-[assembly: AssemblyDescription("This package allows you to transpile, minify and bundle your web assets.")]
+[assembly: AssemblyDescription("Automatically transpile, minify and/or bundle your web assets when your file is saved or before your project is built.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ackara")]
 [assembly: AssemblyProduct("WebFlow")]
@@ -28,10 +28,11 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("0.0.30")]
-[assembly: AssemblyVersion("0.0.30")]
-[assembly: AssemblyFileVersion("0.0.30")]
-[assembly: AssemblyInformationalVersion("0.0.30")]
+// [assembly: AssemblyVersion("0.0.31")]
+[assembly: AssemblyVersion("0.0.31")]
+[assembly: AssemblyFileVersion("0.0.31")]
+[assembly: AssemblyInformationalVersion("0.0.31")]
+
 
 
 
