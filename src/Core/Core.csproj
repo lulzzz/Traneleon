@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Acklann.Traneleon</RootNamespace>
@@ -103,7 +103,7 @@ Features:
     <Message Condition="$(ShouldRestoreEmbeddedResources)=='False'" Text="Skipping because the resouces already exists." />
     <Exec Command="powershell -ExecutionPolicy ByPass -NoProfile -File restore-embeddedResources.ps1 &quot;$(ExternalDependencies)&quot; &quot;$(MSBuildProjectName)&quot;" Condition="$(ShouldRestoreEmbeddedResources)" />
   </Target>
-  <Target Name="RemoveEmbeddedResources" AfterTargets="Clean">
+  <Target Name="RemoveEmbeddedResources" AfterTargets="CoreClean">
     <RemoveDir Directories="$(MSBuildProjectDirectory)\node_modules" />
     <Delete Files="$(MSBuildProjectDirectory)\$(ExternalDependencies);$(MSBuildProjectDirectory)\$(OS)-node_modules.zip" />
   </Target>

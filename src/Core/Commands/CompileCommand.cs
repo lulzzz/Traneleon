@@ -75,7 +75,6 @@ namespace Acklann.Traneleon.Commands
             Log.Debug(format($"Build started", '-'));
             ICompilierResult[] results = _project.Compile(new Progress<ICompilierResult>((x) =>
             {
-
             }));
             string elapse = TimeSpan.FromTicks(DateTime.Now.Ticks - startTime).ToString();
             Log.Debug(format($"Build: finished in ({elapse}); {results.Count(x => x.Succeeded)} succeeded, {results.Count(x => !x.Succeeded)} failed", '='));
@@ -101,7 +100,6 @@ namespace Acklann.Traneleon.Commands
         {
             public void Report(ProgressToken value)
             {
-                
             }
         }
     }
