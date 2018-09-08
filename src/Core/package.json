@@ -1,6 +1,6 @@
 ﻿{
     "name":  "Traneleon",
-    "version":  "0.0.32",
+    "version":  "0.0.33",
     "private":  true,
     "devDependencies":  {
                             "csso":  "^3.5.1",
