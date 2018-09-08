@@ -55,9 +55,8 @@ namespace Acklann.WebFlow.Commands
                 EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-                    var dir = Path.GetDirectoryName(item.Project.FullName);
-                    bool donotHaveConfigFile = Project.FindConfigurationFile(dir) == null;
-                    command.Visible = donotHaveConfigFile;
+                    bool configFileNotExists = string.IsNullOrEmpty(Project.FindConfigurationFile(Path.GetDirectoryName(item.Project.FullName)));
+                    command.Visible = configFileNotExists;
                 }
             }
         }

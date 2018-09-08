@@ -8,6 +8,7 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using Task = System.Threading.Tasks.Task;
+using Project = Acklann.WebFlow.Configuration.Project;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -92,7 +93,7 @@ namespace Acklann.WebFlow.Commands
                 EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-                    bool configFileExist = string.IsNullOrEmpty(Configuration.Project.FindConfigurationFile(item.Project.FullName)) == false;
+                    bool configFileExist = string.IsNullOrEmpty(Project.FindConfigurationFile(Path.GetDirectoryName(item.Project.FullName))) == false;
                     command.Visible = configFileExist;
                 }
             }

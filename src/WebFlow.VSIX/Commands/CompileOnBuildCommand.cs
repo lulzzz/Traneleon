@@ -6,9 +6,9 @@ using NuGet.VisualStudio;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Task = System.Threading.Tasks.Task;
 
 namespace Acklann.WebFlow.Commands
 {
@@ -47,32 +47,27 @@ namespace Acklann.WebFlow.Commands
                 {
                     DialogResult answer = MessageBox.Show("A NuGet package will be installed to augment the MSBuild process, but no files will be added to the project.\r\nThis may require an internet connection.\r\n\r\nDo you want to continue?", nameof(WebFlow), MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
-                    {
-                        Task.Run(() =>
+                        try
                         {
-                            try
-                            {
-                                _dte.StatusBar.Animate(true, EnvDTE.vsStatusAnimation.vsStatusAnimationSync);
-                                var installer = componentModel.GetService<IVsPackageInstaller>();
-                                installer.InstallPackage(null, selectedProject, packageId, version, false);
+                            _dte.StatusBar.Animate(true, EnvDTE.vsStatusAnimation.vsStatusAnimationSync);
+                            var installer = componentModel.GetService<IVsPackageInstaller>();
+                            installer.InstallPackage(null, selectedProject, packageId, version, false);
 
-                                string msg = string.Format("{1} | Finished installing the '{0}' package.", packageId, nameof(WebFlow));
-                                System.Diagnostics.Debug.WriteLine(msg);
-                                _dte.StatusBar.Text = msg;
-                            }
-                            catch (Exception ex)
-                            {
-                                string msg = string.Format("{2} | Unable to install the '{0}.{1}' package.", packageId, version, nameof(WebFlow));
-                                System.Diagnostics.Debug.WriteLine(ex.Message);
-                                System.Diagnostics.Debug.WriteLine(msg);
-                                _dte.StatusBar.Text = msg;
-                            }
-                            finally
-                            {
-                                _dte.StatusBar.Animate(false, EnvDTE.vsStatusAnimation.vsStatusAnimationSync);
-                            }
-                        });
-                    }
+                            string msg = string.Format("{1} | Finished installing the '{0}' package.", packageId, nameof(WebFlow));
+                            System.Diagnostics.Debug.WriteLine(msg);
+                            _dte.StatusBar.Text = msg;
+                        }
+                        catch (Exception ex)
+                        {
+                            string msg = string.Format("{2} | Unable to install the '{0}.{1}' package.", packageId, version, nameof(WebFlow));
+                            System.Diagnostics.Debug.WriteLine(ex.Message);
+                            System.Diagnostics.Debug.WriteLine(msg);
+                            _dte.StatusBar.Text = msg;
+                        }
+                        finally
+                        {
+                            _dte.StatusBar.Animate(false, EnvDTE.vsStatusAnimation.vsStatusAnimationSync);
+                        }
                 }
                 else MessageBox.Show(string.Format("The {0} project has already been configured.", selectedProject.Name));
             }
@@ -85,8 +80,8 @@ namespace Acklann.WebFlow.Commands
                 EnvDTE.SelectedItem item = _dte.GetSelectedItems().FirstOrDefault();
                 if (string.IsNullOrEmpty(item?.Project?.FullName) == false)
                 {
-                    bool configFileExist = string.IsNullOrEmpty(Configuration.Project.FindConfigurationFile(item.Project.FullName)) == false;
-                    command.Visible = configFileExist;
+                    bool configFileNotExist = string.IsNullOrEmpty(Configuration.Project.FindConfigurationFile(Path.GetDirectoryName(item.Project.FullName)));
+                    command.Visible = configFileNotExist;
                 }
             }
         }
