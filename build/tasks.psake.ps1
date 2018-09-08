@@ -20,20 +20,20 @@ Task "Package-Solution" -alias "pack" -description "This task generates all delp
 	New-Item $ArtifactsDir -ItemType Directory | Out-Null;
 
 	# Powershell Gallery
-	$proj = Get-Item "$RootDir\src\*.CLI\*.csproj";
+	$proj = Get-Item "$RootDir\src\*CLI\*.csproj";
 	Write-Header "dotnet: publish '$($proj.Basename)' (FDD)";
 	Exec { &dotnet publish $proj.FullName --configuration $Configuration; }
 	$psd1 = Get-Item (Join-Path $proj.DirectoryName "bin\$Configuration\*\NShellit\*\*\*.psd1");
 	Copy-Item $psd1.DirectoryName -Destination $ArtifactsDir -Recurse;
 
 	# Nuget
-	$proj = Get-Item "$RootDir\src\$SolutionName\*.csproj";
+	$proj = Get-Item "$RootDir\src\Core\*.csproj";
 	Write-Header "dotnet: pack '$($proj.BaseName)'";
 	Exec { &dotnet pack $proj.FullName --output $ArtifactsDir --configuration $Configuration /p:PackageVersion=$version; }
 
 	# VSIX
 	$msbuild = Get-MSBuild;
-	$proj = Get-Item "$RootDir/src/*.VSIX/*.csproj";
+	$proj = Get-Item "$RootDir/src/*VSIX/*.csproj";
 	Write-Header "msbuild: '$($proj.BaseName)'";
 	Exec { &$msbuild /p:"Configuration=$Configuration;Platform=AnyCPU" /verbosity:minimal $proj.FullName; }
 

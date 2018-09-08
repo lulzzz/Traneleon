@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project name="webflow-compiler" xmlns="https://raw.githubusercontent.com/Ackara/Traneleon/master/src/Core/intellisense.xsd">
+  <sass enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
+    <include>
+      <pattern>*.scss</pattern>
+    </include>
+  </sass>
+  <typescript enable="true" suffix=".min" keepIntermediateFiles="false" generateSourceMaps="true">
+    <include outFile="">
+      <pattern>*.ts</pattern>
+    </include>
+  </typescript>
+</project>

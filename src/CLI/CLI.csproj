@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Title>WebFlow</Title>
+    <Product>$(Title)</Product>
+    <ProductName>$(Title)</ProductName>
+    <Authors>Ackara</Authors>
+    <Company>Ackara</Company>
+    <RootNamespace>Acklann.Traneleon</RootNamespace>
+    <AssemblyName>Acklann.Traneleon.CLI</AssemblyName>
+    <AssemblyVersion>0.0.31</AssemblyVersion>
+    <PackageVersion>0.0.31</PackageVersion>
+    <Copyright>All rigths reserved</Copyright>
+    <PackageLicenseUrl>MIT License</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/ackara/webflow</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ackara/webflow/webflow.git</RepositoryUrl>
+    <PackageIconUrl>https://github.com/ackara/webflow/raw/development/art/icon.svg</PackageIconUrl>
+    <PackageReleaseNotes>version 1.0.0
+-------------
+Features:
+	* Transpile and minify sass files.
+	* Transpile and minify typescript files.
+	* Minify image files.
+</PackageReleaseNotes>
+    <PackageTags>web compile minify typescript sass images</PackageTags>
+    <Description>Automatically transpile, minify and/or bundle your web assets when your file is saved or before your project is built.</Description>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Acklann.NShellit" Version="0.0.15-rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>
