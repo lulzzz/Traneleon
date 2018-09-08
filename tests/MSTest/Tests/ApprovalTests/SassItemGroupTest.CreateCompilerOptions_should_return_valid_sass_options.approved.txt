@@ -1,0 +1,2 @@
+﻿path[0] = \wwwroot\stylesheets\global.scss
+path[1] = \wwwroot\stylesheets\views\home.scss

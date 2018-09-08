@@ -1,0 +1,43 @@
+﻿{
+  "name": "test",
+  "outputDirectory": "%temp%/webflow",
+  "typescript":
+  {
+    "include":
+    [
+      {
+        "outFile": "_Layout.cshtml",
+        "patterns":
+        [
+          "*.ts"
+        ]
+      }
+    ]
+  },
+  "sass":
+  {
+    "include":
+    [
+      "*.scss"
+    ]
+  },
+  "image":
+  {
+    "optimize":
+    [
+      {
+        "quality": 75,
+        "patterns":
+        [
+          "*.png"
+        ]
+      },
+      {
+        "patterns":
+        [
+          "*.jpg"
+        ]
+      }
+    ]
+  }
+}

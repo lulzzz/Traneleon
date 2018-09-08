@@ -1,0 +1,6 @@
+﻿file[0] = ImageOptimizerTest\lossy\img1A.min.gif
+file[1] = ImageOptimizerTest\lossless\img1A.min.gif
+file[2] = ImageOptimizerTest\lossy\img8.min.jpg
+file[3] = ImageOptimizerTest\lossless\img8.min.jpg
+file[4] = ImageOptimizerTest\lossy\img10.min.png
+file[5] = ImageOptimizerTest\lossless\img10.min.png

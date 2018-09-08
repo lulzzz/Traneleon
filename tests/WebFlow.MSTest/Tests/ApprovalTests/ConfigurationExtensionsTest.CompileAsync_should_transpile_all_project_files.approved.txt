@@ -1,4 +1,0 @@
-﻿file[0] = app.js
-file[1] = app.js.map
-file[2] = app.min.js
-file[3] = app.min.js.map

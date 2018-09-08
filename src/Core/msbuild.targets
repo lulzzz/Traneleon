@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TranspileOnBuild Condition="$(TranspileOnBuild)==''">true</TranspileOnBuild>
+    <TraneleonConfigName Condition="$(TraneleonConfigName)==''">transpiler.*</TraneleonConfigName>
+    <TraneleonConfigFile Condition="$(TraneleonConfigFile)==''">$(MSBuildProjectDirectory)\$(TraneleonConfigName)</TraneleonConfigFile>
+    <TraneleonRootDirectory>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))))</TraneleonRootDirectory>
+  </PropertyGroup>
+
+  <Target Name="TranspileWebAssetsBeforeBuild"
+          Condition="$(TranspileOnBuild)"
+          BeforeTargets="CoreCompile">
+    <CallTarget Targets="Transpile" UseResultsCache="true" />
+  </Target>
+
+  <Target Name="Transpile">
+    <ItemGroup>
+      <TraneleonAssemblyFile Include="$(TraneleonRootDirectory)\tools\*\*.CLI.dll" />
+    </ItemGroup>
+
+    <Exec Command="dotnet &quot;@(TraneleonAssemblyFile)&quot; build &quot;$(TraneleonConfigFile)&quot;" />
+  </Target>
+</Project>

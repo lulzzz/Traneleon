@@ -1,0 +1,4 @@
+﻿file[0] = build.js
+file[1] = build.js.map
+file[2] = build.min.js
+file[3] = build.min.js.map

@@ -1,4 +1,6 @@
 version 1.0.0
 -------------
 Features:
-	* 
+	* Transpile and minify sass files.
+	* Transpile and minify typescript files.
+	* Minify image files.

@@ -262,15 +262,18 @@ __pycache__/
 
 # Temporary Files
 * - Copy/
+old/
 
 # Generated Files
-powershell_modules/
+[Tt]ests/*.[Ss]ample/**/*.css
+[Tt]ools/
+# -----
+[Mm]ock.config
 *.received.*
-mock.config
 *-lock.*
 *.min.*
-lib.zip
+*.zip
 *.map
 
 # Sensitive Files
-secrets.*
+[Ss]ecrets.*

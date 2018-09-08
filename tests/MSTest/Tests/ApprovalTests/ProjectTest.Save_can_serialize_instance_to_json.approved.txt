@@ -1,0 +1,59 @@
+﻿{
+  "name": "test",
+  "sass": {
+    "keepIntermediateFiles": false,
+    "generateSourceMaps": true,
+    "include": [
+      "*.scss"
+    ],
+    "exclude": [
+      "_*.scss"
+    ],
+    "enabled": true,
+    "suffix": ".min"
+  },
+  "image": {
+    "optimize": [
+      {
+        "quality": 80,
+        "compression": 0,
+        "progressive": true,
+        "patterns": [
+          "*.jpg"
+        ]
+      },
+      {
+        "quality": 50,
+        "compression": 1,
+        "progressive": true,
+        "patterns": [
+          "*.png"
+        ]
+      }
+    ],
+    "enabled": true,
+    "suffix": ".min"
+  },
+  "typescript": {
+    "keepIntermediateFiles": false,
+    "generateSourceMaps": true,
+    "include": [
+      {
+        "patterns": [
+          "**/views/*.ts"
+        ]
+      },
+      {
+        "outFile": "index.min.js",
+        "patterns": [
+          "*.ts"
+        ]
+      }
+    ],
+    "exclude": [
+      "_*.ts"
+    ],
+    "enabled": true,
+    "suffix": ".min"
+  }
+}

@@ -1,0 +1,14 @@
+ul {
+  list-style: none;
+}
+
+button {
+  outline: none;
+  background-color: aqua;
+}
+
+.row {
+  display: flex;
+}
+
+/*# sourceMappingURL=global.css.map */
