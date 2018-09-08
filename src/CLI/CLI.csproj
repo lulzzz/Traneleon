@@ -11,13 +11,13 @@
     <Company>Ackara</Company>
     <RootNamespace>Acklann.Traneleon</RootNamespace>
     <AssemblyName>Acklann.Traneleon.CLI</AssemblyName>
-    <AssemblyVersion>0.0.35</AssemblyVersion>
-    <PackageVersion>0.0.35</PackageVersion>
+    <AssemblyVersion>0.0.36</AssemblyVersion>
+    <PackageVersion>0.0.36</PackageVersion>
     <Copyright>All rigths reserved</Copyright>
     <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/ackara/traneleon</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ackara/traneleon/traneleon.git</RepositoryUrl>
-    <PackageIconUrl>https://github.com/ackara/traneleon/raw/master/art/icon.svg</PackageIconUrl>
+    <PackageIconUrl>https://github.com/ackara/traneleon/raw/master/art/icon.png</PackageIconUrl>
     <PackageReleaseNotes>version 1.0.0
 -------------
 Features:

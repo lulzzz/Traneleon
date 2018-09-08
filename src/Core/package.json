@@ -1,29 +1,29 @@
-{
-  "name": "traneleon",
-  "version": "0.0.35",
-  "private": true,
-  "devDependencies": {
-    "csso": "^3.5.1",
-    "multi-stage-sourcemap": "^0.3.1",
-    "node-sass": "^4.9.0",
-    "svgo": "^1.0.5",
-    "typescript": "^2.9.2",
-    "uglify-js": "^3.4.2"
-  },
-  "author": "Ackara",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ackara/traneleon/traneleon.git"
-  },
-  "homepage": "https://github.com/ackara/traneleon",
-  "keywords": [
-    "web",
-    "compile",
-    "minify",
-    "typescript",
-    "sass",
-    "images",
-    "transpiler"
-  ],
-  "description": "Automatically transpile, minify and/or bundle your web assets when your file is saved or before your project is built."
+﻿{
+    "name":  "Traneleon",
+    "version":  "0.0.36",
+    "private":  true,
+    "devDependencies":  {
+                            "csso":  "^3.5.1",
+                            "multi-stage-sourcemap":  "^0.3.1",
+                            "node-sass":  "^4.9.0",
+                            "svgo":  "^1.0.5",
+                            "typescript":  "^2.9.2",
+                            "uglify-js":  "^3.4.2"
+                        },
+    "author":  "Ackara",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/ackara/traneleon/traneleon.git"
+                   },
+    "homepage":  "https://github.com/ackara/traneleon",
+    "keywords":  [
+                     "web",
+                     "compile",
+                     "minify",
+                     "typescript",
+                     "sass",
+                     "images",
+                     "transpiler"
+                 ],
+    "description":  "Automatically transpile, minify and/or bundle your web assets when your file is saved or before your project is built."
 }
