@@ -1,8 +1,8 @@
-﻿# Traneleon
+﻿![Traneleon](art/banner.svg)
 
-[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/v/ritwickdey.LiveServer.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=ackara.Traneleon)
-[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/d/ritwickdey.LiveServer.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=acklann.Traneleon)
-[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/r/ritwickdey.LiveServer.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=acklann.Traneleon)
+[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/v/ackara.traneleon.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=ackara.traneleon)
+[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/d/ackara.traneleon.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=acklann.traneleon)
+[![Visual Studio Marketplace](https://img.shields.io/vscode-marketplace/r/ackara.traneleon.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=acklann.traneleon)
 ---
 
 ## What is Traneleon
@@ -12,7 +12,7 @@ Traneleon is a Visual Studio extension that automates the bundling and optimizat
 Traneleon works by utilizing a configuration file that enables and customize the input-output of it operations.
 
 ```xml
-<project xmlns="https://raw.githubusercontent.com/Ackara/Traneleon/master/src/Core/intellisense.xsd">
+<project xmlns="https://raw.githubusercontent.com/ackara/traneleon/master/src/core/intellisense.xsd">
     <images>
         <optimize compression="lossless" progressive="true">
             <pattern>wwwroot/**/*.jpg</pattern>
@@ -36,6 +36,6 @@ To manually transpile your files, you can select then right-click on any file or
 ![transpile button](art/screenshots/item.png)
 
 ## Where can I get it
-Traneleon can be install from the [marketplace](https://marketplace.visualstudio.com/items?itemName=acklann.Traneleon), [nuget](https://www.nuget.org/packages/Acklann.Traneleon/) and [powershellgallery](https://www.powershellgallery.com/packages/Traneleon/)
+Traneleon can be install from the [marketplace](https://marketplace.visualstudio.com/items?itemName=acklann.traneleon), [nuget](https://www.nuget.org/packages/acklann.traneleon/) and [powershellgallery](https://www.powershellgallery.com/packages/traneleon/)
 
 `PM> Install-Package Acklann.Traneleon`

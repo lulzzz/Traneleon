@@ -15,7 +15,7 @@
     "Copyright":  "All rigths reserved",
     "Website":  "https://github.com/ackara/traneleon",
     "RepositoryUrl":  "https://github.com/ackara/traneleon/traneleon.git",
-    "Icon":  "https://github.com/ackara/traneleon/raw/master/art/icon.svg",
+    "Icon":  "https://github.com/ackara/traneleon/raw/master/art/icon.png",
     "ReleaseNotes":  "version 1.0.0\r\n-------------\r\nFeatures:\r\n\t* Transpile and minify sass files.\r\n\t* Transpile and minify typescript files.\r\n\t* Minify image files.\r\n",
     "Tags":  "web compile minify typescript sass images transpiler",
     "BranchSuffixMap":  {
