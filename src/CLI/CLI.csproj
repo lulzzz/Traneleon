@@ -11,8 +11,8 @@
     <Company>Ackara</Company>
     <RootNamespace>Acklann.Traneleon</RootNamespace>
     <AssemblyName>Acklann.Traneleon.CLI</AssemblyName>
-    <AssemblyVersion>0.0.34</AssemblyVersion>
-    <PackageVersion>0.0.34</PackageVersion>
+    <AssemblyVersion>0.0.35</AssemblyVersion>
+    <PackageVersion>0.0.35</PackageVersion>
     <Copyright>All rigths reserved</Copyright>
     <PackageLicenseUrl>MIT License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/ackara/traneleon</PackageProjectUrl>
