@@ -8,7 +8,7 @@ namespace Acklann.Traneleon
     {
         static SampleProject()
         {
-            DirectoryName = $"../../../{nameof(Traneleon)}.Sample".ExpandPath(AppContext.BaseDirectory);
+            DirectoryName = $"../../../Sample".ExpandPath(AppContext.BaseDirectory);
         }
 
         public static string DirectoryName { get; }
